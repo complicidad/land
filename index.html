@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notificaciones con Mensaje Central</title>
+<style>
+  
+  body {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: #fefaf6;
+    color: #333;
+    text-align: center;
+  }
+
+  /* Logo */
+  #logo {
+    margin-top: 180px;
+  }
+
+  #logo img {
+    width: 80px;
+    height: auto;
+  }
+
+  h1 {
+    font-weight: 300;
+    font-size: 40px;
+    margin: 20px 0 10px 0;
+  }
+
+  p.subtitle {
+    font-weight: 300;
+    font-size: 18px;
+    color: #777;
+    max-width: 450px;
+    margin: 0 auto 30px auto;
+    line-height: 1.5;
+  }
+
+  /* Botón principal */
+  #cta-button {
+    padding: 14px 30px;
+    font-size: 18px;
+    background-color: #1877F2;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+  }
+
+  #cta-button:hover {
+    background-color: #155bb5;
+    transform: translateY(-2px);
+    box-shadow: 0 12px 25px rgba(0,0,0,0.15);
+  }
+
+  /* Pequeño texto debajo */
+  .small-text {
+    font-size: 13px;
+    color: #aaa;
+    margin-top: 15px;
+  }
+
+  /* Iconos de redes */
+  .social-icons {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+  }
+
+  .social-icons img {
+    width: 28px;
+    height: 28px;
+    opacity: 0.7;
+    transition: opacity 0.3s ease;
+  }
+
+  .social-icons img:hover {
+    opacity: 1;
+  }
+
+  /* Footer */
+  footer {
+    margin-top: 40px;
+    font-size: 12px;
+    color: #ccc;
+    line-height: 1.5;
+  }  
+  
+  body {
+    font-family: Arial, sans-serif;
+    background: #f8f8f8;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Contenedor de notificaciones */
+  #notification-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 350px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Solo en móviles */
+  @media (max-width: 768px) {
+    #notification-container {
+      max-height: calc(2 * 70px); /* altura aproximada de 2 notificaciones */
+      overflow: hidden;
+    }
+
+    .notification {
+      margin-bottom: -10px; /* ajustar para que se solapen suavemente */
+    }
+  }  
+  
+  .notification {
+    display: flex;
+    align-items: center;
+    text-align: left;
+    padding: 10px 14px;
+    border-radius: 10px;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+    background-color: #fff;
+    transform: translateX(120%);
+    opacity: 0;
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s ease, margin 0.5s ease;
+    position: relative;
+    margin-bottom: 10px; /* overlap estilo Muzzle */
+  }
+
+  .notification.show {
+    transform: translateX(0);
+    opacity: 1;
+  }
+
+  .notification .icon {
+    width: 28px;
+    height: 28px;
+    margin-right: 10px;
+    flex-shrink: 0;
+    font-size: 18px;
+  }
+
+  .notification .content {
+    flex-grow: 1;
+  }
+
+  .notification strong {
+    display: block;
+    font-size: 13px;
+    margin-bottom: 3px;
+  }
+
+  .notification span {
+    font-size: 12px;
+    color: #555;
+  }
+
+  .notification .close-btn {
+    position: absolute;
+    top: 4px;
+    right: 6px;
+    background: none;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+  }
+
+  .whatsapp { border-left: 4px solid #25D366; }
+  .instagram { border-left: 4px solid #C13584; }
+  .facebook { border-left: 4px solid #1877F2; }
+  .tiktok { border-left: 4px solid #000; }
+
+  /* Mensaje central */
+  #middle-message {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    z-index: 9998;
+  }
+
+  #middle-message p {
+    font-size: 22px;
+    font-weight: bold;
+    margin-bottom: 15px;
+  }
+
+  #middle-message button {
+    padding: 12px 25px;
+    background-color: #1877F2;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+  }
+
+  #middle-message button:hover {
+    background-color: #155bb5;
+  }
+
+</style>
+</head>
+<body>
+
+<!-- Contenedor de notificaciones -->
+<div id="notification-container"></div>
+
+
+  <!-- Logo -->
+  <div id="logo">
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIA..." alt="Logo Complicidad">
+  </div>
+
+  <!-- Nombre de la startup -->
+  <h1>Latam5S</h1><br>
+
+  <!-- Subtítulo -->
+  <p class="subtitle">
+    Olvida el desorden<br>Direcciones claras<br>envíos perfectos.
+  </p>
+
+  <!-- Botón CTA -->
+  <button id="cta-button">Empieza ahora</button><br>
+
+  <!-- Texto pequeño -->
+  <p class="small-text">Sin importar la plataforma, tus envíos siempre organizados</p>
+
+  <!-- Redes sociales -->
+  <div class="social-icons">
+    <img src="https://cdn-icons-png.flaticon.com/512/733/733585.png" alt="WhatsApp">
+    <img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram">
+    <img src="https://cdn-icons-png.flaticon.com/512/733/733547.png" alt="Facebook">
+    <img src="https://cdn-icons-png.flaticon.com/512/3046/3046121.png" alt="TikTok">
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    © 2025 Latam5S. Todos los derechos reservados.
+  </footer>  
+
+<script>
+const container = document.getElementById('notification-container');
+
+const icons = {
+  whatsapp: '<img src="https://cdn-icons-png.flaticon.com/512/733/733585.png" alt="WhatsApp" width="20" height="20">',
+  instagram: '<img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram" width="20" height="20">',
+  facebook: '<img src="https://cdn-icons-png.flaticon.com/512/733/733547.png" alt="Facebook" width="20" height="20">',
+  tiktok: '<img src="https://cdn-icons-png.flaticon.com/512/3046/3046121.png" alt="TikTok" width="20" height="20">'
+};
+
+function createNotification(platform, user, message) {
+  const notif = document.createElement('div');
+  notif.classList.add('notification', platform);
+
+  notif.innerHTML = `
+    <div class="icon">${icons[platform]}</div>
+    <div class="content">
+      <strong>${user}</strong>
+      <span>${message}</span>
+    </div>
+    <button class="close-btn">&times;</button>
+  `;
+
+  container.prepend(notif);
+
+  notif.offsetHeight;
+  notif.classList.add('show');
+
+  notif.querySelector('.close-btn').addEventListener('click', () => fadeNotification(notif));
+
+  setTimeout(() => fadeNotification(notif), 7000);
+
+  updateOpacity();
+}
+
+function fadeNotification(notif) {
+  notif.style.transition = 'opacity 1.5s ease';
+  notif.style.opacity = 0;
+  notif.addEventListener('transitionend', () => notif.remove());
+  setTimeout(updateOpacity, 200);
+}
+
+function updateOpacity() {
+  const notifs = Array.from(container.querySelectorAll('.notification'));
+  const total = notifs.length;
+  notifs.forEach((n, i) => {
+    const opacity = 1 - (i / total) * 0.8;
+    if(n.style.opacity !== "0") n.style.opacity = opacity;
+  });
+}
+
+// Nombres de usuarios
+const users = ['Ana', 'Luis', 'Carla', 'Miguel', 'Sofía', 'Diego', 'Valeria', 'Jorge'];
+
+// Mensajes tipo ubicación
+const messages = [
+  "Mi dirección es al frente del hospital",
+  "Shalom al frente del aeropuerto",
+  "Shalom Cusco",
+  "Entrega en la esquina de la avenida principal",
+  "Dirección céntrica cerca del parque",
+  "Mi casa está junto a la iglesia",
+  "Shalom Miraflores",
+  "Entrega en la puerta del colegio"
+];
+
+const platforms = ['whatsapp','instagram','facebook','tiktok'];
+
+setInterval(() => {
+  const platform = platforms[Math.floor(Math.random()*platforms.length)];
+  const user = users[Math.floor(Math.random()*users.length)];
+  const message = messages[Math.floor(Math.random()*messages.length)];
+  createNotification(platform, user, message);
+}, 1500);
+</script>
+
+
+</body>
+</html>
