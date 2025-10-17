@@ -54,6 +54,8 @@
           animation: spin 1s linear infinite;
         }
 
+        /* Oculté las clases CSS específicas del mensaje anterior, ya no son necesarias. */
+
     </style>
     <script>
         tailwind.config = {
@@ -83,8 +85,7 @@
 <!-- El cuerpo usa el fondo claro (brand-bg) y texto oscuro (brand-text) -->
 <body class="flex flex-col min-h-screen bg-brand-bg text-brand-text">
 
-    <!-- Contenedor del mensaje de estado -->
-    <div id="mensaje" class="hidden mensaje p-3 mb-3 rounded-lg font-medium mx-auto w-full max-w-3xl"></div>
+    <!-- EL ANTIGUO MENSAJE #mensaje FUE ELIMINADO -->
 
     <!-- Contenedor principal del formulario (main) -->
     <main class="flex-grow p-5 max-w-xl mx-auto font-quicksand w-full">
@@ -255,6 +256,9 @@
             </svg>
         </footer>
 
+    <!-- Toast de Notificación (Nuevo estilo) -->
+    <div class="toast fixed right-5 bottom-5 text-white p-3 rounded-xl shadow-xl shadow-brand-accent/25 opacity-0 translate-y-2 transition-all duration-300 z-50 max-w-sm" id="toast">Acción aplicada</div>
+
 
     <!-- Spinner de carga -->
     <div id="spinner" class="fixed inset-0 bg-brand-bg bg-opacity-85 z-50 flex justify-center items-center flex-col hidden">
@@ -265,17 +269,7 @@
     <!-- Script para los modales de lista. -->
     <script>
 
-        // Se redefinen las clases de mensaje en el DOM para usar las nuevas clases de Tailwind
-        function updateMessageClasses(selector) {
-            const $el = $(selector);
-            // Revertir a clases de éxito/error estándar de Tailwind
-            if ($el.hasClass('success')) {
-                $el.addClass('bg-green-100 text-green-700').removeClass('success');
-            } else if ($el.hasClass('error')) {
-                $el.addClass('bg-red-100 text-red-700').removeClass('error');
-            }
-        }
-        updateMessageClasses('#mensaje');
+        // Se elimina la función updateMessageClasses antigua.
         
         // --- Lógica del modal de Distritos (Vanilla JS) ---
         const campoDistrito = document.getElementById("distrito");
@@ -471,6 +465,43 @@
                     $(campo).removeClass("is-invalid"); // Limpia el estado de error
                 });
             }
+            
+            // FUNCIÓN ACTUALIZADA PARA USAR EL TOAST CON ESTILO GRADIENTE
+            function mostrarMensajeTelefono(mensaje, tipo = "success") {
+                const $toast = $("#toast");
+                
+                // Limpiar clases de gradiente y visibilidad
+                $toast.removeClass("bg-gradient-to-r from-brand-accent to-brand-accent-alt from-red-500 to-red-600 opacity-100 translate-y-0");
+                
+                // 1. Aplicar clases de color según el tipo (Terracota para éxito, Rojo para error)
+                if (tipo === "success") {
+                    $toast.addClass("bg-gradient-to-r from-brand-accent to-brand-accent-alt shadow-brand-accent/25");
+                } else {
+                    $toast.addClass("bg-gradient-to-r from-red-500 to-red-600 shadow-red-500/25");
+                }
+
+                // 2. Setear el texto
+                $toast.text(mensaje);
+                
+                // 3. Mostrar el toast (aplica la transición)
+                // Se hace en el siguiente tick del ciclo de eventos para asegurar la transición
+                setTimeout(() => {
+                    $toast.addClass("opacity-100 translate-y-0");
+                }, 50);
+
+                // 4. Set timeout para ocultar el toast después de 5 segundos
+                clearTimeout($toast.data('timer'));
+                const timer = setTimeout(() => {
+                    $toast.removeClass("opacity-100 translate-y-0").addClass("opacity-0 translate-y-2");
+                    // Limpia las clases de color después de la animación de salida
+                    setTimeout(() => {
+                        $toast.removeClass("from-brand-accent to-brand-accent-alt from-red-500 to-red-600 shadow-brand-accent/25 shadow-red-500/25");
+                    }, 300); // 300ms es la duración de la transición
+                }, 5000); 
+
+                $toast.data('timer', timer);
+            }
+
 
             // Muestra/oculta bloques de campos según la opción seleccionada
             $("#tipoAccion").on("change", function () {
@@ -491,6 +522,8 @@
                     $("#camposDelivery").attr("hidden", false).find("input, select").prop("disabled", false);
                 } else if (valor === "shalom") {
                     $("#camposShalom").attr("hidden", false).find("input, select").prop("disabled", false);
+                } else if (valor === "recoger") {
+                    // Recoger en almacén no requiere campos extra ni fecha de envío
                 } else if (valor === "usado") {
                     $("#camposUsados").attr("hidden", false).find("input, select").prop("disabled", false);
                 }
@@ -518,24 +551,11 @@
             $("#formulario").on("submit", function (e) {
                 e.preventDefault();
 
-                // Oculta el mensaje previo
-                $("#mensaje").slideUp().removeClass("bg-green-100 text-green-700 bg-red-100 text-red-700");
+                // Oculta el mensaje previo inmediatamente
+                $("#toast").removeClass("opacity-100 translate-y-0").addClass("opacity-0 translate-y-2");
                 
-                function mostrarMensajeTelefono(mensaje, tipo = "success") {
-                    const $mensaje = $("#mensaje");
-                    $mensaje.text(mensaje);
-                    $mensaje.removeClass().addClass("p-3 mb-3 rounded-lg font-medium mx-auto w-full max-w-3xl");
-                    
-                    if (tipo === "success") {
-                        $mensaje.addClass("bg-green-100 text-green-700");
-                    } else {
-                        $mensaje.addClass("bg-red-100 text-red-700");
-                    }
-                    $mensaje.slideDown();
-                    
-                    setTimeout(() => {
-                        $mensaje.slideUp();
-                    }, 10000);
+                function mostrarMensaje(mensaje, tipo = "success") {
+                    mostrarMensajeTelefono(mensaje, tipo);
                 }
                 
                 const tipoAccion = $("#tipoAccion").val();
@@ -556,14 +576,14 @@
                         .replace(/\D/g, "");
 
                     if (!telefonoIngresado) {
-                        mostrarMensajeTelefono("Por favor, ingresa tu número registrado", "error");
+                        mostrarMensaje("Por favor, ingresa tu número registrado", "error");
                         aplicarClaseError("telefonoUsado");
                         $("#telefonoUsado").focus();
                         return;
                     }
 
                     if (!telefonosRegistrados.includes(telefonoIngresado)) {
-                        mostrarMensajeTelefono("El número ingresado no está registrado. Verifica e intenta nuevamente", "error");
+                        mostrarMensaje("El número ingresado no está registrado. Verifica e intenta nuevamente", "error");
                         aplicarClaseError("telefonoUsado");
                         $("#telefonoUsado").focus();
                         return;
@@ -585,10 +605,6 @@
 
                 // Prepara FormData para enviar
                 const formData = new FormData(this);
-
-                function mostrarMensaje(mensaje, tipo = "success") {
-                    mostrarMensajeTelefono(mensaje, tipo);
-                }
 
                 // Envío AJAX
                 $.ajax({
