@@ -54,8 +54,6 @@
           animation: spin 1s linear infinite;
         }
 
-        /* Oculté las clases CSS específicas del mensaje anterior, ya no son necesarias. */
-
     </style>
     <script>
         tailwind.config = {
@@ -85,8 +83,6 @@
 <!-- El cuerpo usa el fondo claro (brand-bg) y texto oscuro (brand-text) -->
 <body class="flex flex-col min-h-screen bg-brand-bg text-brand-text">
 
-    <!-- EL ANTIGUO MENSAJE #mensaje FUE ELIMINADO -->
-
     <!-- Contenedor principal del formulario (main) -->
     <main class="flex-grow p-5 max-w-xl mx-auto font-quicksand w-full">
 
@@ -102,20 +98,21 @@
 
             <form id="formulario" novalidate>
                 <!-- Campo 1: WhatsApp usado -->
-                <label for="telefonoUsado" class="block mt-4 font-semibold text-sm text-brand-text">WhatsApp con el que compraste</label>
+                <!-- UX: Se usa type="tel" para facilitar el input en móvil y se añade asterisco -->
+                <label for="telefonoUsado" class="block mt-4 font-semibold text-sm text-brand-text">WhatsApp con el que compraste <span class="text-danger">*</span></label>
                 <input
-                    type="text"
+                    type="tel"
                     id="telefonoUsado"
                     name="telefonoUsado"
                     required
-                    placeholder="Ingresa tu número"
+                    placeholder="Ej. 9XXXXXXXX"
                     pattern="^9\d{8}$"
-                    title="Ingresa un número de teléfono válido de 9 dígitos"
+                    title="Ingresa un número de teléfono válido de 9 dígitos (debe empezar con 9)"
                     class="w-full p-2 mt-1 rounded-xl border border-gray-300 bg-white outline-none transition duration-150 ease-in-out focus:border-brand-accent focus:ring-4 focus:ring-brand-accent-alt/40 text-brand-text"
                 />
 
                 <!-- Campo 2: Tipo de servicio -->
-                <label for="tipoAccion" class="block mt-4 font-semibold text-sm text-brand-text">Selecciona el tipo de servicio</label>
+                <label for="tipoAccion" class="block mt-4 font-semibold text-sm text-brand-text">Selecciona el tipo de servicio <span class="text-danger">*</span></label>
                 <select id="tipoAccion" name="tipoAccion" required
                     class="w-full p-2 mt-1 rounded-xl border border-gray-300 bg-white outline-none transition duration-150 ease-in-out focus:border-brand-accent focus:ring-4 focus:ring-brand-accent-alt/40 text-brand-text">
                     <option value="" disabled selected>Elige una opción</option>
@@ -130,13 +127,13 @@
                     <legend class="text-xl font-bold mb-1 text-brand-text">📦 Delivery</legend>
                     <p class="text-sm text-brand-muted mb-3">Datos de la persona que recibirá el pedido.</p>
 
-                    <label for="nombreDelivery" class="block mt-4 font-semibold text-sm text-brand-text">Nombre:</label>
+                    <label for="nombreDelivery" class="block mt-4 font-semibold text-sm text-brand-text">Nombre: <span class="text-danger">*</span></label>
                     <input type="text" id="nombreDelivery" name="nombre" required
                         class="w-full p-2 mt-1 rounded-xl border border-gray-300 bg-white outline-none transition duration-150 ease-in-out focus:border-brand-accent focus:ring-4 focus:ring-brand-accent-alt/40 text-brand-text" />
 
-                    <label for="telefonoDelivery" class="block mt-4 font-semibold text-sm text-brand-text">Teléfono:</label>
+                    <label for="telefonoDelivery" class="block mt-4 font-semibold text-sm text-brand-text">Teléfono: <span class="text-danger">*</span></label>
                     <input
-                        type="text"
+                        type="tel"
                         id="telefonoDelivery"
                         name="telefono"
                         required
@@ -144,16 +141,22 @@
                         title="Ingresa un número de teléfono válido de 9 dígitos"
                         class="w-full p-2 mt-1 rounded-xl border border-gray-300 bg-white outline-none transition duration-150 ease-in-out focus:border-brand-accent focus:ring-4 focus:ring-brand-accent-alt/40 text-brand-text"
                     />
+                    
+                    <!-- UX: Checkbox para usar el número de WhatsApp principal -->
+                    <div class="mt-1 flex items-center">
+                        <input type="checkbox" id="usarMismoTelefonoDelivery" class="h-4 w-4 text-brand-accent rounded border-gray-300 focus:ring-brand-accent-alt" />
+                        <label for="usarMismoTelefonoDelivery" class="ml-2 block text-sm text-brand-muted cursor-pointer">Usar mi número de WhatsApp (<span id="telefonoDisplayDelivery" class="font-semibold"></span>)</label>
+                    </div>
 
-                    <label for="distrito" class="block mt-4 font-semibold text-sm text-brand-text">Distrito:</label>
+                    <label for="distrito" class="block mt-4 font-semibold text-sm text-brand-text">Distrito: <span class="text-danger">*</span></label>
                     <input type="text" id="distrito" name="distrito" required readonly
                         class="w-full p-2 mt-1 rounded-xl border border-gray-300 bg-white outline-none transition duration-150 ease-in-out focus:border-brand-accent focus:ring-4 focus:ring-brand-accent-alt/40 cursor-pointer text-brand-text" />
 
-                    <label for="direccion" class="block mt-4 font-semibold text-sm text-brand-text">Dirección:</label>
+                    <label for="direccion" class="block mt-4 font-semibold text-sm text-brand-text">Dirección: <span class="text-danger">*</span></label>
                     <input type="text" id="direccion" name="direccion" required
                         class="w-full p-2 mt-1 rounded-xl border border-gray-300 bg-white outline-none transition duration-150 ease-in-out focus:border-brand-accent focus:ring-4 focus:ring-brand-accent-alt/40 text-brand-text" />
 
-                    <label for="referencia" class="block mt-4 font-semibold text-sm text-brand-text">Referencia:</label>
+                    <label for="referencia" class="block mt-4 font-semibold text-sm text-brand-text">Referencia: <span class="text-danger">*</span></label>
                     <input type="text" id="referencia" name="referencia" required
                         class="w-full p-2 mt-1 rounded-xl border border-gray-300 bg-white outline-none transition duration-150 ease-in-out focus:border-brand-accent focus:ring-4 focus:ring-brand-accent-alt/40 text-brand-text" />
                     
@@ -172,13 +175,13 @@
                     <legend class="text-xl font-bold mb-1 text-brand-text">📦 Shalom</legend>
                     <p class="text-sm text-brand-muted mb-3">Datos para retiro en agencia Shalom.</p>
 
-                    <label for="nombreShalom" class="block mt-4 font-semibold text-sm text-brand-text">Nombre completo:</label>
+                    <label for="nombreShalom" class="block mt-4 font-semibold text-sm text-brand-text">Nombre completo: <span class="text-danger">*</span></label>
                     <input type="text" id="nombreShalom" name="nombre" required
                         class="w-full p-2 mt-1 rounded-xl border border-gray-300 bg-white outline-none transition duration-150 ease-in-out focus:border-brand-accent focus:ring-4 focus:ring-brand-accent-alt/40 text-brand-text" />
 
-                    <label for="telefonoShalom" class="block mt-4 font-semibold text-sm text-brand-text">Teléfono:</label>
+                    <label for="telefonoShalom" class="block mt-4 font-semibold text-sm text-brand-text">Teléfono: <span class="text-danger">*</span></label>
                     <input
-                        type="text"
+                        type="tel"
                         id="telefonoShalom"
                         name="telefono"
                         required
@@ -186,12 +189,19 @@
                         title="Ingresa un número de teléfono válido de 9 dígitos"
                         class="w-full p-2 mt-1 rounded-xl border border-gray-300 bg-white outline-none transition duration-150 ease-in-out focus:border-brand-accent focus:ring-4 focus:ring-brand-accent-alt/40 text-brand-text"
                     />
+                    
+                    <!-- UX: Checkbox para usar el número de WhatsApp principal -->
+                    <div class="mt-1 flex items-center">
+                        <input type="checkbox" id="usarMismoTelefonoShalom" class="h-4 w-4 text-brand-accent rounded border-gray-300 focus:ring-brand-accent-alt" />
+                        <label for="usarMismoTelefonoShalom" class="ml-2 block text-sm text-brand-muted cursor-pointer">Usar mi número de WhatsApp (<span id="telefonoDisplayShalom" class="font-semibold"></span>)</label>
+                    </div>
 
-                    <label for="DNI" class="block mt-4 font-semibold text-sm text-brand-text">DNI/CE:</label>
-                    <input type="text" id="DNI" name="DNI" required
+                    <label for="DNI" class="block mt-4 font-semibold text-sm text-brand-text">DNI/CE: <span class="text-danger">*</span></label>
+                    <!-- UX: Se añade pattern para DNI (8 dígitos) o CE (5-15 alfanuméricos) -->
+                    <input type="text" id="DNI" name="DNI" required pattern="[A-Za-z0-9]{5,15}" title="Ingresa un DNI (8 dígitos) o CE válido (5-15 caracteres)"
                         class="w-full p-2 mt-1 rounded-xl border border-gray-300 bg-white outline-none transition duration-150 ease-in-out focus:border-brand-accent focus:ring-4 focus:ring-brand-accent-alt/40 text-brand-text" />
 
-                    <label for="agencia" class="block mt-4 font-semibold text-sm text-brand-text">Agencia:</label>
+                    <label for="agencia" class="block mt-4 font-semibold text-sm text-brand-text">Agencia: <span class="text-danger">*</span></label>
                     <input type="text" id="agencia" name="agencia" required readonly
                         class="w-full p-2 mt-1 rounded-xl border border-gray-300 bg-white outline-none transition duration-150 ease-in-out focus:border-brand-accent focus:ring-4 focus:ring-brand-accent-alt/40 cursor-pointer text-brand-text" />
                     
@@ -213,7 +223,7 @@
 
                 <!-- Campo de fecha reutilizable -->
                 <div id="contenedorFecha" class="mt-4" style="display: none;">
-                    <label for="fecha" class="block font-semibold text-sm text-brand-text">Fecha de envío:</label>
+                    <label for="fecha" class="block font-semibold text-sm text-brand-text">Fecha de envío: <span class="text-danger">*</span></label>
                     <select id="fecha" name="fecha" required
                         class="w-full p-2 mt-1 rounded-xl border border-gray-300 bg-white outline-none transition duration-150 ease-in-out focus:border-brand-accent focus:ring-4 focus:ring-brand-accent-alt/40 text-brand-text"></select>
                 </div>
@@ -391,6 +401,16 @@
             const scriptURL = "https://script.google.com/macros/s/AKfycbzSqYVbDXoRSCvuUl-l-jAtiLauLj-h5KT99WJFxZQ4IBu1M_ErSj3foXqlrEoS3INuCA/exec";
 
             let telefonosRegistrados = [];
+            
+            // UX: Referencias a campos de teléfono para la nueva lógica
+            const $telefonoUsado = $("#telefonoUsado");
+            const $telefonoDelivery = $("#telefonoDelivery");
+            const $telefonoShalom = $("#telefonoShalom");
+            const $usarMismoTelefonoDelivery = $("#usarMismoTelefonoDelivery");
+            const $usarMismoTelefonoShalom = $("#usarMismoTelefonoShalom");
+            const $telefonoDisplayDelivery = $("#telefonoDisplayDelivery");
+            const $telefonoDisplayShalom = $("#telefonoDisplayShalom");
+            
 
             function obtenerFechasEnvio() {
                 const ahora = new Date();
@@ -463,7 +483,16 @@
                         campo.value = "";
                     }
                     $(campo).removeClass("is-invalid"); // Limpia el estado de error
+                    
+                    // UX: Asegurar que los campos de teléfono estén habilitados/no readonly al limpiar
+                    if(campo.id === 'telefonoDelivery' || campo.id === 'telefonoShalom') {
+                        $(campo).prop('readonly', false).removeClass('bg-gray-100');
+                    }
                 });
+                
+                // UX: Desmarcar los checkboxes al limpiar
+                $usarMismoTelefonoDelivery.prop('checked', false);
+                $usarMismoTelefonoShalom.prop('checked', false);
             }
             
             // FUNCIÓN ACTUALIZADA PARA USAR EL TOAST CON ESTILO GRADIENTE
@@ -502,6 +531,52 @@
                 $toast.data('timer', timer);
             }
 
+            // UX: Funciones y eventos para reutilizar el número de teléfono principal
+            function updateTelefonoDisplay() {
+                const val = $telefonoUsado.val() || 'N/A';
+                $telefonoDisplayDelivery.text(val);
+                $telefonoDisplayShalom.text(val);
+            }
+            
+            // Inicializar la visualización y actualizar en cada input del teléfono principal
+            updateTelefonoDisplay();
+            $telefonoUsado.on('input', function() {
+                updateTelefonoDisplay();
+                // Si el checkbox está marcado, también actualiza el campo de destino
+                if ($usarMismoTelefonoDelivery.is(':checked')) {
+                    $telefonoDelivery.val($(this).val());
+                }
+                if ($usarMismoTelefonoShalom.is(':checked')) {
+                    $telefonoShalom.val($(this).val());
+                }
+            });
+
+
+            // Toggle logic for Delivery phone number
+            $usarMismoTelefonoDelivery.on('change', function() {
+                const checked = $(this).is(':checked');
+                if (checked) {
+                    $telefonoDelivery.val($telefonoUsado.val());
+                    $telefonoDelivery.prop('readonly', true).removeClass('cursor-pointer').addClass('bg-gray-100');
+                    $telefonoDelivery.removeClass('is-invalid'); // Limpia estado de error
+                } else {
+                    $telefonoDelivery.val('');
+                    $telefonoDelivery.prop('readonly', false).removeClass('bg-gray-100').focus();
+                }
+            });
+
+            // Toggle logic for Shalom phone number
+            $usarMismoTelefonoShalom.on('change', function() {
+                const checked = $(this).is(':checked');
+                if (checked) {
+                    $telefonoShalom.val($telefonoUsado.val());
+                    $telefonoShalom.prop('readonly', true).removeClass('cursor-pointer').addClass('bg-gray-100');
+                    $telefonoShalom.removeClass('is-invalid'); // Limpia estado de error
+                } else {
+                    $telefonoShalom.val('');
+                    $telefonoShalom.prop('readonly', false).removeClass('bg-gray-100').focus();
+                }
+            });
 
             // Muestra/oculta bloques de campos según la opción seleccionada
             $("#tipoAccion").on("change", function () {
@@ -514,6 +589,11 @@
                     .attr("hidden", true)
                     .find("input, select")
                     .prop("disabled", true);
+                
+                // UX: Asegurar que los checkboxes estén desmarcados
+                $usarMismoTelefonoDelivery.prop('checked', false);
+                $usarMismoTelefonoShalom.prop('checked', false);
+
 
                 const valor = $(this).val();
 
@@ -614,7 +694,8 @@
                     processData: false,
                     contentType: false,
                     success: () => {
-                        mostrarMensaje("Datos enviados correctamente", "success");
+                        // UX: Mensaje de éxito más entusiasta
+                        mostrarMensaje("¡Envío agendado con éxito!", "success");
                         // Resetea formulario
                         $("#formulario")[0].reset();
                         
@@ -633,6 +714,13 @@
                                 $("<option>").val(f.toISOString().split("T")[0]).text(formatearFecha(f))
                             );
                         });
+                        
+                        // UX: Limpia el estado de los campos de teléfono duplicados
+                        $usarMismoTelefonoDelivery.prop('checked', false);
+                        $usarMismoTelefonoShalom.prop('checked', false);
+                        $telefonoDelivery.prop('readonly', false).removeClass('bg-gray-100');
+                        $telefonoShalom.prop('readonly', false).removeClass('bg-gray-100');
+
                     },
                     error: () => {
                         mostrarMensaje("Ocurrió un error al enviar tus datos", "error");
