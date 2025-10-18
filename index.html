@@ -104,7 +104,7 @@
 </head>
 <body class="font-sans bg-bg-soft text-gray-900 antialiased">
     
-    <div id="root-container" class="flex bg-bg-soft min-h-screen">
+    <div id="root-container" class="flex bg-bg-soft">
         <!-- ======================= INICIO: MENÚ VERTICAL (Ahora colapsable) ======================= -->
         <aside id="sidebar" class="w-64 bg-sidebar-bg text-white flex flex-col fixed h-full shadow-lg z-40 transform -translate-x-full transition-transform duration-300 ease-in-out">
             <div class="p-6 border-b border-gray-700 flex items-center gap-3">
@@ -137,7 +137,7 @@
         <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden transition-opacity duration-300 ease-in-out"></div>
         <!-- ======================= FIN: MENÚ VERTICAL ======================= -->
 
-        <div id="mainContent" class="flex-1 flex flex-col transition-all duration-300 ease-in-out">
+        <div id="mainContent" class="flex-1 flex flex-col transition-all duration-300 ease-in-out md:overflow-hidden">
              <!-- ---------- HEADER (Fijo, no se expande) ---------- -->
             <header class="bg-gradient-to-br from-brand-accent to-orange-400 text-white p-6 shadow-xl shadow-accent/25 flex items-center gap-4 flex-shrink-0">
                 <button id="sidebarToggle" class="text-white p-2 rounded-md hover:bg-black/20 focus:outline-none focus:ring-2 focus:ring-white">
@@ -153,6 +153,7 @@
             <main class="flex-grow p-4 md:p-6">
                 
                 <!-- ======================= SECCIÓN ENVÍOS ======================= -->
+                <!-- CORRECCIÓN: Se eliminó la clase 'md:h-full' de la sección. El control de altura ahora es centralizado. -->
                 <section class="active md:h-full" id="envios">
                     <div class="card bg-white rounded-xl shadow-lg shadow-gray-100 p-4 md:p-6 border border-gray-200 flex flex-col md:h-full">
                         <!-- Contenido fijo de la tarjeta (título, botones, filtros) -->
@@ -217,7 +218,8 @@
                         </div>
                         
                         <div id="tableContainer" class="md:flex-grow md:relative md:min-h-0">
-                            <div class="overflow-auto hidden md:block shadow-lg shadow-gray-100 rounded-xl border border-gray-200 h-full">
+                            <!-- Tabla para Desktop -->
+                            <div class="overflow-auto absolute inset-0 hidden md:block shadow-lg shadow-gray-100 rounded-xl border border-gray-200">
                                 <table id="tablaEnvios" class="w-full border-collapse bg-white">
                                     <thead>
                                         <tr>
@@ -240,7 +242,9 @@
                                     <tbody id="tbodyEnvios"></tbody>
                                 </table>
                             </div>
-                             <div id="mobileCardContainer" class="md:hidden space-y-4">
+                             <!-- Contenedor de Tarjetas para Móvil (Ahora con flujo normal en móvil) -->
+                             <div id="mobileCardContainer" class="md:hidden space-y-4 md:overflow-y-auto md:absolute md:inset-0">
+                                <!-- Las tarjetas para móvil se insertarán aquí vía JS -->
                             </div>
                         </div>
 
@@ -252,16 +256,11 @@
                                 <i data-feather="settings" class="w-4 h-4"></i> Ir a Configuración
                             </button>
                         </div>
-                        <footer class="p-4 bg-bg-soft flex-shrink-0 flex md:hidden justify-center items-center gap-2 text-gray-500 text-sm mt-auto">
-                            <span>Powered by</span>
-                            <svg height="20" viewBox="0 0 90 22" xmlns="http://www.w3.org/2000/svg">
-                                <text x="0" y="18" style="font-family: Quicksand, sans-serif; font-size: 20px; font-weight: 700; fill: #D96B4F;">Latam5S</text>
-                            </svg>
-                        </footer>
                     </div>
                 </section>
 
                 <!-- ======================= SECCIÓN LINK MÁGICO ======================= -->
+                <!-- CORRECCIÓN: Se eliminó la clase 'h-full' de la sección. -->
                 <section id="link" class="h-full">
                     <div class="card bg-white rounded-xl shadow-lg shadow-gray-100 p-6 border border-gray-200">
                         <h2 class="text-2xl font-bold text-accent mb-4 flex items-center gap-2">
@@ -286,6 +285,7 @@
                 </section>
                 
                 <!-- ======================= SECCIÓN REPORTES ======================= -->
+                <!-- CORRECCIÓN: Se eliminó la clase 'md:h-full' de la sección. -->
                 <section id="reportes" class="h-full">
                     <div class="card bg-white rounded-xl shadow-lg shadow-gray-100 p-6 border border-gray-200">
                         <h2 class="text-2xl font-bold text-accent mb-4 flex items-center gap-2">
@@ -310,14 +310,14 @@
                             </div>
                         </div>
                     </div>
-                     <footer class="p-4 bg-bg-soft flex-shrink-0 flex justify-center items-center gap-2 text-gray-500 text-sm mt-auto">
+                     <footer class="p-4 bg-bg-soft flex justify-center items-center gap-2 text-gray-500 text-sm md:mt-auto">
                         <span>Powered by</span>
                         <svg height="20" viewBox="0 0 90 22" xmlns="http://www.w3.org/2000/svg">
                             <text x="0" y="18" style="font-family: Quicksand, sans-serif; font-size: 20px; font-weight: 700; fill: #D96B4F;">Latam5S</text>
                         </svg>
                     </footer>
                 </section>
-                
+
                 <!-- ======================= SECCIÓN MENSAJES ======================= -->
                 <section id="mensajes" class="h-full overflow-y-auto">
                     <div class="flex-grow">
@@ -362,6 +362,7 @@
                 </section>
 
                 <!-- ======================= SECCIÓN MI CUENTA ======================= -->
+                <!-- CORRECCIÓN: Se eliminó 'flex-col'. El layout ahora lo controla 'main > section.active' -->
                 <section id="cuenta" class="h-full overflow-y-auto">
                     <div class="flex-grow">
                         <h2 class="text-2xl font-bold text-accent mb-4 flex items-center gap-2">
@@ -631,7 +632,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const filtroFecha = document.getElementById('filtroFecha');
     const filtroTipo = document.getElementById('filtroTipo');
     const btnAplicarFiltros = document.getElementById('btnAplicarFiltros');
-    const dataContainer = document.getElementById('tableContainer');
+    const tableContainer = document.getElementById('tableContainer').querySelector('.overflow-auto'); // Apunta al contenedor con scroll
+    const mobileContainerParent = document.getElementById('mobileCardContainer').parentElement;
     const emptyStateContainer = document.getElementById('emptyStateContainer');
     const batchActionsContainer = document.getElementById('batchActionsContainer');
     const checkTodos = document.getElementById('checkTodos');
@@ -684,7 +686,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const hasEnvios = envios.length > 0;
         
-        dataContainer.classList.toggle('hidden', !hasEnvios);
+        tableContainer.parentElement.classList.toggle('hidden', !hasEnvios);
         emptyStateContainer.classList.toggle('hidden', hasEnvios);
         batchActionsContainer.classList.toggle('hidden', !hasEnvios);
 
@@ -769,6 +771,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const allChecked = totalRows > 0 && seleccionados === totalRows;
         checkTodos.checked = allChecked;
         thCheckTodos.checked = allChecked;
+
+        // Muestra/oculta el panel de acciones en lote
+        // batchActionsContainer.classList.toggle('hidden', seleccionados === 0);
     }
     
     function seleccionarTodos(checked) {
@@ -793,53 +798,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- EVENT LISTENERS ---
     btnAplicarFiltros.addEventListener('click', aplicarFiltros);
     filtroCliente.addEventListener('keyup', (e) => { if(e.key === 'Enter') aplicarFiltros() });
-
-    // --- LÓGICA DE MENSAJES ---
-    const messageTemplates = document.querySelectorAll('.message-template');
-    const variableBtns = document.querySelectorAll('.variable-btn');
-    let lastFocusedTextarea = null;
-
-    function loadMessages() {
-        const defaultMessages = {
-            msgConfirmacion: '¡Hola [CLIENTE]! 👋 Gracias por tu compra en [MI_TIENDA]. Hemos recibido tu pedido y lo estamos preparando. Te avisaremos cuando esté en camino.',
-            msgEnviado: '¡Buenas noticias, [CLIENTE]! Tu pedido de [MI_TIENDA] ya está en camino con el courier [COURIER] y debería llegar el [FECHA_ENVIO]. 🚚',
-            msgEntregado: '¡Tu paquete de [MI_TIENDA] ha sido entregado! 🎉 Esperamos que lo disfrutes. ¡Gracias por tu compra!',
-            msgReprogramado: 'Hola [CLIENTE], te informamos que tu envío de [MI_TIENDA] ha sido reprogramado. La nueva fecha de entrega es el [FECHA_ENVIO]. Disculpa las molestias.'
-        };
-
-        messageTemplates.forEach(textarea => {
-            const savedMessage = localStorage.getItem(textarea.id);
-            textarea.value = savedMessage || defaultMessages[textarea.id];
-            
-            textarea.addEventListener('focus', () => {
-                lastFocusedTextarea = textarea;
-            });
-
-            textarea.addEventListener('input', () => {
-                localStorage.setItem(textarea.id, textarea.value);
-            });
-        });
-    }
-
-    variableBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            if (lastFocusedTextarea) {
-                const textToInsert = btn.textContent;
-                const textarea = lastFocusedTextarea;
-                const start = textarea.selectionStart;
-                const end = textarea.selectionEnd;
-                
-                textarea.value = textarea.value.substring(0, start) + textToInsert + textarea.value.substring(end);
-                
-                textarea.focus();
-                textarea.selectionEnd = start + textToInsert.length;
-
-                localStorage.setItem(textarea.id, textarea.value);
-            } else {
-                showToast('Haz clic en un campo de mensaje primero.');
-            }
-        });
-    });
 
     // --- SINCRONIZACIÓN CON "MI CUENTA" ---
     const businessNameInput = document.getElementById('businessName');
@@ -910,9 +868,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- INICIALIZACIÓN ---
     syncBusinessInfo();
     cargarDatosSimulados();
-    loadMessages();
 });
 </script>
 </body>
 </html>
+
+
 
