@@ -42,10 +42,12 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         html { scroll-behavior: smooth; }
-        /* SOLUCIÓN DEFINITIVA: Se establece una base sólida para el layout */
-        html, body, #root-container {
-            height: 100%;
-            overflow: hidden;
+        /* El bloqueo del scroll principal se aplica solo en desktop */
+        @media (min-width: 768px) {
+            html, body, #root-container {
+                height: 100%;
+                overflow: hidden;
+            }
         }
         body { 
             background-color: #fffaf6; 
@@ -54,9 +56,14 @@
         }
         .oculto { display: none !important; }
 
-        /* SOLUCIÓN DEFINITIVA: Se cambia 'display: block' por 'display: flex' para que las secciones se comporten como contenedores flex */
+        /* SOLUCIÓN DEFINITIVA: Se centraliza el control de visibilidad y layout. */
+        /* Todas las secciones están ocultas por defecto. */
         main > section { display: none; }
-        main > section.active { display: flex; }
+        /* La clase 'active' es la ÚNICA responsable de mostrar una sección y darle el layout de columna vertical. */
+        main > section.active { 
+            display: flex;
+            flex-direction: column;
+        }
 
         .nowrap { white-space: nowrap; }
         #editPanel { transition: transform 0.3s ease-in-out; }
@@ -82,7 +89,6 @@
 </head>
 <body class="font-sans bg-bg-soft text-gray-900 antialiased">
     
-    <!-- SOLUCIÓN DEFINITIVA: Contenedor raíz con altura del 100% -->
     <div id="root-container" class="flex bg-bg-soft">
         <!-- ======================= INICIO: MENÚ VERTICAL (Ahora colapsable) ======================= -->
         <aside id="sidebar" class="w-64 bg-sidebar-bg text-white flex flex-col fixed h-full shadow-lg z-40 transform -translate-x-full transition-transform duration-300 ease-in-out">
@@ -113,7 +119,6 @@
         <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden transition-opacity duration-300 ease-in-out"></div>
         <!-- ======================= FIN: MENÚ VERTICAL ======================= -->
 
-        <!-- SOLUCIÓN DEFINITIVA: El contenedor principal ahora gestiona el layout de forma estricta -->
         <div id="mainContent" class="flex-1 flex flex-col transition-all duration-300 ease-in-out overflow-hidden">
              <!-- ---------- HEADER (Fijo, no se expande) ---------- -->
             <header class="bg-gradient-to-br from-brand-accent to-orange-400 text-white p-6 shadow-xl shadow-accent/25 flex items-center gap-4 flex-shrink-0">
@@ -127,12 +132,12 @@
                 </div>
             </header>
 
-            <!-- SOLUCIÓN DEFINITIVA: El contenedor 'main' se expande para llenar el espacio restante -->
-            <main class="flex-grow overflow-y-auto p-4 md:p-6">
+            <main class="flex-grow md:overflow-y-auto p-4 md:p-6">
                 
                 <!-- ======================= SECCIÓN ENVÍOS ======================= -->
-                <section class="active h-full flex-col" id="envios">
-                    <div class="card bg-white rounded-xl shadow-lg shadow-gray-100 p-4 md:p-6 border border-gray-200 flex flex-col h-full">
+                <!-- CORRECCIÓN: Se eliminó la clase 'flex-col' para evitar conflictos. El layout ahora lo controla 'main > section.active' -->
+                <section class="active md:h-full" id="envios">
+                    <div class="card bg-white rounded-xl shadow-lg shadow-gray-100 p-4 md:p-6 border border-gray-200 flex flex-col md:h-full">
                         <!-- Contenido fijo de la tarjeta (título, botones, filtros) -->
                         <div class="flex-shrink-0">
                             <div class="flex flex-col md:flex-row justify-between md:items-center gap-4 border-b border-gray-200 pb-4 mb-4">
@@ -194,8 +199,7 @@
                             </div>
                         </div>
                         
-                        <!-- SOLUCIÓN DEFINITIVA: Contenedor de la tabla se expande y maneja su propio scroll -->
-                        <div id="tableContainer" class="flex-grow relative min-h-0">
+                        <div id="tableContainer" class="md:flex-grow md:relative md:min-h-0">
                             <!-- Tabla para Desktop -->
                             <div class="overflow-auto absolute inset-0 hidden md:block shadow-lg shadow-gray-100 rounded-xl border border-gray-200">
                                 <table id="tablaEnvios" class="w-full border-collapse bg-white">
@@ -220,8 +224,8 @@
                                     <tbody id="tbodyEnvios"></tbody>
                                 </table>
                             </div>
-                             <!-- Contenedor de Tarjetas para Móvil -->
-                             <div id="mobileCardContainer" class="md:hidden space-y-4 overflow-y-auto absolute inset-0">
+                             <!-- Contenedor de Tarjetas para Móvil (Ahora con flujo normal en móvil) -->
+                             <div id="mobileCardContainer" class="md:hidden space-y-4 md:overflow-y-auto md:absolute md:inset-0">
                                 <!-- Las tarjetas para móvil se insertarán aquí vía JS -->
                             </div>
                         </div>
@@ -238,8 +242,9 @@
                 </section>
 
                 <!-- ======================= SECCIÓN LINK MÁGICO ======================= -->
-                <section id="link" class="flex-col">
-                    <div class="card bg-white rounded-xl shadow-lg shadow-gray-100 p-6 border border-gray-200 mb-6">
+                <!-- CORRECCIÓN: Se eliminó 'flex-col'. El layout ahora lo controla 'main > section.active' -->
+                <section id="link" class="h-full">
+                    <div class="card bg-white rounded-xl shadow-lg shadow-gray-100 p-6 border border-gray-200">
                         <h2 class="text-2xl font-bold text-accent mb-4 flex items-center gap-2">
                             <i data-feather="link" class="w-6 h-6"></i>Tu Enlace Mágico
                         </h2>
@@ -253,11 +258,18 @@
                             </div>
                         </div>
                     </div>
+                    <footer class="p-4 bg-bg-soft flex-shrink-0 flex justify-center items-center gap-2 text-gray-500 text-sm mt-auto">
+                        <span>Powered by</span>
+                        <svg height="20" viewBox="0 0 90 22" xmlns="http://www.w3.org/2000/svg">
+                            <text x="0" y="18" style="font-family: Quicksand, sans-serif; font-size: 20px; font-weight: 700; fill: #D96B4F;">Latam5S</text>
+                        </svg>
+                    </footer>
                 </section>
                 
                 <!-- ======================= SECCIÓN REPORTES ======================= -->
-                <section id="reportes" class="flex-col">
-                    <div class="card bg-white rounded-xl shadow-lg shadow-gray-100 p-6 border border-gray-200 mb-6">
+                <!-- CORRECCIÓN: Se eliminaron 'flex-col' y 'md:flex'. El layout ahora lo controla 'main > section.active' -->
+                <section id="reportes" class="md:h-full">
+                    <div class="card bg-white rounded-xl shadow-lg shadow-gray-100 p-6 border border-gray-200">
                         <h2 class="text-2xl font-bold text-accent mb-4 flex items-center gap-2">
                             <i data-feather="bar-chart-2" class="w-6 h-6"></i>Reportes (Este Mes)
                         </h2>
@@ -280,165 +292,172 @@
                             </div>
                         </div>
                     </div>
+                     <footer class="p-4 bg-bg-soft flex justify-center items-center gap-2 text-gray-500 text-sm md:mt-auto">
+                        <span>Powered by</span>
+                        <svg height="20" viewBox="0 0 90 22" xmlns="http://www.w3.org/2000/svg">
+                            <text x="0" y="18" style="font-family: Quicksand, sans-serif; font-size: 20px; font-weight: 700; fill: #D96B4F;">Latam5S</text>
+                        </svg>
+                    </footer>
                 </section>
 
                 <!-- ======================= SECCIÓN MI CUENTA ======================= -->
-                <section id="cuenta" class="flex-col">
-                    <h2 class="text-2xl font-bold text-accent mb-4 flex items-center gap-2">
-                        <i data-feather="settings" class="w-6 h-6"></i>Configuración de tu Cuenta
-                    </h2>
-                    <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
-                        <div class="lg:col-span-3 space-y-6">
-                            <div class="card bg-white rounded-xl shadow-lg shadow-gray-100 p-6 border border-gray-200">
-                                <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2 border-b border-gray-200 pb-3 mb-4"><i data-feather="briefcase" class="w-5 h-5 text-accent"></i> Perfil del Negocio</h3>
-                                <div class="space-y-4">
-                                    <div class="form-group">
-                                        <label for="businessName" class="block text-sm text-gray-500 font-semibold mb-1.5">Nombre del Emprendimiento</label>
-                                        <input type="text" id="businessName" class="input p-2.5 border border-gray-200 rounded-xl bg-white w-full text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100" placeholder="Ej: La Tiendita de Ana" value="Mi Tienda de Prueba">
+                <!-- CORRECCIÓN: Se eliminó 'flex-col'. El layout ahora lo controla 'main > section.active' -->
+                <section id="cuenta">
+                    <div class="flex-grow">
+                        <h2 class="text-2xl font-bold text-accent mb-4 flex items-center gap-2">
+                            <i data-feather="settings" class="w-6 h-6"></i>Configuración de tu Cuenta
+                        </h2>
+                        <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                            <div class="lg:col-span-3 space-y-6">
+                                <div class="card bg-white rounded-xl shadow-lg shadow-gray-100 p-6 border border-gray-200">
+                                    <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2 border-b border-gray-200 pb-3 mb-4"><i data-feather="briefcase" class="w-5 h-5 text-accent"></i> Perfil del Negocio</h3>
+                                    <div class="space-y-4">
+                                        <div class="form-group">
+                                            <label for="businessName" class="block text-sm text-gray-500 font-semibold mb-1.5">Nombre del Emprendimiento</label>
+                                            <input type="text" id="businessName" class="input p-2.5 border border-gray-200 rounded-xl bg-white w-full text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100" placeholder="Ej: La Tiendita de Ana" value="Mi Tienda de Prueba">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="logoInput" class="block text-sm text-gray-500 font-semibold mb-1.5">Logo del Negocio</label>
+                                            <input type="file" id="logoInput" class="input p-2.5 border border-gray-200 rounded-xl bg-white w-full text-sm file:mr-4 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-accent hover:file:bg-orange-100" accept="image/*">
+                                            <img id="logoPreview" src="" alt="Vista previa del logo" class="max-h-20 rounded-lg object-contain border border-dashed border-gray-300 p-1 mt-3 hidden">
+                                        </div>
                                     </div>
-                                    <div class="form-group">
-                                        <label for="logoInput" class="block text-sm text-gray-500 font-semibold mb-1.5">Logo del Negocio</label>
-                                        <input type="file" id="logoInput" class="input p-2.5 border border-gray-200 rounded-xl bg-white w-full text-sm file:mr-4 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-accent hover:file:bg-orange-100" accept="image/*">
-                                        <img id="logoPreview" src="" alt="Vista previa del logo" class="max-h-20 rounded-lg object-contain border border-dashed border-gray-300 p-1 mt-3 hidden">
+                                </div>
+                                <div class="card bg-white rounded-xl shadow-lg shadow-gray-100 p-6 border border-gray-200">
+                                    <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2 border-b border-gray-200 pb-3 mb-4"><i data-feather="calendar" class="w-5 h-5 text-accent"></i> Opciones de Despacho</h3>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div class="space-y-3">
+                                            <label class="block text-sm text-gray-500 font-semibold">Couriers Habilitados</label>
+                                            <div class="space-y-2">
+                                                <label class="block text-sm text-gray-900"><input type="checkbox" checked class="rounded border-gray-300 text-accent focus:ring-accent mr-2"> Delivery Propio</label>
+                                                <label class="block text-sm text-gray-900"><input type="checkbox" checked class="rounded border-gray-300 text-accent focus:ring-accent mr-2"> Shalom</label>
+                                                <label class="block text-sm text-gray-900"><input type="checkbox" class="rounded border-gray-300 text-accent focus:ring-accent mr-2"> Olva</label>
+                                                <label class="block text-sm text-gray-900"><input type="checkbox" class="rounded border-gray-300 text-accent focus:ring-accent mr-2"> Dinsides</label>
+                                            </div>
+                                        </div>
+                                         <div class="space-y-3">
+                                            <label class="block text-sm text-gray-500 font-semibold">Días de Despacho</label>
+                                            <div class="flex flex-wrap gap-x-4 gap-y-2 text-sm">
+                                                <label class="inline-flex items-center"><input type="checkbox" class="rounded border-gray-300 text-accent focus:ring-accent mr-1"> Lun</label>
+                                                <label class="inline-flex items-center"><input type="checkbox" checked class="rounded border-gray-300 text-accent focus:ring-accent mr-1"> Mar</label>
+                                                <label class="inline-flex items-center"><input type="checkbox" class="rounded border-gray-300 text-accent focus:ring-accent mr-1"> Mié</label>
+                                                <label class="inline-flex items-center"><input type="checkbox" checked class="rounded border-gray-300 text-accent focus:ring-accent mr-1"> Jue</label>
+                                                <label class="inline-flex items-center"><input type="checkbox" class="rounded border-gray-300 text-accent focus:ring-accent mr-1"> Vie</label>
+                                                <label class="inline-flex items-center"><input type="checkbox" checked class="rounded border-gray-300 text-accent focus:ring-accent mr-1"> Sáb</label>
+                                                <label class="inline-flex items-center"><input type="checkbox" class="rounded border-gray-300 text-accent focus:ring-accent mr-1"> Dom</label>
+                                            </div>
+                                        </div>
+                                        <div class="form-group md:col-span-2">
+                                            <label for="cutoffTime" class="block text-sm text-gray-500 font-semibold mb-1.5">Hora de Cierre de Pedidos</label>
+                                            <input type="time" id="cutoffTime" class="input p-2.5 border border-gray-200 rounded-xl bg-white w-full md:w-auto text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card bg-white rounded-xl shadow-lg shadow-gray-100 p-6 border border-gray-200">
+                                    <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2 border-b border-gray-200 pb-3 mb-4"><i data-feather="share-2" class="w-5 h-5 text-accent"></i> Redes Sociales</h3>
+                                    <div class="space-y-4">
+                                        <p class="text-sm text-gray-500 -mt-2">Estos enlaces aparecerán en tu formulario para que tus clientes puedan contactarte.</p>
+                                        <div class="form-group">
+                                            <label for="instagramUser" class="block text-sm text-gray-500 font-semibold mb-1.5">Usuario de Instagram</label>
+                                            <div class="relative">
+                                                <i data-feather="instagram" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"></i>
+                                                <input type="text" id="instagramUser" class="input p-2.5 pl-9 border border-gray-200 rounded-xl bg-white w-full text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100" placeholder="mitiendaonline">
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="whatsappNumber" class="block text-sm text-gray-500 font-semibold mb-1.5">Número de WhatsApp</label>
+                                            <div class="relative">
+                                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm pointer-events-none">+51</span>
+                                                <input type="number" id="whatsappNumber" class="input p-2.5 pl-10 border border-gray-200 rounded-xl bg-white w-full text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100" placeholder="987654321">
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="facebookUser" class="block text-sm text-gray-500 font-semibold mb-1.5">Usuario de Facebook</label>
+                                            <div class="relative">
+                                                <i data-feather="facebook" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"></i>
+                                                <input type="text" id="facebookUser" class="input p-2.5 pl-9 border border-gray-200 rounded-xl bg-white w-full text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100" placeholder="mitiendaonlinefb">
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="tiktokUser" class="block text-sm text-gray-500 font-semibold mb-1.5">Usuario de TikTok</label>
+                                            <div class="relative">
+                                                <i data-feather="music" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"></i>
+                                                <input type="text" id="tiktokUser" class="input p-2.5 pl-9 border border-gray-200 rounded-xl bg-white w-full text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100" placeholder="mitienda.tiktok">
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="card bg-white rounded-xl shadow-lg shadow-gray-100 p-6 border border-gray-200">
-                                <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2 border-b border-gray-200 pb-3 mb-4"><i data-feather="calendar" class="w-5 h-5 text-accent"></i> Opciones de Despacho</h3>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div class="space-y-3">
-                                        <label class="block text-sm text-gray-500 font-semibold">Couriers Habilitados</label>
-                                        <div class="space-y-2">
-                                            <label class="block text-sm text-gray-900"><input type="checkbox" checked class="rounded border-gray-300 text-accent focus:ring-accent mr-2"> Delivery Propio</label>
-                                            <label class="block text-sm text-gray-900"><input type="checkbox" checked class="rounded border-gray-300 text-accent focus:ring-accent mr-2"> Shalom</label>
-                                            <label class="block text-sm text-gray-900"><input type="checkbox" class="rounded border-gray-300 text-accent focus:ring-accent mr-2"> Olva</label>
-                                            <label class="block text-sm text-gray-900"><input type="checkbox" class="rounded border-gray-300 text-accent focus:ring-accent mr-2"> Dinsides</label>
+                            <div class="lg:col-span-2 space-y-6">
+                                <div class="card bg-white rounded-xl shadow-lg shadow-gray-100 p-6 border border-gray-200">
+                                    <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2 border-b border-gray-200 pb-3 mb-4"><i data-feather="award" class="w-5 h-5 text-accent"></i> Tu Suscripción</h3>
+                                    <div class="space-y-3 text-sm">
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-gray-500">Plan Actual:</span>
+                                            <span class="font-bold text-gray-900">Crecimiento</span>
                                         </div>
-                                    </div>
-                                     <div class="space-y-3">
-                                        <label class="block text-sm text-gray-500 font-semibold">Días de Despacho</label>
-                                        <div class="flex flex-wrap gap-x-4 gap-y-2 text-sm">
-                                            <label class="inline-flex items-center"><input type="checkbox" class="rounded border-gray-300 text-accent focus:ring-accent mr-1"> Lun</label>
-                                            <label class="inline-flex items-center"><input type="checkbox" checked class="rounded border-gray-300 text-accent focus:ring-accent mr-1"> Mar</label>
-                                            <label class="inline-flex items-center"><input type="checkbox" class="rounded border-gray-300 text-accent focus:ring-accent mr-1"> Mié</label>
-                                            <label class="inline-flex items-center"><input type="checkbox" checked class="rounded border-gray-300 text-accent focus:ring-accent mr-1"> Jue</label>
-                                            <label class="inline-flex items-center"><input type="checkbox" class="rounded border-gray-300 text-accent focus:ring-accent mr-1"> Vie</label>
-                                            <label class="inline-flex items-center"><input type="checkbox" checked class="rounded border-gray-300 text-accent focus:ring-accent mr-1"> Sáb</label>
-                                            <label class="inline-flex items-center"><input type="checkbox" class="rounded border-gray-300 text-accent focus:ring-accent mr-1"> Dom</label>
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-gray-500">Estado:</span>
+                                            <span class="font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full text-xs">Activo</span>
                                         </div>
-                                    </div>
-                                    <div class="form-group md:col-span-2">
-                                        <label for="cutoffTime" class="block text-sm text-gray-500 font-semibold mb-1.5">Hora de Cierre de Pedidos</label>
-                                        <input type="time" id="cutoffTime" class="input p-2.5 border border-gray-200 rounded-xl bg-white w-full md:w-auto text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100">
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-gray-500">Próximo Pago:</span>
+                                            <span class="font-bold text-gray-900">15 Nov, 2025</span>
+                                        </div>
+                                        <div class="pt-2">
+                                            <button class="btn ghost bg-transparent border border-gray-200 text-gray-900 hover:bg-gray-50 transition-all duration-200 py-2.5 px-4 rounded-xl font-bold text-sm inline-flex items-center gap-2 w-full justify-center">Administrar Suscripción</button>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="card bg-white rounded-xl shadow-lg shadow-gray-100 p-6 border border-gray-200">
-                                <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2 border-b border-gray-200 pb-3 mb-4"><i data-feather="share-2" class="w-5 h-5 text-accent"></i> Redes Sociales</h3>
-                                <div class="space-y-4">
-                                    <p class="text-sm text-gray-500 -mt-2">Estos enlaces aparecerán en tu formulario para que tus clientes puedan contactarte.</p>
-                                    <div class="form-group">
-                                        <label for="instagramUser" class="block text-sm text-gray-500 font-semibold mb-1.5">Usuario de Instagram</label>
-                                        <div class="relative">
-                                            <i data-feather="instagram" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"></i>
-                                            <input type="text" id="instagramUser" class="input p-2.5 pl-9 border border-gray-200 rounded-xl bg-white w-full text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100" placeholder="mitiendaonline">
+                                <div class="card bg-white rounded-xl shadow-lg shadow-gray-100 p-6 border border-gray-200">
+                                    <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2 border-b border-gray-200 pb-3 mb-4"><i data-feather="lock" class="w-5 h-5 text-accent"></i> Seguridad de la Cuenta</h3>
+                                    <div class="space-y-4">
+                                        <div class="form-group">
+                                            <label for="userEmail" class="block text-sm text-gray-500 font-semibold mb-1.5">Email de la Cuenta</label>
+                                            <input type="email" id="userEmail" class="input p-2.5 border border-gray-200 rounded-xl bg-gray-100 w-full text-sm text-gray-600 cursor-not-allowed" value="ana.ventas@email.com" readonly>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="newPassword" class="block text-sm text-gray-500 font-semibold mb-1.5">Nueva Contraseña</label>
+                                            <input type="password" id="newPassword" class="input p-2.5 border border-gray-200 rounded-xl bg-white w-full text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100" placeholder="Deja en blanco para no cambiar">
                                         </div>
                                     </div>
-                                    <div class="form-group">
-                                        <label for="whatsappNumber" class="block text-sm text-gray-500 font-semibold mb-1.5">Número de WhatsApp</label>
-                                        <div class="relative">
-                                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm pointer-events-none">+51</span>
-                                            <input type="number" id="whatsappNumber" class="input p-2.5 pl-10 border border-gray-200 rounded-xl bg-white w-full text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100" placeholder="987654321">
+                                </div>
+                                <div class="card bg-white rounded-xl shadow-lg shadow-gray-100 p-6 border border-gray-200">
+                                    <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2 border-b border-gray-200 pb-3 mb-4"><i data-feather="users" class="w-5 h-5 text-accent"></i> Gestión de Equipo</h3>
+                                    <div class="space-y-4">
+                                        <p class="text-sm text-gray-500 -mt-2">Invita a miembros de tu equipo para que colaboren en la gestión de envíos (Función del Plan Consolidado).</p>
+                                        <div class="flex gap-2">
+                                            <input type="email" placeholder="email@ejemplo.com" class="input p-2.5 border border-gray-200 rounded-xl bg-white w-full text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100 flex-grow">
+                                            <button class="btn primary bg-accent text-white py-2.5 px-4 rounded-xl font-bold text-sm shadow-md shadow-accent/20 hover:shadow-lg hover:shadow-accent/30 hover:-translate-y-0.5 transition-all duration-200 whitespace-nowrap">Invitar</button>
                                         </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="facebookUser" class="block text-sm text-gray-500 font-semibold mb-1.5">Usuario de Facebook</label>
-                                        <div class="relative">
-                                            <i data-feather="facebook" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"></i>
-                                            <input type="text" id="facebookUser" class="input p-2.5 pl-9 border border-gray-200 rounded-xl bg-white w-full text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100" placeholder="mitiendaonlinefb">
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="tiktokUser" class="block text-sm text-gray-500 font-semibold mb-1.5">Usuario de TikTok</label>
-                                        <div class="relative">
-                                            <i data-feather="music" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"></i>
-                                            <input type="text" id="tiktokUser" class="input p-2.5 pl-9 border border-gray-200 rounded-xl bg-white w-full text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100" placeholder="mitienda.tiktok">
+                                        <div class="space-y-2 pt-2">
+                                            <label class="block text-sm text-gray-500 font-semibold mb-1">Miembros Actuales:</label>
+                                            <div class="flex justify-between items-center text-sm p-2 bg-gray-50 rounded-lg">
+                                                <span>ana.ventas@email.com (Tú)</span>
+                                                <span class="font-bold text-accent">Admin</span>
+                                            </div>
+                                            <div class="flex justify-between items-center text-sm p-2 bg-gray-50 rounded-lg">
+                                                <span>carlos.logistica@email.com</span>
+                                                <span class="text-gray-500">Miembro</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="lg:col-span-2 space-y-6">
-                            <div class="card bg-white rounded-xl shadow-lg shadow-gray-100 p-6 border border-gray-200">
-                                <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2 border-b border-gray-200 pb-3 mb-4"><i data-feather="award" class="w-5 h-5 text-accent"></i> Tu Suscripción</h3>
-                                <div class="space-y-3 text-sm">
-                                    <div class="flex justify-between items-center">
-                                        <span class="text-gray-500">Plan Actual:</span>
-                                        <span class="font-bold text-gray-900">Crecimiento</span>
-                                    </div>
-                                    <div class="flex justify-between items-center">
-                                        <span class="text-gray-500">Estado:</span>
-                                        <span class="font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full text-xs">Activo</span>
-                                    </div>
-                                    <div class="flex justify-between items-center">
-                                        <span class="text-gray-500">Próximo Pago:</span>
-                                        <span class="font-bold text-gray-900">15 Nov, 2025</span>
-                                    </div>
-                                    <div class="pt-2">
-                                        <button class="btn ghost bg-transparent border border-gray-200 text-gray-900 hover:bg-gray-50 transition-all duration-200 py-2.5 px-4 rounded-xl font-bold text-sm inline-flex items-center gap-2 w-full justify-center">Administrar Suscripción</button>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="card bg-white rounded-xl shadow-lg shadow-gray-100 p-6 border border-gray-200">
-                                <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2 border-b border-gray-200 pb-3 mb-4"><i data-feather="lock" class="w-5 h-5 text-accent"></i> Seguridad de la Cuenta</h3>
-                                <div class="space-y-4">
-                                    <div class="form-group">
-                                        <label for="userEmail" class="block text-sm text-gray-500 font-semibold mb-1.5">Email de la Cuenta</label>
-                                        <input type="email" id="userEmail" class="input p-2.5 border border-gray-200 rounded-xl bg-gray-100 w-full text-sm text-gray-600 cursor-not-allowed" value="ana.ventas@email.com" readonly>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="newPassword" class="block text-sm text-gray-500 font-semibold mb-1.5">Nueva Contraseña</label>
-                                        <input type="password" id="newPassword" class="input p-2.5 border border-gray-200 rounded-xl bg-white w-full text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100" placeholder="Deja en blanco para no cambiar">
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="card bg-white rounded-xl shadow-lg shadow-gray-100 p-6 border border-gray-200">
-                                <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2 border-b border-gray-200 pb-3 mb-4"><i data-feather="users" class="w-5 h-5 text-accent"></i> Gestión de Equipo</h3>
-                                <div class="space-y-4">
-                                    <p class="text-sm text-gray-500 -mt-2">Invita a miembros de tu equipo para que colaboren en la gestión de envíos (Función del Plan Consolidado).</p>
-                                    <div class="flex gap-2">
-                                        <input type="email" placeholder="email@ejemplo.com" class="input p-2.5 border border-gray-200 rounded-xl bg-white w-full text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100 flex-grow">
-                                        <button class="btn primary bg-accent text-white py-2.5 px-4 rounded-xl font-bold text-sm shadow-md shadow-accent/20 hover:shadow-lg hover:shadow-accent/30 hover:-translate-y-0.5 transition-all duration-200 whitespace-nowrap">Invitar</button>
-                                    </div>
-                                    <div class="space-y-2 pt-2">
-                                        <label class="block text-sm text-gray-500 font-semibold mb-1">Miembros Actuales:</label>
-                                        <div class="flex justify-between items-center text-sm p-2 bg-gray-50 rounded-lg">
-                                            <span>ana.ventas@email.com (Tú)</span>
-                                            <span class="font-bold text-accent">Admin</span>
-                                        </div>
-                                        <div class="flex justify-between items-center text-sm p-2 bg-gray-50 rounded-lg">
-                                            <span>carlos.logistica@email.com</span>
-                                            <span class="text-gray-500">Miembro</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="flex justify-end mt-6">
+                            <button class="btn primary bg-gradient-to-r from-accent to-accent-alt text-white shadow-md shadow-accent/20 hover:shadow-lg hover:shadow-accent/30 hover:-translate-y-0.5 transition-all duration-200 py-2.5 px-4 rounded-xl font-bold text-sm inline-flex items-center gap-2" id="btnGuardarConfig"><i data-feather="save" class="w-4 h-4"></i>Guardar Cambios</button>
                         </div>
                     </div>
-                    <div class="flex justify-end mt-6">
-                        <button class="btn primary bg-gradient-to-r from-accent to-accent-alt text-white shadow-md shadow-accent/20 hover:shadow-lg hover:shadow-accent/30 hover:-translate-y-0.5 transition-all duration-200 py-2.5 px-4 rounded-xl font-bold text-sm inline-flex items-center gap-2" id="btnGuardarConfig"><i data-feather="save" class="w-4 h-4"></i>Guardar Cambios</button>
-                    </div>
+                    <footer class="p-4 bg-bg-soft flex-shrink-0 flex justify-center items-center gap-2 text-gray-500 text-sm mt-6">
+                        <span>Powered by</span>
+                        <svg height="20" viewBox="0 0 90 22" xmlns="http://www.w3.org/2000/svg">
+                            <text x="0" y="18" style="font-family: Quicksand, sans-serif; font-size: 20px; font-weight: 700; fill: #D96B4F;">Latam5S</text>
+                        </svg>
+                    </footer>
                 </section>
                 
             </main>
-
-            <!-- ======================= FOOTER STICKY ======================= -->
-            <footer class="p-4 bg-bg-soft flex-shrink-0 flex justify-center items-center gap-2 text-gray-500 text-sm shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.03)]">
-                <span>Powered by</span>
-                <svg height="20" viewBox="0 0 90 22" xmlns="http://www.w3.org/2000/svg">
-                    <text x="0" y="18" style="font-family: Quicksand, sans-serif; font-size: 20px; font-weight: 700; fill: #D96B4F;">Latam5S</text>
-                </svg>
-            </footer>
 
         </div>
     </div>
@@ -792,6 +811,5 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-
 
 
