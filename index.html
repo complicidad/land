@@ -246,10 +246,13 @@
                         <p class="text-gray-500 text-sm mb-5">Comparte este link único con tus clientes. Ellos completarán sus datos de envío directamente y la información aparecerá en tu panel, ¡sin errores y sin que tengas que transcribir nada!</p>
                         <div class="form-group">
                             <label for="linkUnicoInput" class="block text-sm text-gray-500 font-semibold mb-1.5">Tu enlace personal</label>
-                            <div id="linkUnicoContainer" class="flex gap-2">
+                            <!-- AJUSTE CLAVE: Se añade 'flex-col sm:flex-row' para apilar en móvil y poner en fila en tablet/desktop -->
+                            <div id="linkUnicoContainer" class="flex flex-col sm:flex-row gap-2">
                                 <input type="text" id="linkUnicoInput" class="input p-2.5 border border-gray-200 rounded-xl bg-gray-50 flex-grow text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100" value="https://latam5s.com/form/tu-tienda" readonly>
-                                <button class="btn ghost bg-transparent border border-gray-200 text-gray-900 hover:bg-gray-50 transition-all duration-200 py-2.5 px-4 rounded-xl font-bold text-sm inline-flex items-center gap-2" id="btnCopiarLink"><i data-feather="copy" class="w-4 h-4"></i>Copiar</button>
-                                <button class="btn primary bg-gradient-to-r from-accent to-accent-alt text-white shadow-md shadow-accent/20 hover:shadow-lg hover:shadow-accent/30 hover:-translate-y-0.5 transition-all duration-200 py-2.5 px-4 rounded-xl font-bold text-sm inline-flex items-center gap-2" id="btnCompartirLink"><i data-feather="share-2" class="w-4 h-4"></i>Compartir</button>
+                                <!-- Se añade 'w-full sm:w-auto' para ocupar todo el ancho en móvil -->
+                                <button class="btn ghost bg-transparent border border-gray-200 text-gray-900 hover:bg-gray-50 transition-all duration-200 py-2.5 px-4 rounded-xl font-bold text-sm inline-flex items-center justify-center gap-2 w-full sm:w-auto" id="btnCopiarLink"><i data-feather="copy" class="w-4 h-4"></i>Copiar</button>
+                                <!-- Se añade 'w-full sm:w-auto' para ocupar todo el ancho en móvil -->
+                                <button class="btn primary bg-gradient-to-r from-accent to-accent-alt text-white shadow-md shadow-accent/20 hover:shadow-lg hover:shadow-accent/30 hover:-translate-y-0.5 transition-all duration-200 py-2.5 px-4 rounded-xl font-bold text-sm inline-flex items-center justify-center gap-2 w-full sm:w-auto" id="btnCompartirLink"><i data-feather="share-2" class="w-4 h-4"></i>Compartir</button>
                             </div>
                         </div>
                     </div>
