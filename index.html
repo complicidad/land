@@ -42,7 +42,12 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         html { scroll-behavior: smooth; }
-        body { background-color: #fffaf6; color: #2b2b2b; line-height: 1.6; }
+        body { 
+            background-color: #fffaf6; 
+            color: #2b2b2b; 
+            line-height: 1.6;
+            overflow-x: hidden; /* Evita la barra de scroll horizontal */
+        }
         .oculto { display: none !important; }
 
         main > section { display: none; }
@@ -64,48 +69,6 @@
             background-color: #fef3c7; /* Se usa un color sólido para evitar transparencias */
         }
         
-        /* --- ESTILOS RESPONSIVOS PARA LA TABLA EN MÓVILES --- */
-        @media (max-width: 768px) {
-            #tablaEnvios thead {
-                display: none; /* Ocultar cabecera en móviles */
-            }
-            #tablaEnvios, #tablaEnvios tbody, #tablaEnvios tr {
-                display: block;
-                width: 100%;
-            }
-            #tablaEnvios tr {
-                margin-bottom: 1rem;
-                border: 1px solid #e5e7eb;
-                border-radius: 0.75rem;
-                padding: 1rem;
-                background-color: #ffffff;
-                box-shadow: 0 1px 3px 0 rgba(0,0,0,0.05);
-            }
-            #tablaEnvios td {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: 0.5rem 0;
-                border-bottom: 1px solid #f3f4f6;
-                text-align: right;
-            }
-            #tablaEnvios tr td:last-child {
-                border-bottom: none;
-            }
-            #tablaEnvios td[data-label]::before {
-                content: attr(data-label);
-                font-weight: 600;
-                text-align: left;
-                padding-right: 1rem;
-                color: #4b5563;
-            }
-            /* Ocultar columnas menos importantes en la vista de tarjeta */
-            #tablaEnvios .col-responsive-hide {
-                display: none;
-            }
-        }
-
-
         @media print {
             body > * { display: none; }
             .print-container { display: block; width: 100%; column-count: 2; column-gap: 1.5cm; padding: 1cm; }
@@ -229,31 +192,33 @@
                         </div>
                         
                         <div id="tableContainer">
+                            <!-- Tabla para Desktop -->
                             <div class="overflow-x-auto hidden md:block shadow-lg shadow-gray-100 rounded-xl border border-gray-200">
                                 <table id="tablaEnvios" class="w-full border-collapse bg-white">
                                     <thead>
                                         <tr>
-                                            <th class="border-t border-gray-200 p-3 text-left text-xs font-bold text-accent uppercase tracking-wider rounded-tl-xl w-12"><input type="checkbox" id="thCheckTodos" class="rounded border-gray-300 text-accent focus:ring-accent" /></th>
-                                            <th class="border-t border-gray-200 p-3 text-left text-xs font-bold text-accent uppercase tracking-wider">Fecha Reg.</th>
-                                            <th class="border-t border-gray-200 p-3 text-left text-xs font-bold text-accent uppercase tracking-wider">Cliente</th>
-                                            <th class="border-t border-gray-200 p-3 text-left text-xs font-bold text-accent uppercase tracking-wider">Courier</th>
-                                            <th class="border-t border-gray-200 p-3 text-left text-xs font-bold text-accent uppercase tracking-wider col-responsive-hide">Destinatario</th>
-                                            <th class="border-t border-gray-200 p-3 text-left text-xs font-bold text-accent uppercase tracking-wider col-responsive-hide">Teléfono</th>
-                                            <th class="border-t border-gray-200 p-3 text-left text-xs font-bold text-accent uppercase tracking-wider col-responsive-hide">Distrito</th>
-                                            <th class="border-t border-gray-200 p-3 text-left text-xs font-bold text-accent uppercase tracking-wider col-responsive-hide">Dirección</th>
-                                            <th class="border-t border-gray-200 p-3 text-left text-xs font-bold text-accent uppercase tracking-wider col-responsive-hide">Referencia</th>
-                                            <th class="border-t border-gray-200 p-3 text-left text-xs font-bold text-accent uppercase tracking-wider col-responsive-hide">DNI/CE</th>
-                                            <th class="border-t border-gray-200 p-3 text-left text-xs font-bold text-accent uppercase tracking-wider col-responsive-hide">Agencia</th>
-                                            <th class="border-t border-gray-200 p-3 text-left text-xs font-bold text-accent uppercase tracking-wider">Fecha Envío</th>
-                                            <th class="border-t border-gray-200 p-3 text-left text-xs font-bold text-accent uppercase tracking-wider">Estado</th>
-                                            <th class="border-t border-gray-200 p-3 text-left text-xs font-bold text-accent uppercase tracking-wider rounded-tr-xl">Notificar</th>
+                                            <th class="p-3 text-left text-xs font-bold text-accent uppercase tracking-wider rounded-tl-xl w-12"><input type="checkbox" id="thCheckTodos" class="rounded border-gray-300 text-accent focus:ring-accent" /></th>
+                                            <th class="p-3 text-left text-xs font-bold text-accent uppercase tracking-wider">Fecha Reg.</th>
+                                            <th class="p-3 text-left text-xs font-bold text-accent uppercase tracking-wider">Cliente</th>
+                                            <th class="p-3 text-left text-xs font-bold text-accent uppercase tracking-wider">Courier</th>
+                                            <th class="p-3 text-left text-xs font-bold text-accent uppercase tracking-wider col-responsive-hide">Destinatario</th>
+                                            <th class="p-3 text-left text-xs font-bold text-accent uppercase tracking-wider col-responsive-hide">Teléfono</th>
+                                            <th class="p-3 text-left text-xs font-bold text-accent uppercase tracking-wider col-responsive-hide">Distrito</th>
+                                            <th class="p-3 text-left text-xs font-bold text-accent uppercase tracking-wider col-responsive-hide">Dirección</th>
+                                            <th class="p-3 text-left text-xs font-bold text-accent uppercase tracking-wider col-responsive-hide">Referencia</th>
+                                            <th class="p-3 text-left text-xs font-bold text-accent uppercase tracking-wider col-responsive-hide">DNI/CE</th>
+                                            <th class="p-3 text-left text-xs font-bold text-accent uppercase tracking-wider col-responsive-hide">Agencia</th>
+                                            <th class="p-3 text-left text-xs font-bold text-accent uppercase tracking-wider">Fecha Envío</th>
+                                            <th class="p-3 text-left text-xs font-bold text-accent uppercase tracking-wider">Estado</th>
+                                            <th class="p-3 text-left text-xs font-bold text-accent uppercase tracking-wider rounded-tr-xl">Notificar</th>
                                         </tr>
                                     </thead>
                                     <tbody id="tbodyEnvios"></tbody>
                                 </table>
                             </div>
+                             <!-- Contenedor de Tarjetas para Móvil -->
                              <div id="mobileCardContainer" class="md:hidden space-y-4">
-                                <!-- Las tarjetas para móvil se insertarán aquí -->
+                                <!-- Las tarjetas para móvil se insertarán aquí vía JS -->
                             </div>
                         </div>
 
@@ -625,13 +590,11 @@ document.addEventListener('DOMContentLoaded', () => {
         mobileCardContainer.innerHTML = '';
 
         if (envios.length === 0) {
-            tableContainer.classList.add('hidden');
-            mobileCardContainer.classList.add('hidden');
+            tableContainer.parentElement.classList.add('hidden');
             emptyStateContainer.classList.remove('hidden');
             batchActionsContainer.classList.add('hidden');
         } else {
-            tableContainer.classList.remove('hidden');
-            mobileCardContainer.classList.remove('hidden');
+            tableContainer.parentElement.classList.remove('hidden');
             emptyStateContainer.classList.add('hidden');
             batchActionsContainer.classList.remove('hidden');
             
