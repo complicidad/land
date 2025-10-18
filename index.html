@@ -48,7 +48,14 @@
                 height: 100%;
                 overflow: hidden;
             }
+        }     
+      
+        header {
+          position: sticky;
+          top: 0;
+          z-index: 50;
         }
+      
         body { 
             background-color: #fffaf6; 
             color: #2b2b2b; 
@@ -120,7 +127,7 @@
         <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden transition-opacity duration-300 ease-in-out"></div>
         <!-- ======================= FIN: MENÚ VERTICAL ======================= -->
 
-        <div id="mainContent" class="flex-1 flex flex-col transition-all duration-300 ease-in-out overflow-hidden">
+        <div id="mainContent" class="flex-1 flex flex-col transition-all duration-300 ease-in-out md:overflow-hidden">
              <!-- ---------- HEADER (Fijo, no se expande) ---------- -->
             <header class="bg-gradient-to-br from-brand-accent to-orange-400 text-white p-6 shadow-xl shadow-accent/25 flex items-center gap-4 flex-shrink-0">
                 <button id="sidebarToggle" class="text-white p-2 rounded-md hover:bg-black/20 focus:outline-none focus:ring-2 focus:ring-white">
@@ -812,6 +819,5 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-
 
 
