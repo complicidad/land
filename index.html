@@ -78,7 +78,6 @@
         main > section.active { 
             display: flex;
             flex-direction: column;
-            height: 100%; /* Se añade height: 100% para que la sección activa siempre ocupe todo el espacio */
         }
 
         .nowrap { white-space: nowrap; }
@@ -123,6 +122,9 @@
                 <a href="#reportes" class="nav-link flex items-center gap-3 p-3 rounded-lg font-semibold transition-colors duration-200">
                     <i data-feather="bar-chart-2" class="w-5 h-5"></i><span>Reportes</span>
                 </a>
+                <a href="#mensajes" class="nav-link flex items-center gap-3 p-3 rounded-lg font-semibold transition-colors duration-200">
+                    <i data-feather="message-square" class="w-5 h-5"></i><span>Mensajes</span>
+                </a>
                 <a href="#cuenta" class="nav-link flex items-center gap-3 p-3 rounded-lg font-semibold transition-colors duration-200">
                     <i data-feather="settings" class="w-5 h-5"></i><span>Mi Cuenta</span>
                 </a>
@@ -148,11 +150,11 @@
                 </div>
             </header>
 
-            <main class="flex-grow md:overflow-y-auto p-4 md:p-6">
+            <main class="flex-grow p-4 md:p-6">
                 
                 <!-- ======================= SECCIÓN ENVÍOS ======================= -->
                 <!-- CORRECCIÓN: Se eliminó la clase 'md:h-full' de la sección. El control de altura ahora es centralizado. -->
-                <section class="active" id="envios">
+                <section class="active md:h-full" id="envios">
                     <div class="card bg-white rounded-xl shadow-lg shadow-gray-100 p-4 md:p-6 border border-gray-200 flex flex-col md:h-full">
                         <!-- Contenido fijo de la tarjeta (título, botones, filtros) -->
                         <div class="flex-shrink-0">
@@ -259,7 +261,7 @@
 
                 <!-- ======================= SECCIÓN LINK MÁGICO ======================= -->
                 <!-- CORRECCIÓN: Se eliminó la clase 'h-full' de la sección. -->
-                <section id="link">
+                <section id="link" class="h-full">
                     <div class="card bg-white rounded-xl shadow-lg shadow-gray-100 p-6 border border-gray-200">
                         <h2 class="text-2xl font-bold text-accent mb-4 flex items-center gap-2">
                             <i data-feather="link" class="w-6 h-6"></i>Tu Enlace Mágico
@@ -284,7 +286,7 @@
                 
                 <!-- ======================= SECCIÓN REPORTES ======================= -->
                 <!-- CORRECCIÓN: Se eliminó la clase 'md:h-full' de la sección. -->
-                <section id="reportes">
+                <section id="reportes" class="h-full">
                     <div class="card bg-white rounded-xl shadow-lg shadow-gray-100 p-6 border border-gray-200">
                         <h2 class="text-2xl font-bold text-accent mb-4 flex items-center gap-2">
                             <i data-feather="bar-chart-2" class="w-6 h-6"></i>Reportes (Este Mes)
@@ -316,9 +318,52 @@
                     </footer>
                 </section>
 
+                <!-- ======================= SECCIÓN MENSAJES ======================= -->
+                <section id="mensajes" class="h-full overflow-y-auto">
+                    <div class="flex-grow">
+                        <h2 class="text-2xl font-bold text-accent mb-4 flex items-center gap-2">
+                            <i data-feather="message-square" class="w-6 h-6"></i> Mensajes para Clientes
+                        </h2>
+                        <div class="card bg-white rounded-xl shadow-lg shadow-gray-100 p-6 border border-gray-200 mb-6">
+                            <p class="text-sm text-gray-500 mb-4">Define las plantillas que se enviarán a tus clientes. Haz clic en las variables para insertarlas en tus mensajes. Los cambios se guardan automáticamente.</p>
+                            <div class="flex flex-wrap gap-2 mb-6" id="messageVariables">
+                                <button class="variable-btn bg-orange-100 text-accent text-xs font-bold py-1 px-2 rounded-md hover:bg-orange-200 transition-colors">[CLIENTE]</button>
+                                <button class="variable-btn bg-orange-100 text-accent text-xs font-bold py-1 px-2 rounded-md hover:bg-orange-200 transition-colors">[DESTINATARIO]</button>
+                                <button class="variable-btn bg-orange-100 text-accent text-xs font-bold py-1 px-2 rounded-md hover:bg-orange-200 transition-colors">[COURIER]</button>
+                                <button class="variable-btn bg-orange-100 text-accent text-xs font-bold py-1 px-2 rounded-md hover:bg-orange-200 transition-colors">[FECHA_ENVIO]</button>
+                                <button class="variable-btn bg-orange-100 text-accent text-xs font-bold py-1 px-2 rounded-md hover:bg-orange-200 transition-colors">[MI_TIENDA]</button>
+                            </div>
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                <div class="form-group">
+                                    <label for="msgConfirmacion" class="block text-sm text-gray-900 font-semibold mb-1.5">✅ Mensaje de Confirmación</label>
+                                    <textarea id="msgConfirmacion" rows="4" class="message-template input p-2.5 border border-gray-200 rounded-xl bg-white w-full text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100"></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label for="msgEnviado" class="block text-sm text-gray-900 font-semibold mb-1.5">🚚 Mensaje de Envío en Camino</label>
+                                    <textarea id="msgEnviado" rows="4" class="message-template input p-2.5 border border-gray-200 rounded-xl bg-white w-full text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100"></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label for="msgEntregado" class="block text-sm text-gray-900 font-semibold mb-1.5">📦 Mensaje de Paquete Entregado</label>
+                                    <textarea id="msgEntregado" rows="4" class="message-template input p-2.5 border border-gray-200 rounded-xl bg-white w-full text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100"></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label for="msgReprogramado" class="block text-sm text-gray-900 font-semibold mb-1.5">🗓️ Mensaje de Envío Reprogramado</label>
+                                    <textarea id="msgReprogramado" rows="4" class="message-template input p-2.5 border border-gray-200 rounded-xl bg-white w-full text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <footer class="p-4 bg-bg-soft flex-shrink-0 flex justify-center items-center gap-2 text-gray-500 text-sm mt-6">
+                        <span>Powered by</span>
+                        <svg height="20" viewBox="0 0 90 22" xmlns="http://www.w3.org/2000/svg">
+                            <text x="0" y="18" style="font-family: Quicksand, sans-serif; font-size: 20px; font-weight: 700; fill: #D96B4F;">Latam5S</text>
+                        </svg>
+                    </footer>
+                </section>
+
                 <!-- ======================= SECCIÓN MI CUENTA ======================= -->
                 <!-- CORRECCIÓN: Se eliminó 'flex-col'. El layout ahora lo controla 'main > section.active' -->
-                <section id="cuenta">
+                <section id="cuenta" class="h-full overflow-y-auto">
                     <div class="flex-grow">
                         <h2 class="text-2xl font-bold text-accent mb-4 flex items-center gap-2">
                             <i data-feather="settings" class="w-6 h-6"></i>Configuración de tu Cuenta
