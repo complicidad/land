@@ -53,7 +53,7 @@
 
         /* Estilos para cabecera de tabla fija */
         #tableContainer > .overflow-x-auto {
-            max-height: calc(100vh - 420px); /* Ajustar altura para el scroll */
+            max-height: calc(100vh - 350px); /* Ajustar altura para el scroll */
             overflow-y: auto;
         }
         #tablaEnvios > thead > tr > th {
@@ -61,8 +61,50 @@
             position: sticky;
             top: 0;
             z-index: 5;
-            background-color: #fffaf6; /* Fondo para que no se transparente */
+            background-color: #fef3c7; /* Se usa un color sólido para evitar transparencias */
         }
+        
+        /* --- ESTILOS RESPONSIVOS PARA LA TABLA EN MÓVILES --- */
+        @media (max-width: 768px) {
+            #tablaEnvios thead {
+                display: none; /* Ocultar cabecera en móviles */
+            }
+            #tablaEnvios, #tablaEnvios tbody, #tablaEnvios tr {
+                display: block;
+                width: 100%;
+            }
+            #tablaEnvios tr {
+                margin-bottom: 1rem;
+                border: 1px solid #e5e7eb;
+                border-radius: 0.75rem;
+                padding: 1rem;
+                background-color: #ffffff;
+                box-shadow: 0 1px 3px 0 rgba(0,0,0,0.05);
+            }
+            #tablaEnvios td {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 0.5rem 0;
+                border-bottom: 1px solid #f3f4f6;
+                text-align: right;
+            }
+            #tablaEnvios tr td:last-child {
+                border-bottom: none;
+            }
+            #tablaEnvios td[data-label]::before {
+                content: attr(data-label);
+                font-weight: 600;
+                text-align: left;
+                padding-right: 1rem;
+                color: #4b5563;
+            }
+            /* Ocultar columnas menos importantes en la vista de tarjeta */
+            #tablaEnvios .col-responsive-hide {
+                display: none;
+            }
+        }
+
 
         @media print {
             body > * { display: none; }
@@ -121,91 +163,97 @@
             </header>
 
             <!-- ---------- MAIN CONTENT (Con scroll independiente) ---------- -->
-            <main class="p-6 flex-grow overflow-y-auto">
+            <main class="p-4 md:p-6 flex-grow overflow-y-auto">
                 
                 <!-- ======================= SECCIÓN ENVÍOS ======================= -->
                 <section class="active" id="envios">
-                    <div class="card bg-white rounded-xl shadow-lg shadow-gray-100 p-6 border border-gray-200 mb-6">
-                        <h2 class="text-2xl font-bold text-accent mb-4 flex items-center gap-2">
-                            <i data-feather="truck" class="w-6 h-6"></i>Mis Envíos
-                        </h2>
-                        
-                        <div class="flex gap-2 flex-wrap justify-end mb-4">
-                            <!-- Botones de plantilla unificados en un dropdown -->
-                            <div class="relative inline-block text-left">
-                                <div>
-                                    <button type="button" class="btn ghost bg-transparent border border-gray-200 text-gray-900 hover:bg-gray-50 transition-all duration-200 py-2.5 px-4 rounded-xl font-bold text-sm inline-flex items-center gap-2" id="plantillasDropdownBtn">
-                                        <i data-feather="download" class="w-4 h-4"></i>
-                                        Descargar Plantilla
-                                        <i data-feather="chevron-down" class="w-4 h-4 -mr-1 ml-2"></i>
-                                    </button>
-                                </div>
-                                <div id="plantillasDropdownMenu" class="origin-top-right absolute right-0 mt-2 w-56 rounded-xl shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none hidden z-10">
-                                    <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="plantillasDropdownBtn">
-                                        <a href="#" id="btnTplDelivery" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100" role="menuitem">Plantilla DELIVERY (.csv)</a>
-                                        <a href="#" id="btnTplShalom" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100" role="menuitem">Plantilla SHALOM (.csv)</a>
-                                        <a href="#" id="btnTplOlva" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100" role="menuitem">Plantilla OLVA (.csv)</a>
+                    <div class="card bg-white rounded-xl shadow-lg shadow-gray-100 p-4 md:p-6 border border-gray-200 mb-6">
+                        <div class="flex flex-col md:flex-row justify-between md:items-center gap-4 border-b border-gray-200 pb-4 mb-4">
+                            <h2 class="text-2xl font-bold text-accent flex items-center gap-2">
+                                <i data-feather="truck" class="w-6 h-6"></i>Mis Envíos
+                            </h2>
+                            <div class="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+                                <!-- Botones de plantilla unificados en un dropdown -->
+                                <div class="relative inline-block text-left w-full sm:w-auto">
+                                    <div>
+                                        <button type="button" class="btn ghost bg-transparent border border-gray-200 text-gray-900 hover:bg-gray-50 transition-all duration-200 py-2.5 px-4 rounded-xl font-bold text-sm inline-flex items-center justify-center gap-2 w-full" id="plantillasDropdownBtn">
+                                            <i data-feather="download" class="w-4 h-4"></i>
+                                            <span>Descargar Plantilla</span>
+                                            <i data-feather="chevron-down" class="w-4 h-4 -mr-1 ml-2"></i>
+                                        </button>
+                                    </div>
+                                    <div id="plantillasDropdownMenu" class="origin-top-right absolute right-0 mt-2 w-56 rounded-xl shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none hidden z-10">
+                                        <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="plantillasDropdownBtn">
+                                            <a href="#" id="btnTplDelivery" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100" role="menuitem">Plantilla DELIVERY (.csv)</a>
+                                            <a href="#" id="btnTplShalom" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100" role="menuitem">Plantilla SHALOM (.csv)</a>
+                                            <a href="#" id="btnTplOlva" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100" role="menuitem">Plantilla OLVA (.csv)</a>
+                                        </div>
                                     </div>
                                 </div>
+                                <button class="btn primary bg-gradient-to-r from-accent to-accent-alt text-white shadow-md shadow-accent/20 hover:shadow-lg hover:shadow-accent/30 hover:-translate-y-0.5 transition-all duration-200 py-2.5 px-4 rounded-xl font-bold text-sm inline-flex items-center justify-center gap-2 w-full sm:w-auto" id="btnEtiquetas"><i data-feather="tag" class="w-4 h-4"></i>Imprimir Etiquetas</button>
                             </div>
-                            <button class="btn primary bg-gradient-to-r from-accent to-accent-alt text-white shadow-md shadow-accent/20 hover:shadow-lg hover:shadow-accent/30 hover:-translate-y-0.5 transition-all duration-200 py-2.5 px-4 rounded-xl font-bold text-sm inline-flex items-center gap-2" id="btnEtiquetas"><i data-feather="tag" class="w-4 h-4"></i>Imprimir Etiquetas</button>
+                        </div>
+
+                        <div class="flex flex-col md:flex-row md:items-end gap-3 my-4">
+                             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 flex-1">
+                                <label class="text-xs text-gray-500 font-semibold w-full">Cliente (Celular)<input type="text" id="filtroCliente" placeholder="Ej: 987654321" class="input p-2.5 border border-gray-200 rounded-xl bg-white w-full text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100 mt-1" /></label>
+                                <label class="text-xs text-gray-500 font-semibold w-full">Fecha de Envío<input type="date" id="filtroFecha" class="input p-2.5 border border-gray-200 rounded-xl bg-white w-full text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100 mt-1" /></label>
+                                <label class="text-xs text-gray-500 font-semibold w-full">Courier
+                                    <select id="filtroTipo" class="select p-2.5 border border-gray-200 rounded-xl bg-white w-full text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100 mt-1">
+                                        <option value="">Todos</option>
+                                        <option value="DELIVERY">Delivery Propio</option>
+                                        <option value="SHALOM">Shalom</option>
+                                        <option value="OLVA">Olva</option>
+                                    </select>
+                                </label>
+                            </div>
+                            <button class="btn primary bg-gradient-to-r from-accent to-accent-alt text-white py-2.5 px-4 rounded-xl font-bold text-sm shadow-md shadow-accent/20 hover:shadow-lg hover:shadow-accent/30 hover:-translate-y-0.5 transition-all duration-200 w-full md:w-auto" id="btnAplicarFiltros">Filtrar</button>
                         </div>
                         
-                        <div class="flex flex-wrap items-center gap-3 my-4">
-                            <label class="text-xs text-gray-500 font-semibold">Cliente (Celular)<input type="text" id="filtroCliente" placeholder="Ej: 987654321" class="input p-2.5 border border-gray-200 rounded-xl bg-white w-40 text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100 mt-1" /></label>
-                            <label class="text-xs text-gray-500 font-semibold">Fecha de Envío<input type="date" id="filtroFecha" class="input p-2.5 border border-gray-200 rounded-xl bg-white w-40 text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100 mt-1" /></label>
-                            <label class="text-xs text-gray-500 font-semibold">Courier
-                                <select id="filtroTipo" class="select p-2.5 border border-gray-200 rounded-xl bg-white w-40 text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100 mt-1">
-                                    <option value="">Todos</option>
-                                    <option value="DELIVERY">Delivery Propio</option>
-                                    <option value="SHALOM">Shalom</option>
-                                    <option value="OLVA">Olva</option>
-                                </select>
-                            </label>
-                            <button class="btn primary bg-gradient-to-r from-accent to-accent-alt text-white py-2.5 px-4 rounded-xl font-bold text-sm h-fit self-end shadow-md shadow-accent/20 hover:shadow-lg hover:shadow-accent/30 hover:-translate-y-0.5 transition-all duration-200" id="btnAplicarFiltros">Filtrar</button>
-                        </div>
-                        
-                        <div class="flex flex-wrap items-center justify-between gap-3 my-3 hidden" id="batchActionsContainer">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 my-3 hidden" id="batchActionsContainer">
                             <div class="lote-left flex gap-3 items-center flex-wrap">
                                 <label class="nowrap text-sm text-gray-900"><input type="checkbox" id="checkTodos" class="rounded border-gray-300 text-accent focus:ring-accent" /> Seleccionar todo</label>
                                 <span class="text-gray-500 text-sm" id="selCount">0 seleccionados</span>
                             </div>
-                            <div class="lote-right flex gap-2 items-center flex-wrap justify-end">
-                                <select id="accionLote" class="select p-2.5 border border-gray-200 rounded-xl bg-white w-auto text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100">
+                            <div class="lote-right flex flex-col sm:flex-row gap-2 items-center w-full md:w-auto">
+                                <select id="accionLote" class="select p-2.5 border border-gray-200 rounded-xl bg-white w-full sm:w-auto text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100">
                                     <option value="" selected>Acción en lote…</option>
                                     <option value="ENVIADO">Marcar como Enviado</option>
                                     <option value="ENTREGADO">Marcar como Entregado</option>
                                     <option value="REPROGRAMADO">Reprogramar</option>
                                     <option value="ELIMINAR" class="text-red-600 font-semibold">Eliminar Seleccionados</option>
                                 </select>
-                                <input type="date" id="fechaReprog" class="input p-2.5 border border-gray-200 rounded-xl bg-white w-40 text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100 oculto" />
-                                <button class="btn primary bg-accent text-white py-2.5 px-4 rounded-xl font-bold text-sm shadow-md shadow-accent/20 hover:shadow-lg hover:shadow-accent/30 hover:-translate-y-0.5 transition-all duration-200" id="btnAplicarLote">Aplicar</button>
+                                <input type="date" id="fechaReprog" class="input p-2.5 border border-gray-200 rounded-xl bg-white w-full sm:w-auto text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100 oculto" />
+                                <button class="btn primary bg-accent text-white py-2.5 px-4 rounded-xl font-bold text-sm shadow-md shadow-accent/20 hover:shadow-lg hover:shadow-accent/30 hover:-translate-y-0.5 transition-all duration-200 w-full sm:w-auto" id="btnAplicarLote">Aplicar</button>
                             </div>
                         </div>
                         
                         <div id="tableContainer">
-                            <div class="overflow-x-auto shadow-lg shadow-gray-100 rounded-xl border border-gray-200">
+                            <div class="overflow-x-auto hidden md:block shadow-lg shadow-gray-100 rounded-xl border border-gray-200">
                                 <table id="tablaEnvios" class="w-full border-collapse bg-white">
                                     <thead>
                                         <tr>
-                                            <th class="border-t border-gray-200 p-3 text-left text-xs font-bold text-accent uppercase tracking-wider bg-orange-50/80 rounded-tl-xl w-12"><input type="checkbox" id="thCheckTodos" class="rounded border-gray-300 text-accent focus:ring-accent" /></th>
-                                            <th class="border-t border-gray-200 p-3 text-left text-xs font-bold text-accent uppercase tracking-wider bg-orange-50/80">Fecha Reg.</th>
-                                            <th class="border-t border-gray-200 p-3 text-left text-xs font-bold text-accent uppercase tracking-wider bg-orange-50/80">Cliente</th>
-                                            <th class="border-t border-gray-200 p-3 text-left text-xs font-bold text-accent uppercase tracking-wider bg-orange-50/80">Courier</th>
-                                            <th class="border-t border-gray-200 p-3 text-left text-xs font-bold text-accent uppercase tracking-wider bg-orange-50/80">Destinatario</th>
-                                            <th class="border-t border-gray-200 p-3 text-left text-xs font-bold text-accent uppercase tracking-wider bg-orange-50/80">Teléfono</th>
-                                            <th class="col-distrito border-t border-gray-200 p-3 text-left text-xs font-bold text-accent uppercase tracking-wider bg-orange-50/80">Distrito</th>
-                                            <th class="col-direccion border-t border-gray-200 p-3 text-left text-xs font-bold text-accent uppercase tracking-wider bg-orange-50/80">Dirección</th>
-                                            <th class="col-referencia border-t border-gray-200 p-3 text-left text-xs font-bold text-accent uppercase tracking-wider bg-orange-50/80">Referencia</th>
-                                            <th class="col-dni border-t border-gray-200 p-3 text-left text-xs font-bold text-accent uppercase tracking-wider bg-orange-50/80">DNI/CE</th>
-                                            <th class="col-agencia border-t border-gray-200 p-3 text-left text-xs font-bold text-accent uppercase tracking-wider bg-orange-50/80">Agencia</th>
-                                            <th class="border-t border-gray-200 p-3 text-left text-xs font-bold text-accent uppercase tracking-wider bg-orange-50/80">Fecha Envío</th>
-                                            <th class="border-t border-gray-200 p-3 text-left text-xs font-bold text-accent uppercase tracking-wider bg-orange-50/80">Estado</th>
-                                            <th class="border-t border-gray-200 p-3 text-left text-xs font-bold text-accent uppercase tracking-wider bg-orange-50/80 rounded-tr-xl">Notificar</th>
+                                            <th class="border-t border-gray-200 p-3 text-left text-xs font-bold text-accent uppercase tracking-wider rounded-tl-xl w-12"><input type="checkbox" id="thCheckTodos" class="rounded border-gray-300 text-accent focus:ring-accent" /></th>
+                                            <th class="border-t border-gray-200 p-3 text-left text-xs font-bold text-accent uppercase tracking-wider">Fecha Reg.</th>
+                                            <th class="border-t border-gray-200 p-3 text-left text-xs font-bold text-accent uppercase tracking-wider">Cliente</th>
+                                            <th class="border-t border-gray-200 p-3 text-left text-xs font-bold text-accent uppercase tracking-wider">Courier</th>
+                                            <th class="border-t border-gray-200 p-3 text-left text-xs font-bold text-accent uppercase tracking-wider col-responsive-hide">Destinatario</th>
+                                            <th class="border-t border-gray-200 p-3 text-left text-xs font-bold text-accent uppercase tracking-wider col-responsive-hide">Teléfono</th>
+                                            <th class="border-t border-gray-200 p-3 text-left text-xs font-bold text-accent uppercase tracking-wider col-responsive-hide">Distrito</th>
+                                            <th class="border-t border-gray-200 p-3 text-left text-xs font-bold text-accent uppercase tracking-wider col-responsive-hide">Dirección</th>
+                                            <th class="border-t border-gray-200 p-3 text-left text-xs font-bold text-accent uppercase tracking-wider col-responsive-hide">Referencia</th>
+                                            <th class="border-t border-gray-200 p-3 text-left text-xs font-bold text-accent uppercase tracking-wider col-responsive-hide">DNI/CE</th>
+                                            <th class="border-t border-gray-200 p-3 text-left text-xs font-bold text-accent uppercase tracking-wider col-responsive-hide">Agencia</th>
+                                            <th class="border-t border-gray-200 p-3 text-left text-xs font-bold text-accent uppercase tracking-wider">Fecha Envío</th>
+                                            <th class="border-t border-gray-200 p-3 text-left text-xs font-bold text-accent uppercase tracking-wider">Estado</th>
+                                            <th class="border-t border-gray-200 p-3 text-left text-xs font-bold text-accent uppercase tracking-wider rounded-tr-xl">Notificar</th>
                                         </tr>
                                     </thead>
                                     <tbody id="tbodyEnvios"></tbody>
                                 </table>
+                            </div>
+                             <div id="mobileCardContainer" class="md:hidden space-y-4">
+                                <!-- Las tarjetas para móvil se insertarán aquí -->
                             </div>
                         </div>
 
@@ -520,11 +568,12 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // --- ELEMENTOS DEL DOM ---
     const tbodyEnvios = document.getElementById('tbodyEnvios');
+    const mobileCardContainer = document.getElementById('mobileCardContainer');
     const filtroCliente = document.getElementById('filtroCliente');
     const filtroFecha = document.getElementById('filtroFecha');
     const filtroTipo = document.getElementById('filtroTipo');
     const btnAplicarFiltros = document.getElementById('btnAplicarFiltros');
-    const tableContainer = document.getElementById('tableContainer');
+    const tableContainer = document.querySelector('#tableContainer .overflow-x-auto');
     const emptyStateContainer = document.getElementById('emptyStateContainer');
     const batchActionsContainer = document.getElementById('batchActionsContainer');
     const checkTodos = document.getElementById('checkTodos');
@@ -572,21 +621,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderizarTabla(envios) {
-        tbodyEnvios.innerHTML = ''; // Limpiar tabla
+        tbodyEnvios.innerHTML = '';
+        mobileCardContainer.innerHTML = '';
+
         if (envios.length === 0) {
             tableContainer.classList.add('hidden');
+            mobileCardContainer.classList.add('hidden');
             emptyStateContainer.classList.remove('hidden');
             batchActionsContainer.classList.add('hidden');
         } else {
             tableContainer.classList.remove('hidden');
+            mobileCardContainer.classList.remove('hidden');
             emptyStateContainer.classList.add('hidden');
             batchActionsContainer.classList.remove('hidden');
             
             envios.forEach(envio => {
-                const tr = document.createElement('tr');
-                tr.className = 'border-b border-gray-100 hover:bg-orange-50/50 transition-colors duration-200';
-                tr.dataset.id = envio.id;
-                
                 const getEstadoClass = (estado) => {
                     switch (estado) {
                         case 'PENDIENTE': return 'bg-yellow-100 text-badge-pending';
@@ -597,33 +646,70 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 };
 
+                // --- Renderizar para tabla (Desktop) ---
+                const tr = document.createElement('tr');
+                tr.className = 'border-b border-gray-100 hover:bg-orange-50/50 transition-colors duration-200';
+                tr.dataset.id = envio.id;
                 tr.innerHTML = `
                     <td class="p-3 text-center"><input type="checkbox" class="rowCheck rounded border-gray-300 text-accent focus:ring-accent" data-id="${envio.id}"></td>
                     <td class="p-3 text-sm text-gray-700">${envio.fechaReg}</td>
                     <td class="p-3 text-sm text-gray-700">${envio.cliente}</td>
                     <td class="p-3 text-sm text-gray-700">${envio.courier}</td>
-                    <td class="p-3 text-sm text-gray-700">${envio.destinatario}</td>
-                    <td class="p-3 text-sm text-gray-700">${envio.telefono}</td>
-                    <td class="p-3 text-sm text-gray-700 col-distrito">${envio.distrito}</td>
-                    <td class="p-3 text-sm text-gray-700 col-direccion">${envio.direccion}</td>
-                    <td class="p-3 text-sm text-gray-700 col-referencia">${envio.referencia}</td>
-                    <td class="p-3 text-sm text-gray-700 col-dni">${envio.dni}</td>
-                    <td class="p-3 text-sm text-gray-700 col-agencia">${envio.agencia}</td>
+                    <td class="p-3 text-sm text-gray-700 col-responsive-hide">${envio.destinatario}</td>
+                    <td class="p-3 text-sm text-gray-700 col-responsive-hide">${envio.telefono}</td>
+                    <td class="p-3 text-sm text-gray-700 col-responsive-hide">${envio.distrito}</td>
+                    <td class="p-3 text-sm text-gray-700 col-responsive-hide">${envio.direccion}</td>
+                    <td class="p-3 text-sm text-gray-700 col-responsive-hide">${envio.referencia}</td>
+                    <td class="p-3 text-sm text-gray-700 col-responsive-hide">${envio.dni}</td>
+                    <td class="p-3 text-sm text-gray-700 col-responsive-hide">${envio.agencia}</td>
                     <td class="p-3 text-sm text-gray-700">${envio.fechaEnvio}</td>
-                    <td class="p-3 text-sm text-gray-700"><span class="px-2 py-1 text-xs font-bold rounded-full ${getEstadoClass(envio.estado)}">${envio.estado}</span></td>
+                    <td class="p-3 text-sm"><span class="px-2 py-1 text-xs font-bold rounded-full ${getEstadoClass(envio.estado)}">${envio.estado}</span></td>
                     <td class="p-3 text-center"><button class="text-accent hover:text-accent-alt" title="Notificar al cliente"><i data-feather="send" class="w-4 h-4"></i></button></td>
                 `;
                 tbodyEnvios.appendChild(tr);
+
+                // --- Renderizar para tarjetas (Móvil) ---
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-xl shadow p-4 border border-gray-200 space-y-3';
+                card.dataset.id = envio.id;
+                card.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div class="flex items-center gap-3">
+                            <input type="checkbox" class="rowCheck rounded border-gray-300 text-accent focus:ring-accent" data-id="${envio.id}">
+                            <div>
+                                <p class="font-bold text-gray-800">${envio.destinatario}</p>
+                                <p class="text-sm text-gray-500">${envio.distrito}</p>
+                            </div>
+                        </div>
+                        <span class="px-2 py-1 text-xs font-bold rounded-full ${getEstadoClass(envio.estado)}">${envio.estado}</span>
+                    </div>
+                    <div class="text-sm text-gray-600 space-y-2 pl-8">
+                        <p><strong class="text-gray-500">Cliente:</strong> ${envio.cliente}</p>
+                        <p><strong class="text-gray-500">Courier:</strong> ${envio.courier}</p>
+                        <p><strong class="text-gray-500">Fecha Envío:</strong> ${envio.fechaEnvio}</p>
+                    </div>
+                    <div class="flex justify-end pt-2">
+                        <button class="text-accent hover:text-accent-alt text-sm font-bold inline-flex items-center gap-1" title="Notificar al cliente">
+                            <i data-feather="send" class="w-4 h-4"></i> Notificar
+                        </button>
+                    </div>
+                `;
+                mobileCardContainer.appendChild(card);
+
             });
             feather.replace();
         }
         contarSeleccionados();
     }
 
+
     // --- LÓGICA DE ACCIONES EN LOTE ---
     function contarSeleccionados() {
-        const seleccionados = tbodyEnvios.querySelectorAll('.rowCheck:checked').length;
-        const totalRows = tbodyEnvios.querySelectorAll('tr').length;
+        const seleccionadosDesktop = tbodyEnvios.querySelectorAll('.rowCheck:checked').length;
+        const seleccionadosMobile = mobileCardContainer.querySelectorAll('.rowCheck:checked').length;
+        const seleccionados = Math.max(seleccionadosDesktop, seleccionadosMobile);
+
+        const totalRows = todosLosEnvios.length;
         
         selCount.textContent = `${seleccionados} seleccionados`;
         
@@ -632,19 +718,28 @@ document.addEventListener('DOMContentLoaded', () => {
         thCheckTodos.checked = allChecked;
 
         // Muestra/oculta el panel de acciones en lote
-        const loteRight = document.querySelector('.lote-right');
-        if(loteRight) loteRight.classList.toggle('hidden', seleccionados === 0);
+        batchActionsContainer.classList.toggle('hidden', seleccionados === 0);
     }
     
     function seleccionarTodos(checked) {
-        tbodyEnvios.querySelectorAll('.rowCheck').forEach(chk => chk.checked = checked);
+        document.querySelectorAll('.rowCheck').forEach(chk => chk.checked = checked);
         contarSeleccionados();
     }
 
     checkTodos.addEventListener('change', (e) => seleccionarTodos(e.target.checked));
     thCheckTodos.addEventListener('change', (e) => seleccionarTodos(e.target.checked));
-    tbodyEnvios.addEventListener('change', (e) => {
-        if(e.target.classList.contains('rowCheck')) contarSeleccionados();
+    
+    // Event listener unificado para ambas vistas
+    document.getElementById('envios').addEventListener('change', (e) => {
+        if(e.target.classList.contains('rowCheck')) {
+            const id = e.target.dataset.id;
+            const isChecked = e.target.checked;
+            // Sincronizar checkboxes entre vistas
+            document.querySelectorAll(`.rowCheck[data-id="${id}"]`).forEach(chk => {
+                if (chk !== e.target) chk.checked = isChecked;
+            });
+            contarSeleccionados();
+        }
     });
 
     // --- EVENT LISTENERS ---
