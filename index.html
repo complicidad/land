@@ -63,6 +63,7 @@
         main > section.active { 
             display: flex;
             flex-direction: column;
+            height: 100%; /* Se añade height: 100% para que la sección activa siempre ocupe todo el espacio */
         }
 
         .nowrap { white-space: nowrap; }
@@ -135,8 +136,8 @@
             <main class="flex-grow md:overflow-y-auto p-4 md:p-6">
                 
                 <!-- ======================= SECCIÓN ENVÍOS ======================= -->
-                <!-- CORRECCIÓN: Se eliminó la clase 'flex-col' para evitar conflictos. El layout ahora lo controla 'main > section.active' -->
-                <section class="active md:h-full" id="envios">
+                <!-- CORRECCIÓN: Se eliminó la clase 'md:h-full' de la sección. El control de altura ahora es centralizado. -->
+                <section class="active" id="envios">
                     <div class="card bg-white rounded-xl shadow-lg shadow-gray-100 p-4 md:p-6 border border-gray-200 flex flex-col md:h-full">
                         <!-- Contenido fijo de la tarjeta (título, botones, filtros) -->
                         <div class="flex-shrink-0">
@@ -242,8 +243,8 @@
                 </section>
 
                 <!-- ======================= SECCIÓN LINK MÁGICO ======================= -->
-                <!-- CORRECCIÓN: Se eliminó 'flex-col'. El layout ahora lo controla 'main > section.active' -->
-                <section id="link" class="h-full">
+                <!-- CORRECCIÓN: Se eliminó la clase 'h-full' de la sección. -->
+                <section id="link">
                     <div class="card bg-white rounded-xl shadow-lg shadow-gray-100 p-6 border border-gray-200">
                         <h2 class="text-2xl font-bold text-accent mb-4 flex items-center gap-2">
                             <i data-feather="link" class="w-6 h-6"></i>Tu Enlace Mágico
@@ -267,8 +268,8 @@
                 </section>
                 
                 <!-- ======================= SECCIÓN REPORTES ======================= -->
-                <!-- CORRECCIÓN: Se eliminaron 'flex-col' y 'md:flex'. El layout ahora lo controla 'main > section.active' -->
-                <section id="reportes" class="md:h-full">
+                <!-- CORRECCIÓN: Se eliminó la clase 'md:h-full' de la sección. -->
+                <section id="reportes">
                     <div class="card bg-white rounded-xl shadow-lg shadow-gray-100 p-6 border border-gray-200">
                         <h2 class="text-2xl font-bold text-accent mb-4 flex items-center gap-2">
                             <i data-feather="bar-chart-2" class="w-6 h-6"></i>Reportes (Este Mes)
@@ -811,5 +812,6 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
 
 
