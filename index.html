@@ -42,25 +42,26 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         html { scroll-behavior: smooth; }
+        /* SOLUCIÓN DEFINITIVA: Se establece una base sólida para el layout */
+        html, body, #root-container {
+            height: 100%;
+            overflow: hidden;
+        }
         body { 
             background-color: #fffaf6; 
             color: #2b2b2b; 
             line-height: 1.6;
-            /* Eliminado: overflow-x: hidden; -> Se mueve al contenedor principal (#mainContent) para evitar problemas con el sidebar fijo. */
         }
         .oculto { display: none !important; }
 
+        /* SOLUCIÓN DEFINITIVA: Se cambia 'display: block' por 'display: flex' para que las secciones se comporten como contenedores flex */
         main > section { display: none; }
-        main > section.active { display: block; }
+        main > section.active { display: flex; }
 
         .nowrap { white-space: nowrap; }
         #editPanel { transition: transform 0.3s ease-in-out; }
 
         /* Estilos para cabecera de tabla fija */
-        #tableContainer > .overflow-x-auto {
-            max-height: calc(100vh - 350px); /* Ajustar altura para el scroll */
-            overflow-y: auto;
-        }
         #tablaEnvios > thead > tr > th {
             position: -webkit-sticky;
             position: sticky;
@@ -81,7 +82,8 @@
 </head>
 <body class="font-sans bg-bg-soft text-gray-900 antialiased">
     
-    <div class="flex h-screen bg-bg-soft">
+    <!-- SOLUCIÓN DEFINITIVA: Contenedor raíz con altura del 100% -->
+    <div id="root-container" class="flex bg-bg-soft">
         <!-- ======================= INICIO: MENÚ VERTICAL (Ahora colapsable) ======================= -->
         <aside id="sidebar" class="w-64 bg-sidebar-bg text-white flex flex-col fixed h-full shadow-lg z-40 transform -translate-x-full transition-transform duration-300 ease-in-out">
             <div class="p-6 border-b border-gray-700 flex items-center gap-3">
@@ -111,11 +113,10 @@
         <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden transition-opacity duration-300 ease-in-out"></div>
         <!-- ======================= FIN: MENÚ VERTICAL ======================= -->
 
-        <!-- Contenedor Principal (Header + Main) -->
-        <!-- AJUSTE: Se añade overflow-x-hidden para evitar el scroll horizontal. -->
-        <div id="mainContent" class="flex-1 flex flex-col h-screen transition-all duration-300 ease-in-out overflow-x-hidden">
-             <!-- ---------- HEADER (Ahora dentro del contenedor principal) ---------- -->
-            <header class="bg-gradient-to-br from-brand-accent to-orange-400 text-white p-6 shadow-xl shadow-accent/25 flex items-center gap-4">
+        <!-- SOLUCIÓN DEFINITIVA: El contenedor principal ahora gestiona el layout de forma estricta -->
+        <div id="mainContent" class="flex-1 flex flex-col transition-all duration-300 ease-in-out overflow-hidden">
+             <!-- ---------- HEADER (Fijo, no se expande) ---------- -->
+            <header class="bg-gradient-to-br from-brand-accent to-orange-400 text-white p-6 shadow-xl shadow-accent/25 flex items-center gap-4 flex-shrink-0">
                 <button id="sidebarToggle" class="text-white p-2 rounded-md hover:bg-black/20 focus:outline-none focus:ring-2 focus:ring-white">
                     <i data-feather="menu" class="w-6 h-6"></i>
                 </button>
@@ -126,78 +127,77 @@
                 </div>
             </header>
 
-            <!-- ---------- MAIN CONTENT (Con scroll independiente) ---------- -->
-            <main class="p-4 md:p-6 flex-grow overflow-y-auto">
+            <!-- SOLUCIÓN DEFINITIVA: El contenedor 'main' se expande para llenar el espacio restante -->
+            <main class="flex-grow overflow-y-auto p-4 md:p-6">
                 
                 <!-- ======================= SECCIÓN ENVÍOS ======================= -->
-                <section class="active" id="envios">
-                    <div class="card bg-white rounded-xl shadow-lg shadow-gray-100 p-4 md:p-6 border border-gray-200 mb-6">
-                        <div class="flex flex-col md:flex-row justify-between md:items-center gap-4 border-b border-gray-200 pb-4 mb-4">
-                            <h2 class="text-2xl font-bold text-accent flex items-center gap-2">
-                                <i data-feather="truck" class="w-6 h-6"></i>Mis Envíos
-                            </h2>
-                            <div class="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
-                                <!-- Botones de plantilla unificados en un dropdown -->
-                                <div class="relative inline-block text-left w-full sm:w-auto">
-                                    <div>
-                                        <button type="button" class="btn ghost bg-transparent border border-gray-200 text-gray-900 hover:bg-gray-50 transition-all duration-200 py-2.5 px-4 rounded-xl font-bold text-sm inline-flex items-center justify-center gap-2 w-full" id="plantillasDropdownBtn">
-                                            <i data-feather="download" class="w-4 h-4"></i>
-                                            <span>Descargar Plantilla</span>
-                                            <i data-feather="chevron-down" class="w-4 h-4 -mr-1 ml-2"></i>
-                                        </button>
-                                    </div>
-                                    <div id="plantillasDropdownMenu" class="origin-top-right absolute right-0 mt-2 w-56 rounded-xl shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none hidden z-10">
-                                        <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="plantillasDropdownBtn">
-                                            <a href="#" id="btnTplDelivery" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100" role="menuitem">Plantilla DELIVERY (.csv)</a>
-                                            <a href="#" id="btnTplShalom" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100" role="menuitem">Plantilla SHALOM (.csv)</a>
-                                            <a href="#" id="btnTplOlva" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100" role="menuitem">Plantilla OLVA (.csv)</a>
+                <section class="active h-full flex-col" id="envios">
+                    <div class="card bg-white rounded-xl shadow-lg shadow-gray-100 p-4 md:p-6 border border-gray-200 flex flex-col h-full">
+                        <!-- Contenido fijo de la tarjeta (título, botones, filtros) -->
+                        <div class="flex-shrink-0">
+                            <div class="flex flex-col md:flex-row justify-between md:items-center gap-4 border-b border-gray-200 pb-4 mb-4">
+                                <h2 class="text-2xl font-bold text-accent flex items-center gap-2">
+                                    <i data-feather="truck" class="w-6 h-6"></i>Mis Envíos
+                                </h2>
+                                <div class="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+                                    <div class="relative inline-block text-left w-full sm:w-auto">
+                                        <div>
+                                            <button type="button" class="btn ghost bg-transparent border border-gray-200 text-gray-900 hover:bg-gray-50 transition-all duration-200 py-2.5 px-4 rounded-xl font-bold text-sm inline-flex items-center justify-center gap-2 w-full" id="plantillasDropdownBtn">
+                                                <i data-feather="download" class="w-4 h-4"></i>
+                                                <span>Descargar Plantilla</span>
+                                                <i data-feather="chevron-down" class="w-4 h-4 -mr-1 ml-2"></i>
+                                            </button>
+                                        </div>
+                                        <div id="plantillasDropdownMenu" class="origin-top-right absolute right-0 mt-2 w-56 rounded-xl shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none hidden z-10">
+                                            <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="plantillasDropdownBtn">
+                                                <a href="#" id="btnTplDelivery" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100" role="menuitem">Plantilla DELIVERY (.csv)</a>
+                                                <a href="#" id="btnTplShalom" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100" role="menuitem">Plantilla SHALOM (.csv)</a>
+                                                <a href="#" id="btnTplOlva" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100" role="menuitem">Plantilla OLVA (.csv)</a>
+                                                <a href="#" id="btnTplDinsides" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100" role="menuitem">Plantilla DINSIDES (.csv)</a>
+                                            </div>
                                         </div>
                                     </div>
+                                    <button class="btn primary bg-gradient-to-r from-accent to-accent-alt text-white shadow-md shadow-accent/20 hover:shadow-lg hover:shadow-accent/30 hover:-translate-y-0.5 transition-all duration-200 py-2.5 px-4 rounded-xl font-bold text-sm inline-flex items-center justify-center gap-2 w-full sm:w-auto" id="btnEtiquetas"><i data-feather="tag" class="w-4 h-4"></i>Imprimir Etiquetas</button>
                                 </div>
-                                <button class="btn primary bg-gradient-to-r from-accent to-accent-alt text-white shadow-md shadow-accent/20 hover:shadow-lg hover:shadow-accent/30 hover:-translate-y-0.5 transition-all duration-200 py-2.5 px-4 rounded-xl font-bold text-sm inline-flex items-center justify-center gap-2 w-full sm:w-auto" id="btnEtiquetas"><i data-feather="tag" class="w-4 h-4"></i>Imprimir Etiquetas</button>
                             </div>
-                        </div>
-
-                        <!-- AJUSTE: Distribución de filtros con anchos adaptados. -->
-                        <div class="flex flex-col md:flex-row md:items-end gap-3 my-4">
-                             <!-- Se ajusta la clase grid-cols-1 para mantener la responsividad en móvil -->
-                             <div class="grid grid-cols-1 gap-3 flex-1 md:flex-initial md:grid-cols-3">
-                                <label class="text-xs text-gray-500 font-semibold w-full md:w-40">Cliente (Celular)<input type="text" id="filtroCliente" placeholder="Ej: 987654321" class="input p-2.5 border border-gray-200 rounded-xl bg-white w-full text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100 mt-1" /></label>
-                                <label class="text-xs text-gray-500 font-semibold w-full md:w-36">Fecha de Envío<input type="date" id="filtroFecha" class="input p-2.5 border border-gray-200 rounded-xl bg-white w-full text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100 mt-1" /></label>
-                                <label class="text-xs text-gray-500 font-semibold w-full md:w-48">Courier
-                                    <select id="filtroTipo" class="select p-2.5 border border-gray-200 rounded-xl bg-white w-full text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100 mt-1">
-                                        <option value="">Todos</option>
-                                        <option value="DELIVERY">Delivery Propio</option>
-                                        <option value="SHALOM">Shalom</option>
-                                        <option value="OLVA">Olva</option>
+                            <div class="flex flex-col md:flex-row md:items-end gap-3 my-4">
+                                 <div class="grid grid-cols-1 gap-3 flex-1 md:flex-initial md:grid-cols-3">
+                                    <label class="text-xs text-gray-500 font-semibold w-full md:w-40">Cliente (Celular)<input type="text" id="filtroCliente" placeholder="Ej: 987654321" class="input p-2.5 border border-gray-200 rounded-xl bg-white w-full text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100 mt-1" /></label>
+                                    <label class="text-xs text-gray-500 font-semibold w-full md:w-36">Fecha de Envío<input type="date" id="filtroFecha" class="input p-2.5 border border-gray-200 rounded-xl bg-white w-full text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100 mt-1" /></label>
+                                    <label class="text-xs text-gray-500 font-semibold w-full md:w-48">Courier
+                                        <select id="filtroTipo" class="select p-2.5 border border-gray-200 rounded-xl bg-white w-full text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100 mt-1">
+                                            <option value="">Todos</option>
+                                            <option value="DELIVERY">Delivery Propio</option>
+                                            <option value="SHALOM">Shalom</option>
+                                            <option value="OLVA">Olva</option>
+                                        </select>
+                                    </label>
+                                </div>
+                                <button class="btn primary bg-gradient-to-r from-accent to-accent-alt text-white py-2.5 px-4 rounded-xl font-bold text-sm shadow-md shadow-accent/20 hover:shadow-lg hover:shadow-accent/30 hover:-translate-y-0.5 transition-all duration-200 w-full md:w-auto" id="btnAplicarFiltros">Filtrar</button>
+                            </div>
+                            <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 my-3 hidden" id="batchActionsContainer">
+                                <div class="lote-left flex gap-3 items-center flex-wrap">
+                                    <label class="nowrap text-sm text-gray-900"><input type="checkbox" id="checkTodos" class="rounded border-gray-300 text-accent focus:ring-accent" /> Seleccionar todo</label>
+                                    <span class="text-gray-500 text-sm" id="selCount">0 seleccionados</span>
+                                </div>
+                                <div class="lote-right flex flex-col sm:flex-row gap-2 items-center w-full md:w-auto">
+                                    <select id="accionLote" class="select p-2.5 border border-gray-200 rounded-xl bg-white w-full sm:w-auto text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100">
+                                        <option value="" selected>Acción en lote…</option>
+                                        <option value="ENVIADO">Marcar como Enviado</option>
+                                        <option value="ENTREGADO">Marcar como Entregado</option>
+                                        <option value="REPROGRAMADO">Reprogramar</option>
+                                        <option value="ELIMINAR" class="text-red-600 font-semibold">Eliminar Seleccionados</option>
                                     </select>
-                                </label>
-                            </div>
-                            <!-- El botón se mantiene con full-width en móvil y auto en desktop -->
-                            <button class="btn primary bg-gradient-to-r from-accent to-accent-alt text-white py-2.5 px-4 rounded-xl font-bold text-sm shadow-md shadow-accent/20 hover:shadow-lg hover:shadow-accent/30 hover:-translate-y-0.5 transition-all duration-200 w-full md:w-auto" id="btnAplicarFiltros">Filtrar</button>
-                        </div>
-                        
-                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 my-3 hidden" id="batchActionsContainer">
-                            <div class="lote-left flex gap-3 items-center flex-wrap">
-                                <label class="nowrap text-sm text-gray-900"><input type="checkbox" id="checkTodos" class="rounded border-gray-300 text-accent focus:ring-accent" /> Seleccionar todo</label>
-                                <span class="text-gray-500 text-sm" id="selCount">0 seleccionados</span>
-                            </div>
-                            <div class="lote-right flex flex-col sm:flex-row gap-2 items-center w-full md:w-auto">
-                                <select id="accionLote" class="select p-2.5 border border-gray-200 rounded-xl bg-white w-full sm:w-auto text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100">
-                                    <option value="" selected>Acción en lote…</option>
-                                    <option value="ENVIADO">Marcar como Enviado</option>
-                                    <option value="ENTREGADO">Marcar como Entregado</option>
-                                    <option value="REPROGRAMADO">Reprogramar</option>
-                                    <option value="ELIMINAR" class="text-red-600 font-semibold">Eliminar Seleccionados</option>
-                                </select>
-                                <input type="date" id="fechaReprog" class="input p-2.5 border border-gray-200 rounded-xl bg-white w-full sm:w-auto text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100 oculto" />
-                                <button class="btn primary bg-accent text-white py-2.5 px-4 rounded-xl font-bold text-sm shadow-md shadow-accent/20 hover:shadow-lg hover:shadow-accent/30 hover:-translate-y-0.5 transition-all duration-200 w-full sm:w-auto" id="btnAplicarLote">Aplicar</button>
+                                    <input type="date" id="fechaReprog" class="input p-2.5 border border-gray-200 rounded-xl bg-white w-full sm:w-auto text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100 oculto" />
+                                    <button class="btn primary bg-accent text-white py-2.5 px-4 rounded-xl font-bold text-sm shadow-md shadow-accent/20 hover:shadow-lg hover:shadow-accent/30 hover:-translate-y-0.5 transition-all duration-200 w-full sm:w-auto" id="btnAplicarLote">Aplicar</button>
+                                </div>
                             </div>
                         </div>
                         
-                        <div id="tableContainer">
+                        <!-- SOLUCIÓN DEFINITIVA: Contenedor de la tabla se expande y maneja su propio scroll -->
+                        <div id="tableContainer" class="flex-grow relative min-h-0">
                             <!-- Tabla para Desktop -->
-                            <div class="overflow-x-auto hidden md:block shadow-lg shadow-gray-100 rounded-xl border border-gray-200">
+                            <div class="overflow-auto absolute inset-0 hidden md:block shadow-lg shadow-gray-100 rounded-xl border border-gray-200">
                                 <table id="tablaEnvios" class="w-full border-collapse bg-white">
                                     <thead>
                                         <tr>
@@ -221,12 +221,12 @@
                                 </table>
                             </div>
                              <!-- Contenedor de Tarjetas para Móvil -->
-                             <div id="mobileCardContainer" class="md:hidden space-y-4">
+                             <div id="mobileCardContainer" class="md:hidden space-y-4 overflow-y-auto absolute inset-0">
                                 <!-- Las tarjetas para móvil se insertarán aquí vía JS -->
                             </div>
                         </div>
 
-                        <div id="emptyStateContainer" class="hidden text-center p-10 border-2 border-dashed rounded-xl mt-4">
+                        <div id="emptyStateContainer" class="hidden text-center p-10 border-2 border-dashed rounded-xl mt-4 flex-grow items-center justify-center flex-col">
                             <i data-feather="gift" class="w-16 h-16 mx-auto text-gray-300"></i>
                             <h3 class="mt-4 text-xl font-bold text-gray-800">¡Bienvenido a tu panel de control!</h3>
                             <p class="mt-2 text-sm text-gray-500 max-w-sm mx-auto">Aún no tienes envíos registrados. El primer paso es configurar tu 'Link Mágico' y compartirlo con tus clientes.</p>
@@ -238,7 +238,7 @@
                 </section>
 
                 <!-- ======================= SECCIÓN LINK MÁGICO ======================= -->
-                <section id="link">
+                <section id="link" class="flex-col">
                     <div class="card bg-white rounded-xl shadow-lg shadow-gray-100 p-6 border border-gray-200 mb-6">
                         <h2 class="text-2xl font-bold text-accent mb-4 flex items-center gap-2">
                             <i data-feather="link" class="w-6 h-6"></i>Tu Enlace Mágico
@@ -246,12 +246,9 @@
                         <p class="text-gray-500 text-sm mb-5">Comparte este link único con tus clientes. Ellos completarán sus datos de envío directamente y la información aparecerá en tu panel, ¡sin errores y sin que tengas que transcribir nada!</p>
                         <div class="form-group">
                             <label for="linkUnicoInput" class="block text-sm text-gray-500 font-semibold mb-1.5">Tu enlace personal</label>
-                            <!-- AJUSTE CLAVE: Se añade 'flex-col sm:flex-row' para apilar en móvil y poner en fila en tablet/desktop -->
                             <div id="linkUnicoContainer" class="flex flex-col sm:flex-row gap-2">
                                 <input type="text" id="linkUnicoInput" class="input p-2.5 border border-gray-200 rounded-xl bg-gray-50 flex-grow text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100" value="https://latam5s.com/form/tu-tienda" readonly>
-                                <!-- Se añade 'w-full sm:w-auto' para ocupar todo el ancho en móvil -->
                                 <button class="btn ghost bg-transparent border border-gray-200 text-gray-900 hover:bg-gray-50 transition-all duration-200 py-2.5 px-4 rounded-xl font-bold text-sm inline-flex items-center justify-center gap-2 w-full sm:w-auto" id="btnCopiarLink"><i data-feather="copy" class="w-4 h-4"></i>Copiar</button>
-                                <!-- Se añade 'w-full sm:w-auto' para ocupar todo el ancho en móvil -->
                                 <button class="btn primary bg-gradient-to-r from-accent to-accent-alt text-white shadow-md shadow-accent/20 hover:shadow-lg hover:shadow-accent/30 hover:-translate-y-0.5 transition-all duration-200 py-2.5 px-4 rounded-xl font-bold text-sm inline-flex items-center justify-center gap-2 w-full sm:w-auto" id="btnCompartirLink"><i data-feather="share-2" class="w-4 h-4"></i>Compartir</button>
                             </div>
                         </div>
@@ -259,7 +256,7 @@
                 </section>
                 
                 <!-- ======================= SECCIÓN REPORTES ======================= -->
-                <section id="reportes">
+                <section id="reportes" class="flex-col">
                     <div class="card bg-white rounded-xl shadow-lg shadow-gray-100 p-6 border border-gray-200 mb-6">
                         <h2 class="text-2xl font-bold text-accent mb-4 flex items-center gap-2">
                             <i data-feather="bar-chart-2" class="w-6 h-6"></i>Reportes (Este Mes)
@@ -286,7 +283,7 @@
                 </section>
 
                 <!-- ======================= SECCIÓN MI CUENTA ======================= -->
-                <section id="cuenta">
+                <section id="cuenta" class="flex-col">
                     <h2 class="text-2xl font-bold text-accent mb-4 flex items-center gap-2">
                         <i data-feather="settings" class="w-6 h-6"></i>Configuración de tu Cuenta
                     </h2>
@@ -433,13 +430,16 @@
                     </div>
                 </section>
                 
-                <footer class="mt-20 pb-5 flex justify-center items-center gap-2 text-gray-500 text-sm">
-                    <span>Powered by</span>
-                    <svg height="20" viewBox="0 0 90 22" xmlns="http://www.w3.org/2000/svg">
-                        <text x="0" y="18" style="font-family: Quicksand, sans-serif; font-size: 20px; font-weight: 700; fill: #D96B4F;">Latam5S</text>
-                    </svg>
-                </footer>
             </main>
+
+            <!-- ======================= FOOTER STICKY ======================= -->
+            <footer class="p-4 bg-bg-soft flex-shrink-0 flex justify-center items-center gap-2 text-gray-500 text-sm shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.03)]">
+                <span>Powered by</span>
+                <svg height="20" viewBox="0 0 90 22" xmlns="http://www.w3.org/2000/svg">
+                    <text x="0" y="18" style="font-family: Quicksand, sans-serif; font-size: 20px; font-weight: 700; fill: #D96B4F;">Latam5S</text>
+                </svg>
+            </footer>
+
         </div>
     </div>
 
@@ -526,9 +526,16 @@ document.addEventListener('DOMContentLoaded', () => {
             link.classList.add(...activeClasses);
             link.classList.remove(...inactiveClasses);
 
-            sections.forEach(sec => sec.classList.toggle('active', sec.id === targetId));
+            sections.forEach(sec => sec.classList.remove('active'));
+            const targetSection = document.getElementById(targetId);
+            if (targetSection) {
+                targetSection.classList.add('active');
+            }
             
-            closeSidebar();
+            // Si la pantalla es pequeña, cierra el menú al hacer clic
+            if (window.innerWidth < 768) {
+                closeSidebar();
+            }
         });
     });
     document.querySelector('.nav-link.active')?.classList.remove(...inactiveClasses);
@@ -545,7 +552,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const filtroFecha = document.getElementById('filtroFecha');
     const filtroTipo = document.getElementById('filtroTipo');
     const btnAplicarFiltros = document.getElementById('btnAplicarFiltros');
-    const tableContainer = document.querySelector('#tableContainer .overflow-x-auto');
+    const tableContainer = document.getElementById('tableContainer').querySelector('.overflow-auto'); // Apunta al contenedor con scroll
+    const mobileContainerParent = document.getElementById('mobileCardContainer').parentElement;
     const emptyStateContainer = document.getElementById('emptyStateContainer');
     const batchActionsContainer = document.getElementById('batchActionsContainer');
     const checkTodos = document.getElementById('checkTodos');
@@ -596,15 +604,13 @@ document.addEventListener('DOMContentLoaded', () => {
         tbodyEnvios.innerHTML = '';
         mobileCardContainer.innerHTML = '';
 
-        if (envios.length === 0) {
-            tableContainer.parentElement.classList.add('hidden');
-            emptyStateContainer.classList.remove('hidden');
-            batchActionsContainer.classList.add('hidden');
-        } else {
-            tableContainer.parentElement.classList.remove('hidden');
-            emptyStateContainer.classList.add('hidden');
-            batchActionsContainer.classList.remove('hidden');
-            
+        const hasEnvios = envios.length > 0;
+        
+        tableContainer.parentElement.classList.toggle('hidden', !hasEnvios);
+        emptyStateContainer.classList.toggle('hidden', hasEnvios);
+        batchActionsContainer.classList.toggle('hidden', !hasEnvios);
+
+        if (hasEnvios) {
             envios.forEach(envio => {
                 const getEstadoClass = (estado) => {
                     switch (estado) {
@@ -665,7 +671,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 `;
                 mobileCardContainer.appendChild(card);
-
             });
             feather.replace();
         }
@@ -688,7 +693,7 @@ document.addEventListener('DOMContentLoaded', () => {
         thCheckTodos.checked = allChecked;
 
         // Muestra/oculta el panel de acciones en lote
-        batchActionsContainer.classList.toggle('hidden', seleccionados === 0);
+        // batchActionsContainer.classList.toggle('hidden', seleccionados === 0);
     }
     
     function seleccionarTodos(checked) {
@@ -699,12 +704,10 @@ document.addEventListener('DOMContentLoaded', () => {
     checkTodos.addEventListener('change', (e) => seleccionarTodos(e.target.checked));
     thCheckTodos.addEventListener('change', (e) => seleccionarTodos(e.target.checked));
     
-    // Event listener unificado para ambas vistas
     document.getElementById('envios').addEventListener('change', (e) => {
         if(e.target.classList.contains('rowCheck')) {
             const id = e.target.dataset.id;
             const isChecked = e.target.checked;
-            // Sincronizar checkboxes entre vistas
             document.querySelectorAll(`.rowCheck[data-id="${id}"]`).forEach(chk => {
                 if (chk !== e.target) chk.checked = isChecked;
             });
@@ -789,3 +792,6 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
+
+
