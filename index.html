@@ -112,7 +112,7 @@
         <!-- ======================= FIN: MENÚ VERTICAL ======================= -->
 
         <!-- Contenedor Principal (Header + Main) -->
-        <!-- AJUSTE: Se añade overflow-x-hidden aquí para solucionar el scroll horizontal causado por el menú fijo al deslizarse. -->
+        <!-- AJUSTE: Se añade overflow-x-hidden para evitar el scroll horizontal. -->
         <div id="mainContent" class="flex-1 flex flex-col h-screen transition-all duration-300 ease-in-out overflow-x-hidden">
              <!-- ---------- HEADER (Ahora dentro del contenedor principal) ---------- -->
             <header class="bg-gradient-to-br from-brand-accent to-orange-400 text-white p-6 shadow-xl shadow-accent/25 flex items-center gap-4">
@@ -158,11 +158,13 @@
                             </div>
                         </div>
 
+                        <!-- AJUSTE: Distribución de filtros con anchos adaptados. -->
                         <div class="flex flex-col md:flex-row md:items-end gap-3 my-4">
-                             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 flex-1">
-                                <label class="text-xs text-gray-500 font-semibold w-full">Cliente (Celular)<input type="text" id="filtroCliente" placeholder="Ej: 987654321" class="input p-2.5 border border-gray-200 rounded-xl bg-white w-full text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100 mt-1" /></label>
-                                <label class="text-xs text-gray-500 font-semibold w-full">Fecha de Envío<input type="date" id="filtroFecha" class="input p-2.5 border border-gray-200 rounded-xl bg-white w-full text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100 mt-1" /></label>
-                                <label class="text-xs text-gray-500 font-semibold w-full">Courier
+                             <!-- Se ajusta la clase grid-cols-1 para mantener la responsividad en móvil -->
+                             <div class="grid grid-cols-1 gap-3 flex-1 md:flex-initial md:grid-cols-3">
+                                <label class="text-xs text-gray-500 font-semibold w-full md:w-40">Cliente (Celular)<input type="text" id="filtroCliente" placeholder="Ej: 987654321" class="input p-2.5 border border-gray-200 rounded-xl bg-white w-full text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100 mt-1" /></label>
+                                <label class="text-xs text-gray-500 font-semibold w-full md:w-36">Fecha de Envío<input type="date" id="filtroFecha" class="input p-2.5 border border-gray-200 rounded-xl bg-white w-full text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100 mt-1" /></label>
+                                <label class="text-xs text-gray-500 font-semibold w-full md:w-48">Courier
                                     <select id="filtroTipo" class="select p-2.5 border border-gray-200 rounded-xl bg-white w-full text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100 mt-1">
                                         <option value="">Todos</option>
                                         <option value="DELIVERY">Delivery Propio</option>
@@ -171,6 +173,7 @@
                                     </select>
                                 </label>
                             </div>
+                            <!-- El botón se mantiene con full-width en móvil y auto en desktop -->
                             <button class="btn primary bg-gradient-to-r from-accent to-accent-alt text-white py-2.5 px-4 rounded-xl font-bold text-sm shadow-md shadow-accent/20 hover:shadow-lg hover:shadow-accent/30 hover:-translate-y-0.5 transition-all duration-200 w-full md:w-auto" id="btnAplicarFiltros">Filtrar</button>
                         </div>
                         
