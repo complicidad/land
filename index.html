@@ -2,734 +2,726 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8" />
+    <title>Panel de Control — Latam5S</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Agenda tu envío</title>
-
-    <!-- Meta Tags OGP y Twitter (se mantienen sin cambios) -->
-    <meta property="og:title" content="Agenda tu envío" />
-    <meta property="og:description" content="Agenda tu envío de manera simple, rápida y segura." />
-    <meta property="og:image" content="https://complicidad.github.io/form/Spin.png" />
-    <meta property="og:url" content="https://complicidad.github.io/form" />
-    <meta property="og:type" content="website" />
-    <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" content="Agenda tu envío" />
-    <meta name="twitter:description" content="Agenda tu envío de manera simple, rápida y segura." />
-    <meta name="twitter:image" content="https://complicidad.github.io/form/Spin.png" />
-
-    <!-- jQuery (se mantiene para la lógica existente) -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-    <!-- Fuente Quicksand (Alineada con tu landing page) -->
+    <!-- Google Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
-
+    <script src="https://unpkg.com/feather-icons"></script>
+    
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        /* Configuración de Tailwind para usar la fuente Quicksand y colores de marca */
-        @layer base {
-            body {
-                font-family: 'Quicksand', sans-serif;
-            }
-        }
-        
-        /* Definición de colores de marca para su uso en clases personalizadas */
-        :root {
-            --brand-accent: #D96B4F;
-            --brand-accent-alt: #FF8B6A;
-            --danger-color: #d93025; 
-        }
-        
-        /* Estilos personalizados para manejo de estados (Tailwind no permite `!important` en focus/invalid sin config extendida) */
-        .is-invalid {
-            border-color: var(--danger-color) !important;
-            box-shadow: 0 0 0 3px rgba(217, 48, 37, 0.15) !important;
-        }
-
-        /* Keyframes para el spinner */
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-        .animate-spin-custom {
-          animation: spin 1s linear infinite;
-        }
-
-    </style>
     <script>
+        // Configuración de Tailwind para usar colores y fuentes personalizados
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        'brand-bg': '#fffaf6',
-                        'brand-card': '#ffffff',
-                        'brand-text': '#2b2b2b',
-                        'brand-muted': '#6b6b6b',
-                        'brand-accent': '#D96B4F', // Terracota principal
-                        'brand-accent-alt': '#FF8B6A', // Terracota claro para hover/sombra
-                        danger: '#d93025',
-                    },
-                    borderRadius: {
-                        'xl': '12px',
+                        'accent': '#D96B4F',
+                        'accent-alt': '#FF8B6A',
+                        'bg-soft': '#fffaf6',
+                        'badge-pending': '#9a6200',
+                        'badge-sent': '#D96B4F',
+                        'badge-delivered': '#1b7f3a',
+                        'badge-rescheduled': '#8e44ad',
+                        'brand-accent': '#D96B4F',
+                        // Colores para el nuevo menú lateral
+                        'sidebar-bg': '#1f2937', // Gris oscuro para el fondo
+                        'sidebar-hover': '#374151', // Gris más claro para el hover
+                        'sidebar-active-bg': '#D96B4F', // Color accent para el fondo del enlace activo
                     },
                     fontFamily: {
-                        'quicksand': ['Quicksand', 'sans-serif'],
-                    }
-                }
+                        sans: ['Quicksand', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'Arial', 'sans-serif'],
+                    },
+                    borderRadius: { 'xl': '14px' }
+                },
             }
         }
     </script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body { background-color: #fffaf6; color: #2b2b2b; line-height: 1.6; }
+        .oculto { display: none !important; }
+
+        main > section { display: none; }
+        main > section.active { display: block; }
+
+        .nowrap { white-space: nowrap; }
+        #editPanel { transition: transform 0.3s ease-in-out; }
+
+        /* Estilos para cabecera de tabla fija */
+        #tableContainer > .overflow-x-auto {
+            max-height: calc(100vh - 420px); /* Ajustar altura para el scroll */
+            overflow-y: auto;
+        }
+        #tablaEnvios > thead > tr > th {
+            position: -webkit-sticky;
+            position: sticky;
+            top: 0;
+            z-index: 5;
+            background-color: #fffaf6; /* Fondo para que no se transparente */
+        }
+
+        @media print {
+            body > * { display: none; }
+            .print-container { display: block; width: 100%; column-count: 2; column-gap: 1.5cm; padding: 1cm; }
+            .label-card { break-inside: avoid-column; page-break-inside: avoid; margin-bottom: 1.5cm; border: 1px solid #000; padding: 10px; width: 100%; min-height: 100px; }
+            .label-header { font-size: 14px; font-weight: bold; border-bottom: 1px dashed #000; padding-bottom: 5px; margin-bottom: 5px; }
+            .label-info { font-size: 12px; margin-top: 5px; }
+            .qr-placeholder { text-align: center; margin-top: 10px; font-size: 10px; border: 1px solid #ccc; padding: 5px; height: 50px; display: flex; align-items: center; justify-content: center; }
+        }
+    </style>
 </head>
-
-<!-- El cuerpo usa el fondo claro (brand-bg) y texto oscuro (brand-text) -->
-<body class="flex flex-col min-h-screen bg-brand-bg text-brand-text">
-
-    <!-- Contenedor principal del formulario (main) -->
-    <main class="flex-grow p-5 max-w-xl mx-auto font-quicksand w-full">
-
-        <!-- La tarjeta usa el fondo blanco (brand-card) -->
-        <div class="bg-brand-card p-6 md:p-8 rounded-xl shadow-2xl">
-
-        <!-- Logo -->
-        <div class="text-center p-4">
-            <img src="https://raw.githubusercontent.com/complicidad/form/main/Spin.png" alt="Logo Complicidad" class="max-w-[100px] h-auto inline-block">
-        </div>
-
-            <h2 class="mt-[0px] mb-2 text-center text-2xl font-bold text-brand-text">Agenda tu envío</h2>
-
-            <form id="formulario" novalidate>
-                <!-- Campo 1: WhatsApp usado -->
-                <!-- UX: Se usa type="tel" para facilitar el input en móvil y se añade asterisco -->
-                <label for="telefonoUsado" class="block mt-4 font-semibold text-sm text-brand-text">WhatsApp con el que compraste <span class="text-danger">*</span></label>
-                <input
-                    type="tel"
-                    id="telefonoUsado"
-                    name="telefonoUsado"
-                    required
-                    placeholder="Ej. 9XXXXXXXX"
-                    pattern="^9\d{8}$"
-                    title="Ingresa un número de teléfono válido de 9 dígitos (debe empezar con 9)"
-                    class="w-full p-2 mt-1 rounded-xl border border-gray-300 bg-white outline-none transition duration-150 ease-in-out focus:border-brand-accent focus:ring-4 focus:ring-brand-accent-alt/40 text-brand-text"
-                />
-
-                <!-- Campo 2: Tipo de servicio -->
-                <label for="tipoAccion" class="block mt-4 font-semibold text-sm text-brand-text">Selecciona el tipo de servicio <span class="text-danger">*</span></label>
-                <select id="tipoAccion" name="tipoAccion" required
-                    class="w-full p-2 mt-1 rounded-xl border border-gray-300 bg-white outline-none transition duration-150 ease-in-out focus:border-brand-accent focus:ring-4 focus:ring-brand-accent-alt/40 text-brand-text">
-                    <option value="" disabled selected>Elige una opción</option>
-                    <option value="delivery">Envío a domicilio/trabajo (Delivery)</option>
-                    <option value="shalom">Retiro en agencia Shalom</option>
-                    <option value="recoger">Recoger en almacén</option>
-                    <option value="usado">Usar mi dirección registrada</option>
-                </select>
-
-                <!-- Fieldset: Delivery -->
-                <fieldset id="camposDelivery" class="mt-4 border-none p-0" hidden>
-                    <legend class="text-xl font-bold mb-1 text-brand-text">📦 Delivery</legend>
-                    <p class="text-sm text-brand-muted mb-3">Datos de la persona que recibirá el pedido.</p>
-
-                    <label for="nombreDelivery" class="block mt-4 font-semibold text-sm text-brand-text">Nombre: <span class="text-danger">*</span></label>
-                    <input type="text" id="nombreDelivery" name="nombre" required
-                        class="w-full p-2 mt-1 rounded-xl border border-gray-300 bg-white outline-none transition duration-150 ease-in-out focus:border-brand-accent focus:ring-4 focus:ring-brand-accent-alt/40 text-brand-text" />
-
-                    <label for="telefonoDelivery" class="block mt-4 font-semibold text-sm text-brand-text">Teléfono: <span class="text-danger">*</span></label>
-                    <input
-                        type="tel"
-                        id="telefonoDelivery"
-                        name="telefono"
-                        required
-                        pattern="^9\d{8}$"
-                        title="Ingresa un número de teléfono válido de 9 dígitos"
-                        class="w-full p-2 mt-1 rounded-xl border border-gray-300 bg-white outline-none transition duration-150 ease-in-out focus:border-brand-accent focus:ring-4 focus:ring-brand-accent-alt/40 text-brand-text"
-                    />
-                    
-                    <!-- UX: Checkbox para usar el número de WhatsApp principal -->
-                    <div class="mt-1 flex items-center">
-                        <input type="checkbox" id="usarMismoTelefonoDelivery" class="h-4 w-4 text-brand-accent rounded border-gray-300 focus:ring-brand-accent-alt" />
-                        <label for="usarMismoTelefonoDelivery" class="ml-2 block text-sm text-brand-muted cursor-pointer">Usar mi número de WhatsApp (<span id="telefonoDisplayDelivery" class="font-semibold"></span>)</label>
-                    </div>
-
-                    <label for="distrito" class="block mt-4 font-semibold text-sm text-brand-text">Distrito: <span class="text-danger">*</span></label>
-                    <input type="text" id="distrito" name="distrito" required readonly
-                        class="w-full p-2 mt-1 rounded-xl border border-gray-300 bg-white outline-none transition duration-150 ease-in-out focus:border-brand-accent focus:ring-4 focus:ring-brand-accent-alt/40 cursor-pointer text-brand-text" />
-
-                    <label for="direccion" class="block mt-4 font-semibold text-sm text-brand-text">Dirección: <span class="text-danger">*</span></label>
-                    <input type="text" id="direccion" name="direccion" required
-                        class="w-full p-2 mt-1 rounded-xl border border-gray-300 bg-white outline-none transition duration-150 ease-in-out focus:border-brand-accent focus:ring-4 focus:ring-brand-accent-alt/40 text-brand-text" />
-
-                    <label for="referencia" class="block mt-4 font-semibold text-sm text-brand-text">Referencia: <span class="text-danger">*</span></label>
-                    <input type="text" id="referencia" name="referencia" required
-                        class="w-full p-2 mt-1 rounded-xl border border-gray-300 bg-white outline-none transition duration-150 ease-in-out focus:border-brand-accent focus:ring-4 focus:ring-brand-accent-alt/40 text-brand-text" />
-                    
-                    <!-- Modal oculto para Distritos -->
-                    <div class="modal hidden fixed inset-0 bg-brand-text bg-opacity-50 z-50 flex justify-center items-start pt-5 pb-5" id="modalDistrito">
-                        <div class="modal-content bg-brand-card p-5 rounded-xl w-[350px] max-h-[95vh] overflow-y-auto shadow-2xl">
-                            <input type="text" id="buscadorDistrito" placeholder="Buscar distrito..."
-                                class="w-full p-2 mb-3 rounded-lg border border-gray-300 focus:border-brand-accent focus:ring-2 focus:ring-brand-accent-alt/40 text-brand-text" />
-                            <div id="listaDistritos" class="list max-h-80vh overflow-y-auto list-none p-0 m-0 text-brand-text"></div>
-                        </div>
-                    </div>
-                </fieldset>
-
-                <!-- Fieldset: Shalom -->
-                <fieldset id="camposShalom" class="mt-4 border-none p-0" hidden>
-                    <legend class="text-xl font-bold mb-1 text-brand-text">📦 Shalom</legend>
-                    <p class="text-sm text-brand-muted mb-3">Datos para retiro en agencia Shalom.</p>
-
-                    <label for="nombreShalom" class="block mt-4 font-semibold text-sm text-brand-text">Nombre completo: <span class="text-danger">*</span></label>
-                    <input type="text" id="nombreShalom" name="nombre" required
-                        class="w-full p-2 mt-1 rounded-xl border border-gray-300 bg-white outline-none transition duration-150 ease-in-out focus:border-brand-accent focus:ring-4 focus:ring-brand-accent-alt/40 text-brand-text" />
-
-                    <label for="telefonoShalom" class="block mt-4 font-semibold text-sm text-brand-text">Teléfono: <span class="text-danger">*</span></label>
-                    <input
-                        type="tel"
-                        id="telefonoShalom"
-                        name="telefono"
-                        required
-                        pattern="^9\d{8}$"
-                        title="Ingresa un número de teléfono válido de 9 dígitos"
-                        class="w-full p-2 mt-1 rounded-xl border border-gray-300 bg-white outline-none transition duration-150 ease-in-out focus:border-brand-accent focus:ring-4 focus:ring-brand-accent-alt/40 text-brand-text"
-                    />
-                    
-                    <!-- UX: Checkbox para usar el número de WhatsApp principal -->
-                    <div class="mt-1 flex items-center">
-                        <input type="checkbox" id="usarMismoTelefonoShalom" class="h-4 w-4 text-brand-accent rounded border-gray-300 focus:ring-brand-accent-alt" />
-                        <label for="usarMismoTelefonoShalom" class="ml-2 block text-sm text-brand-muted cursor-pointer">Usar mi número de WhatsApp (<span id="telefonoDisplayShalom" class="font-semibold"></span>)</label>
-                    </div>
-
-                    <label for="DNI" class="block mt-4 font-semibold text-sm text-brand-text">DNI/CE: <span class="text-danger">*</span></label>
-                    <!-- UX: Se añade pattern para DNI (8 dígitos) o CE (5-15 alfanuméricos) -->
-                    <input type="text" id="DNI" name="DNI" required pattern="[A-Za-z0-9]{5,15}" title="Ingresa un DNI (8 dígitos) o CE válido (5-15 caracteres)"
-                        class="w-full p-2 mt-1 rounded-xl border border-gray-300 bg-white outline-none transition duration-150 ease-in-out focus:border-brand-accent focus:ring-4 focus:ring-brand-accent-alt/40 text-brand-text" />
-
-                    <label for="agencia" class="block mt-4 font-semibold text-sm text-brand-text">Agencia: <span class="text-danger">*</span></label>
-                    <input type="text" id="agencia" name="agencia" required readonly
-                        class="w-full p-2 mt-1 rounded-xl border border-gray-300 bg-white outline-none transition duration-150 ease-in-out focus:border-brand-accent focus:ring-4 focus:ring-brand-accent-alt/40 cursor-pointer text-brand-text" />
-                    
-                    <!-- Modal oculto para Agencias -->
-                    <div class="modal hidden fixed inset-0 bg-brand-text bg-opacity-50 z-50 flex justify-center items-start pt-5 pb-5" id="modalAgencia">
-                        <div class="modal-content bg-brand-card p-5 rounded-xl w-[350px] max-h-[95vh] overflow-y-auto shadow-2xl">
-                            <input type="text" id="buscadorAgencia" placeholder="Buscar agencia..."
-                                class="w-full p-2 mb-3 rounded-lg border border-gray-300 focus:border-brand-accent focus:ring-2 focus:ring-brand-accent-alt/40 text-brand-text" />
-                            <div id="listaAgencias" class="list max-h-80vh overflow-y-auto list-none p-0 m-0 text-brand-text"></div>
-                        </div>
-                    </div>
-                </fieldset>
-
-                <!-- Fieldset: Usado -->
-                <fieldset id="camposUsados" class="mt-4 border-none p-0" hidden>
-                    <legend class="text-xl font-bold mb-1 text-brand-text">📦 Dirección registrada</legend>
-                    <p class="text-sm text-brand-muted mb-3">Usaremos tu dirección guardada.</p>
-                </fieldset>
-
-                <!-- Campo de fecha reutilizable -->
-                <div id="contenedorFecha" class="mt-4" style="display: none;">
-                    <label for="fecha" class="block font-semibold text-sm text-brand-text">Fecha de envío: <span class="text-danger">*</span></label>
-                    <select id="fecha" name="fecha" required
-                        class="w-full p-2 mt-1 rounded-xl border border-gray-300 bg-white outline-none transition duration-150 ease-in-out focus:border-brand-accent focus:ring-4 focus:ring-brand-accent-alt/40 text-brand-text"></select>
-                </div>
-
-                <!-- Botón de envío, con el nuevo color de acento -->
-                <div class="flex justify-center w-full mt-6">
-                    <button type="submit"
-                        class="p-3 text-lg cursor-pointer bg-brand-accent text-white font-semibold border-none rounded-xl w-full transition duration-150 ease-in-out hover:bg-brand-accent-alt shadow-lg">
-                        Confirmar y agendar envío
-                    </button>
-                </div>
-
-                <!-- Texto de privacidad -->
-                <div class="mt-4 text-sm text-brand-muted text-center">
-                    Usaremos tus datos solo para procesar y entregar tu pedido.
-                    <a href="https://complicidad.github.io/privacy/" target="_blank" class="text-brand-accent hover:text-brand-accent-alt underline">Ver política de privacidad</a>
-                </div>
-
-                <!-- Redes sociales -->
-                <div class="mt-4 flex justify-center gap-4">
-                    <a href="https://wa.me/51981391159" target="_blank" rel="noopener noreferrer" class="inline-flex items-center hover:opacity-80 transition">
-                        <img src="https://raw.githubusercontent.com/complicidad/form/main/whatsapp.png" alt="WhatsApp" width="28" height="28">
-                    </a>
-                    <a href="https://www.tiktok.com/@complicidadboutique" target="_blank" rel="noopener noreferrer" class="inline-flex items-center hover:opacity-80 transition">
-                        <img src="https://raw.githubusercontent.com/complicidad/form/main/tik-tok.png" alt="TikTok" width="28" height="28">
-                    </a>
-                    <a href="https://www.instagram.com/complicidadboutique" target="_blank" rel="noopener noreferrer" class="inline-flex items-center hover:opacity-80 transition">
-                        <img src="https://raw.githubusercontent.com/complicidad/form/main/instagram.png" alt="Instagram" width="28" height="28">
-                    </a>
-                </div>
-            </form>
-        </div>
-    </main>
-
-        <!-- Footer: Se eliminó la atribución visible para no distraer al cliente. -->
-        <footer class="mt-10 mb-5 text-center text-gray-500 text-xs">
-            <!-- La atribución a la herramienta ahora se omite en la vista del usuario final. -->
-            <p>Hecho con ❤️ para tu emprendimiento.</p>
-        </footer>
-
-    <!-- Toast de Notificación (Nuevo estilo) -->
-    <div class="toast fixed right-5 bottom-5 text-white p-3 rounded-xl shadow-xl shadow-brand-accent/25 opacity-0 translate-y-2 transition-all duration-300 z-50 max-w-sm" id="toast">Acción aplicada</div>
-
-
-    <!-- Spinner de carga -->
-    <div id="spinner" class="fixed inset-0 bg-brand-bg bg-opacity-85 z-50 flex justify-center items-center flex-col hidden">
-        <img src="https://raw.githubusercontent.com/complicidad/form/main/Spin.png" alt="Cargando..." class="w-[150px] h-auto animate-spin-custom">
-        <p class="mt-4 text-lg text-brand-text"></p>
-    </div>
+<body class="font-sans bg-bg-soft text-gray-900 antialiased">
     
-    <!-- Script para los modales de lista. -->
-    <script>
+    <div class="flex h-screen bg-bg-soft">
+        <!-- ======================= INICIO: MENÚ VERTICAL (Ahora colapsable) ======================= -->
+        <aside id="sidebar" class="w-64 bg-sidebar-bg text-white flex flex-col fixed h-full shadow-lg z-40 transform -translate-x-full transition-transform duration-300 ease-in-out">
+            <div class="p-6 border-b border-gray-700 flex items-center gap-3">
+                <img id="sidebarLogo" src="" alt="Logo" class="h-10 w-10 rounded-md object-cover bg-white p-1 hidden">
+                <h1 id="sidebarTitle" class="text-2xl font-bold text-white">Panel</h1>
+            </div>
 
-        // Se elimina la función updateMessageClasses antigua.
-        
-        // --- Lógica del modal de Distritos (Vanilla JS) ---
-        const campoDistrito = document.getElementById("distrito");
-        const overlay = document.getElementById("modalDistrito");
-        const buscador = document.getElementById("buscadorDistrito");
-        const listaDistritos = document.getElementById("listaDistritos");
-        let distritos = [];
-        
-        // Abrir popup al hacer click en el campo
-        campoDistrito.addEventListener("click", () => {
-          overlay.style.display = "flex";
-          buscador.value = "";
-          mostrarDistritos(distritos);
-          buscador.focus();
-        });
-        
-        // Cerrar popup si clic fuera de la caja
-        overlay.addEventListener("click", (e) => {
-          if (e.target === overlay) {
-            overlay.style.display = "none";
-          }
-        });
-        
-        // Buscar distritos
-        buscador.addEventListener("input", () => {
-          const filtro = buscador.value.toLowerCase();
-          const filtrados = distritos.filter(d => d.toLowerCase().includes(filtro));
-          mostrarDistritos(filtrados);
-        });
-        
-        // Mostrar lista en el popup
-        function mostrarDistritos(lista) {
-          listaDistritos.innerHTML = "";
-          lista.forEach(d => {
-            const div = document.createElement("div");
-            // Clases de Tailwind para el item de la lista
-            div.className = "p-2 cursor-pointer border-b border-gray-100 hover:bg-gray-100 transition list-item";
-            div.textContent = d;
-            div.addEventListener("click", () => {
-              campoDistrito.value = d;
-              overlay.style.display = "none";
-            });
-            listaDistritos.appendChild(div);
-          });
+            <nav class="flex-1 p-4 space-y-2">
+                <a href="#envios" class="nav-link active flex items-center gap-3 p-3 rounded-lg font-semibold transition-colors duration-200">
+                    <i data-feather="truck" class="w-5 h-5"></i><span>Envíos</span>
+                </a>
+                <a href="#link" class="nav-link flex items-center gap-3 p-3 rounded-lg font-semibold transition-colors duration-200">
+                    <i data-feather="link" class="w-5 h-5"></i><span>Link Mágico</span>
+                </a>
+                <a href="#reportes" class="nav-link flex items-center gap-3 p-3 rounded-lg font-semibold transition-colors duration-200">
+                    <i data-feather="bar-chart-2" class="w-5 h-5"></i><span>Reportes</span>
+                </a>
+                <a href="#cuenta" class="nav-link flex items-center gap-3 p-3 rounded-lg font-semibold transition-colors duration-200">
+                    <i data-feather="settings" class="w-5 h-5"></i><span>Mi Cuenta</span>
+                </a>
+            </nav>
+
+            <div class="p-4 border-t border-gray-700 text-sm">
+                <a href="#" class="text-accent-alt hover:underline">Cerrar Sesión</a>
+            </div>
+        </aside>
+        <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden transition-opacity duration-300 ease-in-out"></div>
+        <!-- ======================= FIN: MENÚ VERTICAL ======================= -->
+
+        <!-- Contenedor Principal (Header + Main) -->
+        <div id="mainContent" class="flex-1 flex flex-col h-screen transition-all duration-300 ease-in-out">
+             <!-- ---------- HEADER (Ahora dentro del contenedor principal) ---------- -->
+            <header class="bg-gradient-to-br from-brand-accent to-orange-400 text-white p-6 shadow-xl shadow-accent/25 flex items-center gap-4">
+                <button id="sidebarToggle" class="text-white p-2 rounded-md hover:bg-black/20 focus:outline-none focus:ring-2 focus:ring-white">
+                    <i data-feather="menu" class="w-6 h-6"></i>
+                </button>
+                <img id="headerLogo" src="" alt="Logo Emprendimiento" class="h-12 w-12 rounded-lg object-cover bg-white p-1 hidden">
+                <div>
+                    <h1 id="headerTitle" class="text-2xl font-bold">Panel de Control</h1>
+                    <p class="mt-1 text-sm opacity-90">Bienvenido, <strong id="headerBusinessName">[Nombre del emprendimiento]</strong></p>
+                </div>
+            </header>
+
+            <!-- ---------- MAIN CONTENT (Con scroll independiente) ---------- -->
+            <main class="p-6 flex-grow overflow-y-auto">
+                
+                <!-- ======================= SECCIÓN ENVÍOS ======================= -->
+                <section class="active" id="envios">
+                    <div class="card bg-white rounded-xl shadow-lg shadow-gray-100 p-6 border border-gray-200 mb-6">
+                        <h2 class="text-2xl font-bold text-accent mb-4 flex items-center gap-2">
+                            <i data-feather="truck" class="w-6 h-6"></i>Mis Envíos
+                        </h2>
+                        
+                        <div class="flex gap-2 flex-wrap justify-end mb-4">
+                            <!-- Botones de plantilla unificados en un dropdown -->
+                            <div class="relative inline-block text-left">
+                                <div>
+                                    <button type="button" class="btn ghost bg-transparent border border-gray-200 text-gray-900 hover:bg-gray-50 transition-all duration-200 py-2.5 px-4 rounded-xl font-bold text-sm inline-flex items-center gap-2" id="plantillasDropdownBtn">
+                                        <i data-feather="download" class="w-4 h-4"></i>
+                                        Descargar Plantilla
+                                        <i data-feather="chevron-down" class="w-4 h-4 -mr-1 ml-2"></i>
+                                    </button>
+                                </div>
+                                <div id="plantillasDropdownMenu" class="origin-top-right absolute right-0 mt-2 w-56 rounded-xl shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none hidden z-10">
+                                    <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="plantillasDropdownBtn">
+                                        <a href="#" id="btnTplDelivery" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100" role="menuitem">Plantilla DELIVERY (.csv)</a>
+                                        <a href="#" id="btnTplShalom" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100" role="menuitem">Plantilla SHALOM (.csv)</a>
+                                        <a href="#" id="btnTplOlva" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100" role="menuitem">Plantilla OLVA (.csv)</a>
+                                    </div>
+                                </div>
+                            </div>
+                            <button class="btn primary bg-gradient-to-r from-accent to-accent-alt text-white shadow-md shadow-accent/20 hover:shadow-lg hover:shadow-accent/30 hover:-translate-y-0.5 transition-all duration-200 py-2.5 px-4 rounded-xl font-bold text-sm inline-flex items-center gap-2" id="btnEtiquetas"><i data-feather="tag" class="w-4 h-4"></i>Imprimir Etiquetas</button>
+                        </div>
+                        
+                        <div class="flex flex-wrap items-center gap-3 my-4">
+                            <label class="text-xs text-gray-500 font-semibold">Cliente (Celular)<input type="text" id="filtroCliente" placeholder="Ej: 987654321" class="input p-2.5 border border-gray-200 rounded-xl bg-white w-40 text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100 mt-1" /></label>
+                            <label class="text-xs text-gray-500 font-semibold">Fecha de Envío<input type="date" id="filtroFecha" class="input p-2.5 border border-gray-200 rounded-xl bg-white w-40 text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100 mt-1" /></label>
+                            <label class="text-xs text-gray-500 font-semibold">Courier
+                                <select id="filtroTipo" class="select p-2.5 border border-gray-200 rounded-xl bg-white w-40 text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100 mt-1">
+                                    <option value="">Todos</option>
+                                    <option value="DELIVERY">Delivery Propio</option>
+                                    <option value="SHALOM">Shalom</option>
+                                    <option value="OLVA">Olva</option>
+                                </select>
+                            </label>
+                            <button class="btn primary bg-gradient-to-r from-accent to-accent-alt text-white py-2.5 px-4 rounded-xl font-bold text-sm h-fit self-end shadow-md shadow-accent/20 hover:shadow-lg hover:shadow-accent/30 hover:-translate-y-0.5 transition-all duration-200" id="btnAplicarFiltros">Filtrar</button>
+                        </div>
+                        
+                        <div class="flex flex-wrap items-center justify-between gap-3 my-3 hidden" id="batchActionsContainer">
+                            <div class="lote-left flex gap-3 items-center flex-wrap">
+                                <label class="nowrap text-sm text-gray-900"><input type="checkbox" id="checkTodos" class="rounded border-gray-300 text-accent focus:ring-accent" /> Seleccionar todo</label>
+                                <span class="text-gray-500 text-sm" id="selCount">0 seleccionados</span>
+                            </div>
+                            <div class="lote-right flex gap-2 items-center flex-wrap justify-end">
+                                <select id="accionLote" class="select p-2.5 border border-gray-200 rounded-xl bg-white w-auto text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100">
+                                    <option value="" selected>Acción en lote…</option>
+                                    <option value="ENVIADO">Marcar como Enviado</option>
+                                    <option value="ENTREGADO">Marcar como Entregado</option>
+                                    <option value="REPROGRAMADO">Reprogramar</option>
+                                    <option value="ELIMINAR" class="text-red-600 font-semibold">Eliminar Seleccionados</option>
+                                </select>
+                                <input type="date" id="fechaReprog" class="input p-2.5 border border-gray-200 rounded-xl bg-white w-40 text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100 oculto" />
+                                <button class="btn primary bg-accent text-white py-2.5 px-4 rounded-xl font-bold text-sm shadow-md shadow-accent/20 hover:shadow-lg hover:shadow-accent/30 hover:-translate-y-0.5 transition-all duration-200" id="btnAplicarLote">Aplicar</button>
+                            </div>
+                        </div>
+                        
+                        <div id="tableContainer">
+                            <div class="overflow-x-auto shadow-lg shadow-gray-100 rounded-xl border border-gray-200">
+                                <table id="tablaEnvios" class="w-full border-collapse bg-white">
+                                    <thead>
+                                        <tr>
+                                            <th class="border-t border-gray-200 p-3 text-left text-xs font-bold text-accent uppercase tracking-wider bg-orange-50/80 rounded-tl-xl w-12"><input type="checkbox" id="thCheckTodos" class="rounded border-gray-300 text-accent focus:ring-accent" /></th>
+                                            <th class="border-t border-gray-200 p-3 text-left text-xs font-bold text-accent uppercase tracking-wider bg-orange-50/80">Fecha Reg.</th>
+                                            <th class="border-t border-gray-200 p-3 text-left text-xs font-bold text-accent uppercase tracking-wider bg-orange-50/80">Cliente</th>
+                                            <th class="border-t border-gray-200 p-3 text-left text-xs font-bold text-accent uppercase tracking-wider bg-orange-50/80">Courier</th>
+                                            <th class="border-t border-gray-200 p-3 text-left text-xs font-bold text-accent uppercase tracking-wider bg-orange-50/80">Destinatario</th>
+                                            <th class="border-t border-gray-200 p-3 text-left text-xs font-bold text-accent uppercase tracking-wider bg-orange-50/80">Teléfono</th>
+                                            <th class="col-distrito border-t border-gray-200 p-3 text-left text-xs font-bold text-accent uppercase tracking-wider bg-orange-50/80">Distrito</th>
+                                            <th class="col-direccion border-t border-gray-200 p-3 text-left text-xs font-bold text-accent uppercase tracking-wider bg-orange-50/80">Dirección</th>
+                                            <th class="col-referencia border-t border-gray-200 p-3 text-left text-xs font-bold text-accent uppercase tracking-wider bg-orange-50/80">Referencia</th>
+                                            <th class="col-dni border-t border-gray-200 p-3 text-left text-xs font-bold text-accent uppercase tracking-wider bg-orange-50/80">DNI/CE</th>
+                                            <th class="col-agencia border-t border-gray-200 p-3 text-left text-xs font-bold text-accent uppercase tracking-wider bg-orange-50/80">Agencia</th>
+                                            <th class="border-t border-gray-200 p-3 text-left text-xs font-bold text-accent uppercase tracking-wider bg-orange-50/80">Fecha Envío</th>
+                                            <th class="border-t border-gray-200 p-3 text-left text-xs font-bold text-accent uppercase tracking-wider bg-orange-50/80">Estado</th>
+                                            <th class="border-t border-gray-200 p-3 text-left text-xs font-bold text-accent uppercase tracking-wider bg-orange-50/80 rounded-tr-xl">Notificar</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tbodyEnvios"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div id="emptyStateContainer" class="hidden text-center p-10 border-2 border-dashed rounded-xl mt-4">
+                            <i data-feather="gift" class="w-16 h-16 mx-auto text-gray-300"></i>
+                            <h3 class="mt-4 text-xl font-bold text-gray-800">¡Bienvenido a tu panel de control!</h3>
+                            <p class="mt-2 text-sm text-gray-500 max-w-sm mx-auto">Aún no tienes envíos registrados. El primer paso es configurar tu 'Link Mágico' y compartirlo con tus clientes.</p>
+                            <button id="goToAccountBtn" class="mt-6 btn primary bg-gradient-to-r from-accent to-accent-alt text-white shadow-md shadow-accent/20 hover:shadow-lg hover:shadow-accent/30 hover:-translate-y-0.5 transition-all duration-200 py-2.5 px-4 rounded-xl font-bold text-sm inline-flex items-center gap-2">
+                                <i data-feather="settings" class="w-4 h-4"></i> Ir a Configuración
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ======================= SECCIÓN LINK MÁGICO ======================= -->
+                <section id="link">
+                    <div class="card bg-white rounded-xl shadow-lg shadow-gray-100 p-6 border border-gray-200 mb-6">
+                        <h2 class="text-2xl font-bold text-accent mb-4 flex items-center gap-2">
+                            <i data-feather="link" class="w-6 h-6"></i>Tu Enlace Mágico
+                        </h2>
+                        <p class="text-gray-500 text-sm mb-5">Comparte este link único con tus clientes. Ellos completarán sus datos de envío directamente y la información aparecerá en tu panel, ¡sin errores y sin que tengas que transcribir nada!</p>
+                        <div class="form-group">
+                            <label for="linkUnicoInput" class="block text-sm text-gray-500 font-semibold mb-1.5">Tu enlace personal</label>
+                            <div id="linkUnicoContainer" class="flex gap-2">
+                                <input type="text" id="linkUnicoInput" class="input p-2.5 border border-gray-200 rounded-xl bg-gray-50 flex-grow text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100" value="https://latam5s.com/form/tu-tienda" readonly>
+                                <button class="btn ghost bg-transparent border border-gray-200 text-gray-900 hover:bg-gray-50 transition-all duration-200 py-2.5 px-4 rounded-xl font-bold text-sm inline-flex items-center gap-2" id="btnCopiarLink"><i data-feather="copy" class="w-4 h-4"></i>Copiar</button>
+                                <button class="btn primary bg-gradient-to-r from-accent to-accent-alt text-white shadow-md shadow-accent/20 hover:shadow-lg hover:shadow-accent/30 hover:-translate-y-0.5 transition-all duration-200 py-2.5 px-4 rounded-xl font-bold text-sm inline-flex items-center gap-2" id="btnCompartirLink"><i data-feather="share-2" class="w-4 h-4"></i>Compartir</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- ======================= SECCIÓN REPORTES ======================= -->
+                <section id="reportes">
+                    <div class="card bg-white rounded-xl shadow-lg shadow-gray-100 p-6 border border-gray-200 mb-6">
+                        <h2 class="text-2xl font-bold text-accent mb-4 flex items-center gap-2">
+                            <i data-feather="bar-chart-2" class="w-6 h-6"></i>Reportes (Este Mes)
+                        </h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+                            <div class="stat-card text-center bg-bg-soft p-5 rounded-xl border border-orange-100">
+                                <div class="value text-4xl font-bold text-accent" id="statTotal">128</div>
+                                <div class="label text-sm text-gray-500 mt-1">Envíos Totales</div>
+                            </div>
+                            <div class="stat-card text-center bg-bg-soft p-5 rounded-xl border border-orange-100">
+                                <div class="value text-4xl font-bold text-accent" id="statPendientes">15</div>
+                                <div class="label text-sm text-gray-500 mt-1">Pendientes</div>
+                            </div>
+                            <div class="stat-card text-center bg-bg-soft p-5 rounded-xl border border-orange-100">
+                                <div class="value text-4xl font-bold text-accent" id="statCompletados">113</div>
+                                <div class="label text-sm text-gray-500 mt-1">Completados</div>
+                            </div>
+                            <div class="stat-card text-center bg-bg-soft p-5 rounded-xl border border-orange-100">
+                                <div class="value text-2xl font-bold text-accent" id="statCourier">Shalom</div>
+                                <div class="label text-sm text-gray-500 mt-1">Courier Más Usado</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ======================= SECCIÓN MI CUENTA ======================= -->
+                <section id="cuenta">
+                    <h2 class="text-2xl font-bold text-accent mb-4 flex items-center gap-2">
+                        <i data-feather="settings" class="w-6 h-6"></i>Configuración de tu Cuenta
+                    </h2>
+                    <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                        <div class="lg:col-span-3 space-y-6">
+                            <div class="card bg-white rounded-xl shadow-lg shadow-gray-100 p-6 border border-gray-200">
+                                <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2 border-b border-gray-200 pb-3 mb-4"><i data-feather="briefcase" class="w-5 h-5 text-accent"></i> Perfil del Negocio</h3>
+                                <div class="space-y-4">
+                                    <div class="form-group">
+                                        <label for="businessName" class="block text-sm text-gray-500 font-semibold mb-1.5">Nombre del Emprendimiento</label>
+                                        <input type="text" id="businessName" class="input p-2.5 border border-gray-200 rounded-xl bg-white w-full text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100" placeholder="Ej: La Tiendita de Ana" value="Mi Tienda de Prueba">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="logoInput" class="block text-sm text-gray-500 font-semibold mb-1.5">Logo del Negocio</label>
+                                        <input type="file" id="logoInput" class="input p-2.5 border border-gray-200 rounded-xl bg-white w-full text-sm file:mr-4 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-accent hover:file:bg-orange-100" accept="image/*">
+                                        <img id="logoPreview" src="" alt="Vista previa del logo" class="max-h-20 rounded-lg object-contain border border-dashed border-gray-300 p-1 mt-3 hidden">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card bg-white rounded-xl shadow-lg shadow-gray-100 p-6 border border-gray-200">
+                                <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2 border-b border-gray-200 pb-3 mb-4"><i data-feather="calendar" class="w-5 h-5 text-accent"></i> Opciones de Despacho</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div class="space-y-3">
+                                        <label class="block text-sm text-gray-500 font-semibold">Couriers Habilitados</label>
+                                        <div class="space-y-2">
+                                            <label class="block text-sm text-gray-900"><input type="checkbox" checked class="rounded border-gray-300 text-accent focus:ring-accent mr-2"> Delivery Propio</label>
+                                            <label class="block text-sm text-gray-900"><input type="checkbox" checked class="rounded border-gray-300 text-accent focus:ring-accent mr-2"> Shalom</label>
+                                            <label class="block text-sm text-gray-900"><input type="checkbox" class="rounded border-gray-300 text-accent focus:ring-accent mr-2"> Olva</label>
+                                            <label class="block text-sm text-gray-900"><input type="checkbox" class="rounded border-gray-300 text-accent focus:ring-accent mr-2"> Dinsides</label>
+                                        </div>
+                                    </div>
+                                     <div class="space-y-3">
+                                        <label class="block text-sm text-gray-500 font-semibold">Días de Despacho</label>
+                                        <div class="flex flex-wrap gap-x-4 gap-y-2 text-sm">
+                                            <label class="inline-flex items-center"><input type="checkbox" class="rounded border-gray-300 text-accent focus:ring-accent mr-1"> Lun</label>
+                                            <label class="inline-flex items-center"><input type="checkbox" checked class="rounded border-gray-300 text-accent focus:ring-accent mr-1"> Mar</label>
+                                            <label class="inline-flex items-center"><input type="checkbox" class="rounded border-gray-300 text-accent focus:ring-accent mr-1"> Mié</label>
+                                            <label class="inline-flex items-center"><input type="checkbox" checked class="rounded border-gray-300 text-accent focus:ring-accent mr-1"> Jue</label>
+                                            <label class="inline-flex items-center"><input type="checkbox" class="rounded border-gray-300 text-accent focus:ring-accent mr-1"> Vie</label>
+                                            <label class="inline-flex items-center"><input type="checkbox" checked class="rounded border-gray-300 text-accent focus:ring-accent mr-1"> Sáb</label>
+                                            <label class="inline-flex items-center"><input type="checkbox" class="rounded border-gray-300 text-accent focus:ring-accent mr-1"> Dom</label>
+                                        </div>
+                                    </div>
+                                    <div class="form-group md:col-span-2">
+                                        <label for="cutoffTime" class="block text-sm text-gray-500 font-semibold mb-1.5">Hora de Cierre de Pedidos</label>
+                                        <input type="time" id="cutoffTime" class="input p-2.5 border border-gray-200 rounded-xl bg-white w-full md:w-auto text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card bg-white rounded-xl shadow-lg shadow-gray-100 p-6 border border-gray-200">
+                                <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2 border-b border-gray-200 pb-3 mb-4"><i data-feather="share-2" class="w-5 h-5 text-accent"></i> Redes Sociales</h3>
+                                <div class="space-y-4">
+                                    <p class="text-sm text-gray-500 -mt-2">Estos enlaces aparecerán en tu formulario para que tus clientes puedan contactarte.</p>
+                                    <div class="form-group">
+                                        <label for="instagramUser" class="block text-sm text-gray-500 font-semibold mb-1.5">Usuario de Instagram</label>
+                                        <div class="relative">
+                                            <i data-feather="instagram" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"></i>
+                                            <input type="text" id="instagramUser" class="input p-2.5 pl-9 border border-gray-200 rounded-xl bg-white w-full text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100" placeholder="mitiendaonline">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="whatsappNumber" class="block text-sm text-gray-500 font-semibold mb-1.5">Número de WhatsApp</label>
+                                        <div class="relative">
+                                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm pointer-events-none">+51</span>
+                                            <input type="number" id="whatsappNumber" class="input p-2.5 pl-10 border border-gray-200 rounded-xl bg-white w-full text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100" placeholder="987654321">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="facebookUser" class="block text-sm text-gray-500 font-semibold mb-1.5">Usuario de Facebook</label>
+                                        <div class="relative">
+                                            <i data-feather="facebook" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"></i>
+                                            <input type="text" id="facebookUser" class="input p-2.5 pl-9 border border-gray-200 rounded-xl bg-white w-full text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100" placeholder="mitiendaonlinefb">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="tiktokUser" class="block text-sm text-gray-500 font-semibold mb-1.5">Usuario de TikTok</label>
+                                        <div class="relative">
+                                            <i data-feather="music" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"></i>
+                                            <input type="text" id="tiktokUser" class="input p-2.5 pl-9 border border-gray-200 rounded-xl bg-white w-full text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100" placeholder="mitienda.tiktok">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="lg:col-span-2 space-y-6">
+                            <div class="card bg-white rounded-xl shadow-lg shadow-gray-100 p-6 border border-gray-200">
+                                <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2 border-b border-gray-200 pb-3 mb-4"><i data-feather="award" class="w-5 h-5 text-accent"></i> Tu Suscripción</h3>
+                                <div class="space-y-3 text-sm">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-gray-500">Plan Actual:</span>
+                                        <span class="font-bold text-gray-900">Crecimiento</span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-gray-500">Estado:</span>
+                                        <span class="font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full text-xs">Activo</span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-gray-500">Próximo Pago:</span>
+                                        <span class="font-bold text-gray-900">15 Nov, 2025</span>
+                                    </div>
+                                    <div class="pt-2">
+                                        <button class="btn ghost bg-transparent border border-gray-200 text-gray-900 hover:bg-gray-50 transition-all duration-200 py-2.5 px-4 rounded-xl font-bold text-sm inline-flex items-center gap-2 w-full justify-center">Administrar Suscripción</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card bg-white rounded-xl shadow-lg shadow-gray-100 p-6 border border-gray-200">
+                                <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2 border-b border-gray-200 pb-3 mb-4"><i data-feather="lock" class="w-5 h-5 text-accent"></i> Seguridad de la Cuenta</h3>
+                                <div class="space-y-4">
+                                    <div class="form-group">
+                                        <label for="userEmail" class="block text-sm text-gray-500 font-semibold mb-1.5">Email de la Cuenta</label>
+                                        <input type="email" id="userEmail" class="input p-2.5 border border-gray-200 rounded-xl bg-gray-100 w-full text-sm text-gray-600 cursor-not-allowed" value="ana.ventas@email.com" readonly>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="newPassword" class="block text-sm text-gray-500 font-semibold mb-1.5">Nueva Contraseña</label>
+                                        <input type="password" id="newPassword" class="input p-2.5 border border-gray-200 rounded-xl bg-white w-full text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100" placeholder="Deja en blanco para no cambiar">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card bg-white rounded-xl shadow-lg shadow-gray-100 p-6 border border-gray-200">
+                                <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2 border-b border-gray-200 pb-3 mb-4"><i data-feather="users" class="w-5 h-5 text-accent"></i> Gestión de Equipo</h3>
+                                <div class="space-y-4">
+                                    <p class="text-sm text-gray-500 -mt-2">Invita a miembros de tu equipo para que colaboren en la gestión de envíos (Función del Plan Consolidado).</p>
+                                    <div class="flex gap-2">
+                                        <input type="email" placeholder="email@ejemplo.com" class="input p-2.5 border border-gray-200 rounded-xl bg-white w-full text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100 flex-grow">
+                                        <button class="btn primary bg-accent text-white py-2.5 px-4 rounded-xl font-bold text-sm shadow-md shadow-accent/20 hover:shadow-lg hover:shadow-accent/30 hover:-translate-y-0.5 transition-all duration-200 whitespace-nowrap">Invitar</button>
+                                    </div>
+                                    <div class="space-y-2 pt-2">
+                                        <label class="block text-sm text-gray-500 font-semibold mb-1">Miembros Actuales:</label>
+                                        <div class="flex justify-between items-center text-sm p-2 bg-gray-50 rounded-lg">
+                                            <span>ana.ventas@email.com (Tú)</span>
+                                            <span class="font-bold text-accent">Admin</span>
+                                        </div>
+                                        <div class="flex justify-between items-center text-sm p-2 bg-gray-50 rounded-lg">
+                                            <span>carlos.logistica@email.com</span>
+                                            <span class="text-gray-500">Miembro</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex justify-end mt-6">
+                        <button class="btn primary bg-gradient-to-r from-accent to-accent-alt text-white shadow-md shadow-accent/20 hover:shadow-lg hover:shadow-accent/30 hover:-translate-y-0.5 transition-all duration-200 py-2.5 px-4 rounded-xl font-bold text-sm inline-flex items-center gap-2" id="btnGuardarConfig"><i data-feather="save" class="w-4 h-4"></i>Guardar Cambios</button>
+                    </div>
+                </section>
+                
+                <footer class="mt-20 pb-5 flex justify-center items-center gap-2 text-gray-500 text-sm">
+                    <span>Powered by</span>
+                    <svg height="20" viewBox="0 0 90 22" xmlns="http://www.w3.org/2000/svg">
+                        <text x="0" y="18" style="font-family: Quicksand, sans-serif; font-size: 20px; font-weight: 700; fill: #D96B4F;">Latam5S</text>
+                    </svg>
+                </footer>
+            </main>
+        </div>
+    </div>
+
+    <!-- Elementos Flotantes (Toast, Modals, Panel de Edición) -->
+    <div class="toast fixed right-5 bottom-5 bg-gradient-to-r from-accent to-accent-alt text-white p-3 rounded-xl shadow-xl shadow-accent/25 opacity-0 translate-y-2 transition-all duration-300 z-50" id="toast">Acción aplicada</div>
+    <div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md text-center">
+            <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0">
+                <i data-feather="alert-triangle" class="h-6 w-6 text-red-600"></i>
+            </div>
+            <h3 class="text-lg leading-6 font-bold text-gray-900 mt-4" id="modal-title">Confirmar Eliminación</h3>
+            <div class="mt-2"><p class="text-sm text-gray-500" id="modalMessage">...</p></div>
+            <div class="mt-6 flex justify-center gap-4">
+                <button type="button" id="confirmDeleteBtn" class="... bg-red-600 ...">Eliminar</button>
+                <button type="button" id="cancelDeleteBtn" class="... bg-white ...">Cancelar</button>
+            </div>
+        </div>
+    </div>
+    <div id="editPanelOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden"></div>
+    <aside id="editPanel" class="fixed top-0 right-0 h-full w-full max-w-md bg-bg-soft shadow-2xl transform translate-x-full z-30 flex flex-col">
+    </aside>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    feather.replace();
+
+    // --- LÓGICA PARA EL MENÚ COLAPSABLE ---
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+    function closeSidebar() {
+        sidebar.classList.add('-translate-x-full');
+        sidebarOverlay.classList.add('hidden');
+    }
+
+    function openSidebar() {
+        sidebar.classList.remove('-translate-x-full');
+        sidebarOverlay.classList.remove('hidden');
+    }
+    
+    sidebarToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (sidebar.classList.contains('-translate-x-full')) {
+            openSidebar();
+        } else {
+            closeSidebar();
         }
-        
-        // Cargar JSON de distritos
-        fetch("https://raw.githubusercontent.com/complicidad/form/main/lstDistritos.json")
-          .then(res => res.json())
-          .then(data => {
-            distritos = data.map(item => typeof item === "string" ? item : item.Distrito || item.nombre || "");
-            mostrarDistritos(distritos);
-          })
-          .catch(err => {
-            console.error("Error cargando distritos:", err);
-          });
-        
-        // --- Lógica del modal de Agencias (Vanilla JS) ---
-        const campoAgencia = document.getElementById("agencia");
-        const overlayAgencia = document.getElementById("modalAgencia");
-        const buscadorAgencia = document.getElementById("buscadorAgencia");
-        const listaAgencias = document.getElementById("listaAgencias");
-        let agencias = [];
-        
-        // Abrir popup al hacer click en el campo
-        campoAgencia.addEventListener("click", () => {
-          overlayAgencia.style.display = "flex";
-          buscadorAgencia.value = "";
-          mostrarAgencias(agencias);
-          buscadorAgencia.focus();
-        });
-        
-        // Cerrar popup si clic fuera de la caja
-        overlayAgencia.addEventListener("click", (e) => {
-          if (e.target === overlayAgencia) {
-            overlayAgencia.style.display = "none";
-          }
-        });
-        
-        // Buscar agencias
-        buscadorAgencia.addEventListener("input", () => {
-          const filtro = buscadorAgencia.value.toLowerCase();
-          const filtrados = agencias.filter(a => a.toLowerCase().includes(filtro));
-          mostrarAgencias(filtrados);
-        });
-        
-        // Mostrar lista en el popup
-        function mostrarAgencias(lista) {
-          listaAgencias.innerHTML = "";
-          lista.forEach(a => {
-            const [titulo, ...resto] = a.split("\n"); // Separar en partes
-            const div = document.createElement("div");
-            // Clases de Tailwind para el item de la lista
-            div.className = "p-2 cursor-pointer border-b border-gray-100 hover:bg-gray-100 transition list-item";
-            // Armamos el HTML con la primera línea en negrita
-            div.innerHTML = `<span class="font-semibold">${titulo}</span>${resto.length ? "<br><span class='text-sm text-gray-600'>" + resto.join("<br>") + "</span>" : ""}`;
-            div.addEventListener("click", () => {
-              campoAgencia.value = titulo; // Mantener el valor original con \n
-              overlayAgencia.style.display = "none";
-            });
-            listaAgencias.appendChild(div);
-          });
+    });
+
+    sidebarOverlay.addEventListener('click', closeSidebar);
+
+
+    // --- LÓGICA PARA DROPDOWN DE PLANTILLAS ---
+    const plantillasBtn = document.getElementById('plantillasDropdownBtn');
+    const plantillasMenu = document.getElementById('plantillasDropdownMenu');
+
+    plantillasBtn.addEventListener('click', () => {
+        plantillasMenu.classList.toggle('hidden');
+    });
+
+    window.addEventListener('click', (e) => {
+        if (!plantillasBtn.contains(e.target) && !plantillasMenu.contains(e.target)) {
+            plantillasMenu.classList.add('hidden');
         }
-        
-        // Cargar JSON de agencias
-        fetch("https://raw.githubusercontent.com/complicidad/form/main/lstShalom.json")
-          .then(res => res.json())
-          .then(data => {
-            agencias = data.map(item => typeof item === "string" ? item : item.Shalom || item.nombre || "");
-            mostrarAgencias(agencias);
-          })
-          .catch(err => {
-            console.error("Error cargando agencias:", err);
-          });
+    });
 
-        // --- Lógica principal del formulario (jQuery) ---
-        $(document).ready(function () {
+    // --- LÓGICA PARA EL NUEVO MENÚ VERTICAL ---
+    const navLinks = document.querySelectorAll('.nav-link');
+    const sections = document.querySelectorAll('main > section');
+    const activeClasses = ['bg-sidebar-active-bg', 'text-white'];
+    const inactiveClasses = ['text-gray-300', 'hover:bg-sidebar-hover', 'hover:text-white'];
 
-            const scriptURL = "https://script.google.com/macros/s/AKfycbzSqYVbDXoRSCvuUl-l-jAtiLauLj-h5KT99WJFxZQ4IBu1M_ErSj3foXqlrEoS3INuCA/exec";
-
-            let telefonosRegistrados = [];
+    navLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const targetId = link.getAttribute('href').substring(1);
             
-            // UX: Referencias a campos de teléfono para la nueva lógica
-            const $telefonoUsado = $("#telefonoUsado");
-            const $telefonoDelivery = $("#telefonoDelivery");
-            const $telefonoShalom = $("#telefonoShalom");
-            const $usarMismoTelefonoDelivery = $("#usarMismoTelefonoDelivery");
-            const $usarMismoTelefonoShalom = $("#usarMismoTelefonoShalom");
-            const $telefonoDisplayDelivery = $("#telefonoDisplayDelivery");
-            const $telefonoDisplayShalom = $("#telefonoDisplayShalom");
+            navLinks.forEach(l => {
+                l.classList.remove(...activeClasses);
+                l.classList.add(...inactiveClasses);
+            });
+            link.classList.add(...activeClasses);
+            link.classList.remove(...inactiveClasses);
+
+            sections.forEach(sec => sec.classList.toggle('active', sec.id === targetId));
             
-
-            function obtenerFechasEnvio() {
-                const ahora = new Date();
-                const opciones = [];
-                const diasPermitidos = [2, 5]; // martes = 2, viernes = 5
-                const horaCorte = 10; // 10:00 a.m.
-                const limite = new Date();
-                limite.setDate(ahora.getDate() + 14);
-
-                let fecha = new Date();
-                fecha.setHours(0, 0, 0, 0);
-
-                while (fecha <= limite) {
-                    const diaSemana = fecha.getDay();
-
-                    if (diasPermitidos.includes(diaSemana)) {
-                        const fechaCorte = new Date(fecha);
-                        fechaCorte.setDate(fecha.getDate() - 1);
-                        fechaCorte.setHours(horaCorte, 0, 0, 0);
-
-                        if (ahora < fechaCorte) {
-                            opciones.push(new Date(fecha));
-                        }
-                    }
-                    fecha.setDate(fecha.getDate() + 1);
-                }
-                return opciones;
-            }
-
-            function formatearFecha(fecha) {
-                return fecha.toLocaleDateString("es-ES", {
-                    weekday: "long",
-                    day: "2-digit",
-                    month: "long",
-                    year: "numeric",
-                });
-            }
-
-            // Carga las fechas en el select #fecha
-            const $selectFecha = $("#fecha");
-            const fechas = obtenerFechasEnvio();
-            fechas.forEach((f) => {
-                const option = $("<option>")
-                    .val(f.toISOString().split("T")[0])
-                    .text(formatearFecha(f));
-                $selectFecha.append(option);
-            });
-
-            // Cargar teléfonos registrados desde Google Sheets
-            const cargarTelefonos = $.getJSON(`${scriptURL}?sheet=Clientes`)
-                .done((data) => {
-                    telefonosRegistrados = data.values
-                        .map((row) => String(row[0]).replace(/\D/g, ""))
-                        .filter((t) => t.length === 9);
-                })
-                .fail(() => {
-                    console.error("No se pudieron cargar los teléfonos registrados.");
-                });
-
-            Promise.all([cargarTelefonos]).catch(() =>
-                console.error("Error al cargar datos necesarios para el formulario.")
-            );
-
-            function limpiarCampos(idContenedor) {
-                const selector = `#${idContenedor} input, #${idContenedor} select`;
-                document.querySelectorAll(selector).forEach((campo) => {
-                    if (campo.tagName === "SELECT") {
-                        $(campo).val(null).trigger("change");
-                    } else {
-                        campo.value = "";
-                    }
-                    $(campo).removeClass("is-invalid"); // Limpia el estado de error
-                    
-                    // UX: Asegurar que los campos de teléfono estén habilitados/no readonly al limpiar
-                    if(campo.id === 'telefonoDelivery' || campo.id === 'telefonoShalom') {
-                        $(campo).prop('readonly', false).removeClass('bg-gray-100');
-                    }
-                });
-                
-                // UX: Desmarcar los checkboxes al limpiar
-                $usarMismoTelefonoDelivery.prop('checked', false);
-                $usarMismoTelefonoShalom.prop('checked', false);
-            }
-            
-            // FUNCIÓN ACTUALIZADA PARA USAR EL TOAST CON ESTILO GRADIENTE
-            function mostrarMensajeTelefono(mensaje, tipo = "success") {
-                const $toast = $("#toast");
-                
-                // Limpiar clases de gradiente y visibilidad
-                $toast.removeClass("bg-gradient-to-r from-brand-accent to-brand-accent-alt from-red-500 to-red-600 opacity-100 translate-y-0");
-                
-                // 1. Aplicar clases de color según el tipo (Terracota para éxito, Rojo para error)
-                if (tipo === "success") {
-                    $toast.addClass("bg-gradient-to-r from-brand-accent to-brand-accent-alt shadow-brand-accent/25");
-                } else {
-                    $toast.addClass("bg-gradient-to-r from-red-500 to-red-600 shadow-red-500/25");
-                }
-
-                // 2. Setear el texto
-                $toast.text(mensaje);
-                
-                // 3. Mostrar el toast (aplica la transición)
-                // Se hace en el siguiente tick del ciclo de eventos para asegurar la transición
-                setTimeout(() => {
-                    $toast.addClass("opacity-100 translate-y-0");
-                }, 50);
-
-                // 4. Set timeout para ocultar el toast después de 5 segundos
-                clearTimeout($toast.data('timer'));
-                const timer = setTimeout(() => {
-                    $toast.removeClass("opacity-100 translate-y-0").addClass("opacity-0 translate-y-2");
-                    // Limpia las clases de color después de la animación de salida
-                    setTimeout(() => {
-                        $toast.removeClass("from-brand-accent to-brand-accent-alt from-red-500 to-red-600 shadow-brand-accent/25 shadow-red-500/25");
-                    }, 300); // 300ms es la duración de la transición
-                }, 5000); 
-
-                $toast.data('timer', timer);
-            }
-
-            // UX: Funciones y eventos para reutilizar el número de teléfono principal
-            function updateTelefonoDisplay() {
-                const val = $telefonoUsado.val() || 'N/A';
-                $telefonoDisplayDelivery.text(val);
-                $telefonoDisplayShalom.text(val);
-            }
-            
-            // Inicializar la visualización y actualizar en cada input del teléfono principal
-            updateTelefonoDisplay();
-            $telefonoUsado.on('input', function() {
-                updateTelefonoDisplay();
-                // Si el checkbox está marcado, también actualiza el campo de destino
-                if ($usarMismoTelefonoDelivery.is(':checked')) {
-                    $telefonoDelivery.val($(this).val());
-                }
-                if ($usarMismoTelefonoShalom.is(':checked')) {
-                    $telefonoShalom.val($(this).val());
-                }
-            });
-
-
-            // Toggle logic for Delivery phone number
-            $usarMismoTelefonoDelivery.on('change', function() {
-                const checked = $(this).is(':checked');
-                if (checked) {
-                    $telefonoDelivery.val($telefonoUsado.val());
-                    $telefonoDelivery.prop('readonly', true).removeClass('cursor-pointer').addClass('bg-gray-100');
-                    $telefonoDelivery.removeClass('is-invalid'); // Limpia estado de error
-                } else {
-                    $telefonoDelivery.val('');
-                    $telefonoDelivery.prop('readonly', false).removeClass('bg-gray-100').focus();
-                }
-            });
-
-            // Toggle logic for Shalom phone number
-            $usarMismoTelefonoShalom.on('change', function() {
-                const checked = $(this).is(':checked');
-                if (checked) {
-                    $telefonoShalom.val($telefonoUsado.val());
-                    $telefonoShalom.prop('readonly', true).removeClass('cursor-pointer').addClass('bg-gray-100');
-                    $telefonoShalom.removeClass('is-invalid'); // Limpia estado de error
-                } else {
-                    $telefonoShalom.val('');
-                    $telefonoShalom.prop('readonly', false).removeClass('bg-gray-100').focus();
-                }
-            });
-
-            // Muestra/oculta bloques de campos según la opción seleccionada
-            $("#tipoAccion").on("change", function () {
-                limpiarCampos("camposDelivery");
-                limpiarCampos("camposShalom");
-                limpiarCampos("camposUsados");
-
-                // Oculta todos los bloques y deshabilita inputs/selects dentro
-                $("#camposDelivery, #camposShalom, #camposUsados")
-                    .attr("hidden", true)
-                    .find("input, select")
-                    .prop("disabled", true);
-                
-                // UX: Asegurar que los checkboxes estén desmarcados
-                $usarMismoTelefonoDelivery.prop('checked', false);
-                $usarMismoTelefonoShalom.prop('checked', false);
-
-
-                const valor = $(this).val();
-
-                // Mostrar y habilitar bloque correspondiente
-                if (valor === "delivery") {
-                    $("#camposDelivery").attr("hidden", false).find("input, select").prop("disabled", false);
-                } else if (valor === "shalom") {
-                    $("#camposShalom").attr("hidden", false).find("input, select").prop("disabled", false);
-                } else if (valor === "recoger") {
-                    // Recoger en almacén no requiere campos extra ni fecha de envío
-                } else if (valor === "usado") {
-                    $("#camposUsados").attr("hidden", false).find("input, select").prop("disabled", false);
-                }
-
-                // Mover y mostrar campo fecha en el bloque correspondiente
-                const $contenedorFecha = $("#contenedorFecha");
-                $contenedorFecha.hide();
-
-                if (["delivery", "shalom", "usado"].includes(valor)) {
-                    if (valor === "delivery") {
-                        $("#camposDelivery").append($contenedorFecha);
-                    } else if (valor === "shalom") {
-                        $("#camposShalom").append($contenedorFecha);
-                    } else {
-                        $("#camposUsados").append($contenedorFecha);
-                    }
-                    $contenedorFecha.show();
-                    $("#fecha").prop("disabled", false);
-                } else {
-                    $("#fecha").prop("disabled", true);
-                }
-            });
-
-            // Envío del formulario con validación extra para opción "usado"
-            $("#formulario").on("submit", function (e) {
-                e.preventDefault();
-
-                // Oculta el mensaje previo inmediatamente
-                $("#toast").removeClass("opacity-100 translate-y-0").addClass("opacity-0 translate-y-2");
-                
-                function mostrarMensaje(mensaje, tipo = "success") {
-                    mostrarMensajeTelefono(mensaje, tipo);
-                }
-                
-                const tipoAccion = $("#tipoAccion").val();
-                
-                // Función para aplicar clase de error
-                function aplicarClaseError(id) {
-                    $(`#${id}`).addClass('is-invalid');
-                    $(`#${id}`).on('input change', function() {
-                        $(this).removeClass('is-invalid');
-                    });
-                }
-
-
-                // Validación personalizada para "usado"
-                if (tipoAccion === "usado") {
-                    const telefonoIngresado = $("#telefonoUsado")
-                        .val()
-                        .replace(/\D/g, "");
-
-                    if (!telefonoIngresado) {
-                        mostrarMensaje("Por favor, ingresa tu número registrado", "error");
-                        aplicarClaseError("telefonoUsado");
-                        $("#telefonoUsado").focus();
-                        return;
-                    }
-
-                    if (!telefonosRegistrados.includes(telefonoIngresado)) {
-                        mostrarMensaje("El número ingresado no está registrado. Verifica e intenta nuevamente", "error");
-                        aplicarClaseError("telefonoUsado");
-                        $("#telefonoUsado").focus();
-                        return;
-                    }
-                }
-
-                // Validación nativa HTML5 para campos visibles
-                if (!this.checkValidity()) {
-                    // Si falla la validación nativa, aplicar la clase de error personalizada
-                    $(this).find(':invalid').each(function() {
-                        aplicarClaseError(this.id);
-                    });
-                    this.reportValidity(); // Muestra mensajes nativos
-                    return;
-                }
-
-                // Mostrar spinner antes de enviar
-                $("#spinner").fadeIn(200);
-
-                // Prepara FormData para enviar
-                const formData = new FormData(this);
-
-                // Envío AJAX
-                $.ajax({
-                    url: scriptURL,
-                    method: "POST",
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    success: () => {
-                        // UX: Mensaje de éxito más entusiasta
-                        mostrarMensaje("¡Envío agendado con éxito!", "success");
-                        // Resetea formulario
-                        $("#formulario")[0].reset();
-                        
-                        // Oculta todos los bloques
-                        $("#camposDelivery, #camposShalom, #camposUsados")
-                            .attr("hidden", true)
-                            .find("input, select")
-                            .prop("disabled", true);
-                        
-                        // Oculta y limpia campo fecha
-                        $("#contenedorFecha").hide();
-                        $("#fecha").empty();
-                        const nuevasFechas = obtenerFechasEnvio();
-                        nuevasFechas.forEach(f => {
-                            $("#fecha").append(
-                                $("<option>").val(f.toISOString().split("T")[0]).text(formatearFecha(f))
-                            );
-                        });
-                        
-                        // UX: Limpia el estado de los campos de teléfono duplicados
-                        $usarMismoTelefonoDelivery.prop('checked', false);
-                        $usarMismoTelefonoShalom.prop('checked', false);
-                        $telefonoDelivery.prop('readonly', false).removeClass('bg-gray-100');
-                        $telefonoShalom.prop('readonly', false).removeClass('bg-gray-100');
-
-                    },
-                    error: () => {
-                        mostrarMensaje("Ocurrió un error al enviar tus datos", "error");
-                    },
-                    complete: () => {
-                        // Ocultar spinner siempre al finalizar
-                        $("#spinner").fadeOut(200);
-                    }
-                });
-            });
+            closeSidebar();
         });
-    </script>
+    });
+    document.querySelector('.nav-link.active')?.classList.remove(...inactiveClasses);
+    document.querySelector('.nav-link.active')?.classList.add(...activeClasses);
+
+    // ===================================================================================
+    // --- INICIO DE LA LÓGICA DEL PANEL (CON DATOS SIMULADOS) ---
+    // ===================================================================================
+    
+    // --- ELEMENTOS DEL DOM ---
+    const tbodyEnvios = document.getElementById('tbodyEnvios');
+    const filtroCliente = document.getElementById('filtroCliente');
+    const filtroFecha = document.getElementById('filtroFecha');
+    const filtroTipo = document.getElementById('filtroTipo');
+    const btnAplicarFiltros = document.getElementById('btnAplicarFiltros');
+    const tableContainer = document.getElementById('tableContainer');
+    const emptyStateContainer = document.getElementById('emptyStateContainer');
+    const batchActionsContainer = document.getElementById('batchActionsContainer');
+    const checkTodos = document.getElementById('checkTodos');
+    const thCheckTodos = document.getElementById('thCheckTodos');
+    const selCount = document.getElementById('selCount');
+    const accionLote = document.getElementById('accionLote');
+    const fechaReprog = document.getElementById('fechaReprog');
+    const btnAplicarLote = document.getElementById('btnAplicarLote');
+    const goToAccountBtn = document.getElementById('goToAccountBtn');
+    
+    let todosLosEnvios = []; // Variable global para almacenar todos los envíos.
+
+    // --- DATOS SIMULADOS ---
+    const sampleData = [
+        { id: 1, fechaReg: '2025-10-16', cliente: '987654321', courier: 'SHALOM', destinatario: 'Ana Torres', telefono: '912345678', distrito: 'Miraflores', direccion: 'Av. Larco 123', referencia: 'Frente al parque', dni: '12345678', agencia: 'Shalom Miraflores', fechaEnvio: '2025-10-17', estado: 'PENDIENTE', notificar: true },
+        { id: 2, fechaReg: '2025-10-16', cliente: '911223344', courier: 'DELIVERY', destinatario: 'Carlos Briceño', telefono: '922334455', distrito: 'Surco', direccion: 'Calle Monte Umbroso 456', referencia: 'Casa con rejas negras', dni: '', agencia: '', fechaEnvio: '2025-10-17', estado: 'ENVIADO', notificar: false },
+        { id: 3, fechaReg: '2025-10-15', cliente: '933445566', courier: 'OLVA', destinatario: 'Luisa Mendoza', telefono: '933445566', distrito: 'San Isidro', direccion: 'Paseo de la República 3210', referencia: 'Oficina 501', dni: '87654321', agencia: 'Olva Corpac', fechaEnvio: '2025-10-16', estado: 'ENTREGADO', notificar: true },
+        { id: 4, fechaReg: '2025-10-15', cliente: '944556677', courier: 'SHALOM', destinatario: 'Jorge Paredes', telefono: '944556677', distrito: 'La Molina', direccion: 'Av. Javier Prado Este 5595', referencia: 'Cerca a la USIL', dni: '11223344', agencia: 'Shalom La Molina', fechaEnvio: '2025-10-16', estado: 'REPROGRAMADO', notificar: false },
+        { id: 5, fechaReg: '2025-10-14', cliente: '955667788', courier: 'DELIVERY', destinatario: 'Mariela Solano', telefono: '955667788', distrito: 'Barranco', direccion: 'Jr. Batalla de Junín 182', referencia: 'Portón de madera', dni: '', agencia: '', fechaEnvio: '2025-10-15', estado: 'ENTREGADO', notificar: true },
+        { id: 6, fechaReg: '2025-10-13', cliente: '966778899', courier: 'OLVA', destinatario: 'Ricardo Palma', telefono: '966778899', distrito: 'Lince', direccion: 'Av. Arequipa 2245', referencia: 'Edificio Los Robles', dni: '44332211', agencia: 'Olva Risso', fechaEnvio: '2025-10-14', estado: 'ENTREGADO', notificar: true },
+        { id: 7, fechaReg: '2025-10-12', cliente: '977889900', courier: 'SHALOM', destinatario: 'Patricia Guzman', telefono: '977889900', distrito: 'San Borja', direccion: 'Av. Aviación 3140', referencia: 'Al costado del grifo', dni: '55667788', agencia: 'Shalom San Borja', fechaEnvio: '2025-10-13', estado: 'PENDIENTE', notificar: false },
+        { id: 8, fechaReg: '2025-10-11', cliente: '988990011', courier: 'DELIVERY', destinatario: 'Miguel Grau', telefono: '988990011', distrito: 'Magdalena', direccion: 'Jr. San Martín 789', referencia: 'Frente al mercado', dni: '', agencia: '', fechaEnvio: '2025-10-12', estado: 'ENVIADO', notificar: true },
+        { id: 9, fechaReg: '2025-10-10', cliente: '999001122', courier: 'OLVA', destinatario: 'Sofia Mulanovich', telefono: '999001122', distrito: 'Punta Hermosa', direccion: 'Calle Las Olas 111', referencia: 'Casa de playa amarilla', dni: '99887766', agencia: 'Olva Lurín', fechaEnvio: '2025-10-11', estado: 'ENTREGADO', notificar: true },
+        { id: 10, fechaReg: '2025-10-09', cliente: '912121212', courier: 'SHALOM', destinatario: 'Juan Diego Flórez', telefono: '912121212', distrito: 'San Miguel', direccion: 'Av. La Marina 2233', referencia: 'Cerca a Plaza San Miguel', dni: '10102020', agencia: 'Shalom San Miguel', fechaEnvio: '2025-10-10', estado: 'PENDIENTE', notificar: true }
+    ];
+
+    function cargarDatosSimulados() {
+        todosLosEnvios = sampleData;
+        aplicarFiltros();
+    }
+    
+    // --- LÓGICA DE LA TABLA Y FILTROS ---
+    function aplicarFiltros() {
+        const clienteFilter = filtroCliente.value.toLowerCase();
+        const fechaFilter = filtroFecha.value;
+        const tipoFilter = filtroTipo.value;
+
+        const enviosFiltrados = todosLosEnvios.filter(envio => {
+            const clienteMatch = !clienteFilter || envio.cliente.toLowerCase().includes(clienteFilter);
+            const fechaMatch = !fechaFilter || envio.fechaEnvio === fechaFilter;
+            const tipoMatch = !tipoFilter || envio.courier === tipoFilter;
+            return clienteMatch && fechaMatch && tipoMatch;
+        });
+        renderizarTabla(enviosFiltrados);
+    }
+
+    function renderizarTabla(envios) {
+        tbodyEnvios.innerHTML = ''; // Limpiar tabla
+        if (envios.length === 0) {
+            tableContainer.classList.add('hidden');
+            emptyStateContainer.classList.remove('hidden');
+            batchActionsContainer.classList.add('hidden');
+        } else {
+            tableContainer.classList.remove('hidden');
+            emptyStateContainer.classList.add('hidden');
+            batchActionsContainer.classList.remove('hidden');
+            
+            envios.forEach(envio => {
+                const tr = document.createElement('tr');
+                tr.className = 'border-b border-gray-100 hover:bg-orange-50/50 transition-colors duration-200';
+                tr.dataset.id = envio.id;
+                
+                const getEstadoClass = (estado) => {
+                    switch (estado) {
+                        case 'PENDIENTE': return 'bg-yellow-100 text-badge-pending';
+                        case 'ENVIADO': return 'bg-orange-100 text-badge-sent';
+                        case 'ENTREGADO': return 'bg-green-100 text-badge-delivered';
+                        case 'REPROGRAMADO': return 'bg-purple-100 text-badge-rescheduled';
+                        default: return 'bg-gray-100 text-gray-800';
+                    }
+                };
+
+                tr.innerHTML = `
+                    <td class="p-3 text-center"><input type="checkbox" class="rowCheck rounded border-gray-300 text-accent focus:ring-accent" data-id="${envio.id}"></td>
+                    <td class="p-3 text-sm text-gray-700">${envio.fechaReg}</td>
+                    <td class="p-3 text-sm text-gray-700">${envio.cliente}</td>
+                    <td class="p-3 text-sm text-gray-700">${envio.courier}</td>
+                    <td class="p-3 text-sm text-gray-700">${envio.destinatario}</td>
+                    <td class="p-3 text-sm text-gray-700">${envio.telefono}</td>
+                    <td class="p-3 text-sm text-gray-700 col-distrito">${envio.distrito}</td>
+                    <td class="p-3 text-sm text-gray-700 col-direccion">${envio.direccion}</td>
+                    <td class="p-3 text-sm text-gray-700 col-referencia">${envio.referencia}</td>
+                    <td class="p-3 text-sm text-gray-700 col-dni">${envio.dni}</td>
+                    <td class="p-3 text-sm text-gray-700 col-agencia">${envio.agencia}</td>
+                    <td class="p-3 text-sm text-gray-700">${envio.fechaEnvio}</td>
+                    <td class="p-3 text-sm text-gray-700"><span class="px-2 py-1 text-xs font-bold rounded-full ${getEstadoClass(envio.estado)}">${envio.estado}</span></td>
+                    <td class="p-3 text-center"><button class="text-accent hover:text-accent-alt" title="Notificar al cliente"><i data-feather="send" class="w-4 h-4"></i></button></td>
+                `;
+                tbodyEnvios.appendChild(tr);
+            });
+            feather.replace();
+        }
+        contarSeleccionados();
+    }
+
+    // --- LÓGICA DE ACCIONES EN LOTE ---
+    function contarSeleccionados() {
+        const seleccionados = tbodyEnvios.querySelectorAll('.rowCheck:checked').length;
+        const totalRows = tbodyEnvios.querySelectorAll('tr').length;
+        
+        selCount.textContent = `${seleccionados} seleccionados`;
+        
+        const allChecked = totalRows > 0 && seleccionados === totalRows;
+        checkTodos.checked = allChecked;
+        thCheckTodos.checked = allChecked;
+
+        // Muestra/oculta el panel de acciones en lote
+        const loteRight = document.querySelector('.lote-right');
+        if(loteRight) loteRight.classList.toggle('hidden', seleccionados === 0);
+    }
+    
+    function seleccionarTodos(checked) {
+        tbodyEnvios.querySelectorAll('.rowCheck').forEach(chk => chk.checked = checked);
+        contarSeleccionados();
+    }
+
+    checkTodos.addEventListener('change', (e) => seleccionarTodos(e.target.checked));
+    thCheckTodos.addEventListener('change', (e) => seleccionarTodos(e.target.checked));
+    tbodyEnvios.addEventListener('change', (e) => {
+        if(e.target.classList.contains('rowCheck')) contarSeleccionados();
+    });
+
+    // --- EVENT LISTENERS ---
+    btnAplicarFiltros.addEventListener('click', aplicarFiltros);
+    filtroCliente.addEventListener('keyup', (e) => { if(e.key === 'Enter') aplicarFiltros() });
+
+    // --- SINCRONIZACIÓN CON "MI CUENTA" ---
+    const businessNameInput = document.getElementById('businessName');
+    const headerBusinessName = document.getElementById('headerBusinessName');
+    const logoInput = document.getElementById('logoInput');
+    const logoPreview = document.getElementById('logoPreview');
+    const headerLogo = document.getElementById('headerLogo');
+    const btnGuardarConfig = document.getElementById('btnGuardarConfig');
+    const sidebarTitle = document.getElementById('sidebarTitle');
+    const sidebarLogo = document.getElementById('sidebarLogo');
+
+    function syncBusinessInfo() {
+        const name = localStorage.getItem('businessName') || 'Mi Tienda de Prueba';
+        businessNameInput.value = name;
+        headerBusinessName.textContent = name;
+        sidebarTitle.textContent = name;
+
+        const logoSrc = localStorage.getItem('businessLogo');
+        if (logoSrc) {
+            headerLogo.src = logoSrc;
+            sidebarLogo.src = logoSrc;
+            logoPreview.src = logoSrc;
+            headerLogo.classList.remove('hidden');
+            sidebarLogo.classList.remove('hidden');
+            logoPreview.classList.remove('hidden');
+        } else {
+            headerLogo.classList.add('hidden');
+            sidebarLogo.classList.add('hidden');
+            logoPreview.classList.add('hidden');
+        }
+    }
+    
+    logoInput.addEventListener('change', function() {
+        if (this.files && this.files[0]) {
+            const reader = new FileReader();
+            reader.onload = e => {
+                localStorage.setItem('businessLogo', e.target.result);
+                syncBusinessInfo();
+            };
+            reader.readAsDataURL(this.files[0]);
+        }
+    });
+
+    btnGuardarConfig.addEventListener('click', () => {
+        localStorage.setItem('businessName', businessNameInput.value);
+        showToast('Cambios guardados con éxito.');
+        syncBusinessInfo();
+    });
+
+    goToAccountBtn.addEventListener('click', () => {
+        document.querySelector('a.nav-link[href="#cuenta"]').click();
+    });
+
+    // --- UTILIDADES ---
+    const toast = document.getElementById('toast');
+    let toastTimeout;
+    function showToast(msg){
+        clearTimeout(toastTimeout);
+        toast.textContent = msg;
+        toast.classList.remove('opacity-0', 'translate-y-2');
+        toast.classList.add('opacity-100', 'translate-y-0');
+        toastTimeout = setTimeout(() => {
+            toast.classList.remove('opacity-100', 'translate-y-0');
+            toast.classList.add('opacity-0', 'translate-y-2');
+        }, 2500);
+    }
+
+    // --- INICIALIZACIÓN ---
+    syncBusinessInfo();
+    cargarDatosSimulados();
+});
+</script>
 </body>
 </html>
+
