@@ -930,7 +930,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const name = localStorage.getItem('businessName') || 'Mi Tienda de Prueba';
         businessNameInput.value = name;
         headerBusinessName.textContent = name;
-        sidebarTitle.textContent = name;
+        sidebarTitle.textContent = name;     
 
         const logoSrc = localStorage.getItem('businessLogo');
         if (logoSrc) {
@@ -958,7 +958,7 @@ document.addEventListener('DOMContentLoaded', () => {
     btnGuardarConfig.addEventListener('click', () => {
         localStorage.setItem('businessName', businessNameInput.value);
         showToast('Cambios guardados con éxito.');
-        syncBusinessInfo();
+        syncBusinessInfo(); // <-- ¡Verifica esta llamada!
     });
 
     goToAccountBtn.addEventListener('click', () => {
