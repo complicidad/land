@@ -153,7 +153,6 @@
                 <button id="sidebarToggle" class="text-white p-2 rounded-md hover:bg-black/20 focus:outline-none focus:ring-2 focus:ring-white">
                     <i data-feather="menu" class="w-6 h-6"></i>
                 </button>
-                <img id="headerLogo" src="" alt="Logo Emprendimiento" class="h-12 w-12 rounded-lg object-cover bg-white p-1 hidden">
                 <div>
                     <h1 id="headerTitle" class="text-2xl font-bold">Envíos</h1>
                     <p class="mt-1 text-sm opacity-90">Bienvenido, <strong id="headerBusinessName">[Nombre del emprendimiento]</strong></p>
@@ -923,7 +922,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const headerBusinessName = document.getElementById('headerBusinessName');
     const logoInput = document.getElementById('logoInput');
     const logoPreview = document.getElementById('logoPreview');
-    const headerLogo = document.getElementById('headerLogo');
     const btnGuardarConfig = document.getElementById('btnGuardarConfig');
     const sidebarTitle = document.getElementById('sidebarTitle');
     const sidebarLogo = document.getElementById('sidebarLogo');
@@ -936,14 +934,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const logoSrc = localStorage.getItem('businessLogo');
         if (logoSrc) {
-            headerLogo.src = logoSrc;
             sidebarLogo.src = logoSrc;
             logoPreview.src = logoSrc;
-            headerLogo.classList.remove('hidden');
             sidebarLogo.classList.remove('hidden');
             logoPreview.classList.remove('hidden');
         } else {
-            headerLogo.classList.add('hidden');
             sidebarLogo.classList.add('hidden');
             logoPreview.classList.add('hidden');
         }
