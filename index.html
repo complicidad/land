@@ -46,7 +46,6 @@
         @media (min-width: 768px) {
             html, body, #root-container {
                 height: 100%;
-                overflow: hidden;
             }
         }
       
@@ -100,11 +99,22 @@
             .label-info { font-size: 12px; margin-top: 5px; }
             .qr-placeholder { text-align: center; margin-top: 10px; font-size: 10px; border: 1px solid #ccc; padding: 5px; height: 50px; display: flex; align-items: center; justify-content: center; }
         }
+
+        @media (min-width: 768px) {
+            body:not(.scroll-enabled) #root-container {
+                overflow: hidden;
+            }
+
+            body.scroll-enabled #mainContent {
+                overflow-y: auto;
+            }
+        }
+
     </style>
 </head>
 <body class="font-sans bg-bg-soft text-gray-900 antialiased">
     
-    <div id="root-container" class="flex bg-bg-soft">
+    <div id="root-container" class="flex bg-bg-soft min-h-screen">
         <!-- ======================= INICIO: MENÚ VERTICAL (Ahora colapsable) ======================= -->
         <aside id="sidebar" class="w-64 bg-sidebar-bg text-white flex flex-col fixed h-full shadow-lg z-40 transform -translate-x-full transition-transform duration-300 ease-in-out">
             <div class="p-6 border-b border-gray-700 flex items-center gap-3">
@@ -137,7 +147,7 @@
         <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden transition-opacity duration-300 ease-in-out"></div>
         <!-- ======================= FIN: MENÚ VERTICAL ======================= -->
 
-        <div id="mainContent" class="flex-1 flex flex-col transition-all duration-300 ease-in-out md:overflow-hidden">
+        <div id="mainContent" class="flex-1 flex flex-col transition-all duration-300 ease-in-out">
              <!-- ---------- HEADER (Fijo, no se expande) ---------- -->
             <header class="bg-gradient-to-br from-brand-accent to-orange-400 text-white p-6 shadow-xl shadow-accent/25 flex items-center gap-4 flex-shrink-0">
                 <button id="sidebarToggle" class="text-white p-2 rounded-md hover:bg-black/20 focus:outline-none focus:ring-2 focus:ring-white">
@@ -145,7 +155,7 @@
                 </button>
                 <img id="headerLogo" src="" alt="Logo Emprendimiento" class="h-12 w-12 rounded-lg object-cover bg-white p-1 hidden">
                 <div>
-                    <h1 id="headerTitle" class="text-2xl font-bold">Panel de Control</h1>
+                    <h1 id="headerTitle" class="text-2xl font-bold">Envíos</h1>
                     <p class="mt-1 text-sm opacity-90">Bienvenido, <strong id="headerBusinessName">[Nombre del emprendimiento]</strong></p>
                 </div>
             </header>
@@ -158,46 +168,44 @@
                     <div class="card bg-white rounded-xl shadow-lg shadow-gray-100 p-4 md:p-6 border border-gray-200 flex flex-col md:h-full">
                         <!-- Contenido fijo de la tarjeta (título, botones, filtros) -->
                         <div class="flex-shrink-0">
-                            <div class="flex flex-col md:flex-row justify-between md:items-center gap-4 border-b border-gray-200 pb-4 mb-4">
-                                <h2 class="text-2xl font-bold text-accent flex items-center gap-2">
-                                    <i data-feather="truck" class="w-6 h-6"></i>Mis Envíos
-                                </h2>
-                                <div class="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
-                                    <div class="relative inline-block text-left w-full sm:w-auto">
-                                        <div>
+                                <div class="flex flex-col md:flex-row justify-between md:items-end gap-4 border-b border-gray-200 pb-4 mb-4 flex-wrap">
+                                    <!-- Grupo de Filtros (Izquierda) -->
+                                    <div class="flex flex-col md:flex-row md:items-end gap-2 flex-wrap">
+                                        <label class="text-xs text-gray-500 font-semibold md:w-36">Cliente (Celular)<input type="text" id="filtroCliente" placeholder="Ej: 987654321" class="input p-2.5 border border-gray-200 rounded-xl bg-white w-full text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100 mt-1" /></label>
+                                        <label class="text-xs text-gray-500 font-semibold md:w-36">Fecha de Envío<input type="date" id="filtroFecha" class="input p-2.5 border border-gray-200 rounded-xl bg-white w-full text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100 mt-1" /></label>
+                                        <label class="text-xs text-gray-500 font-semibold md:w-36"">Courier
+                                            <select id="filtroTipo" class="select p-2.5 border border-gray-200 rounded-xl bg-white w-full text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100 mt-1">
+                                                <option value="">Todos</option>
+                                                <option value="SHALOM">Shalom</option>
+                                                <option value="OLVA">Olva</option>
+                                                <option value="DINSIDES">Dinsides</option>
+                                                <option value="DELIVERY">Delivery Propio</option>
+                                            </select>
+                                        </label>
+                                        <button class="btn primary bg-gradient-to-r from-accent to-accent-alt text-white py-2.5 px-4 rounded-xl font-bold text-sm shadow-md shadow-accent/20 hover:shadow-lg hover:shadow-accent/30 hover:-translate-y-0.5 transition-all duration-200" id="btnAplicarFiltros">Filtrar</button>
+                                        <button id="btnLimpiarFiltros" class="btn ghost bg-transparent border border-gray-300 text-gray-700 hover:bg-gray-50 py-2.5 px-4 rounded-xl font-bold text-sm transition-all duration-200">Limpiar</button>
+                                    </div>
+                                    <!-- Grupo de Acciones (Derecha) -->
+                                    <div class="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+                                        <div class="relative inline-block text-left">
                                             <button type="button" class="btn ghost bg-transparent border border-gray-200 text-gray-900 hover:bg-gray-50 transition-all duration-200 py-2.5 px-4 rounded-xl font-bold text-sm inline-flex items-center justify-center gap-2 w-full" id="plantillasDropdownBtn">
                                                 <i data-feather="download" class="w-4 h-4"></i>
                                                 <span>Descargar Plantilla</span>
                                                 <i data-feather="chevron-down" class="w-4 h-4 -mr-1 ml-2"></i>
                                             </button>
-                                        </div>
-                                        <div id="plantillasDropdownMenu" class="origin-top-right absolute right-0 mt-2 w-56 rounded-xl shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none hidden z-10">
-                                            <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="plantillasDropdownBtn">
-                                                <a href="#" id="btnTplDelivery" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100" role="menuitem">Plantilla DELIVERY (.csv)</a>
-                                                <a href="#" id="btnTplShalom" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100" role="menuitem">Plantilla SHALOM (.csv)</a>
-                                                <a href="#" id="btnTplOlva" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100" role="menuitem">Plantilla OLVA (.csv)</a>
-                                                <a href="#" id="btnTplDinsides" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100" role="menuitem">Plantilla DINSIDES (.csv)</a>
+                                            <div id="plantillasDropdownMenu" class="origin-top-right absolute right-0 mt-2 w-56 rounded-xl shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none hidden z-10">
+                                                <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="plantillasDropdownBtn">
+                                                    <a href="#" id="btnTplDelivery" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100" role="menuitem">Plantilla DELIVERY (.csv)</a>
+                                                    <a href="#" id="btnTplShalom" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100" role="menuitem">Plantilla SHALOM (.csv)</a>
+                                                    <a href="#" id="btnTplOlva" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100" role="menuitem">Plantilla OLVA (.csv)</a>
+                                                    <a href="#" id="btnTplDinsides" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100" role="menuitem">Plantilla DINSIDES (.csv)</a>
+                                                </div>
                                             </div>
                                         </div>
+                                        <button class="btn primary bg-gradient-to-r from-accent to-accent-alt text-white shadow-md shadow-accent/20 hover:shadow-lg hover:shadow-accent/30 hover:-translate-y-0.5 transition-all duration-200 py-2.5 px-4 rounded-xl font-bold text-sm inline-flex items-center justify-center gap-2" id="btnEtiquetas"><i data-feather="tag" class="w-4 h-4"></i>Imprimir Etiquetas</button>
                                     </div>
-                                    <button class="btn primary bg-gradient-to-r from-accent to-accent-alt text-white shadow-md shadow-accent/20 hover:shadow-lg hover:shadow-accent/30 hover:-translate-y-0.5 transition-all duration-200 py-2.5 px-4 rounded-xl font-bold text-sm inline-flex items-center justify-center gap-2 w-full sm:w-auto" id="btnEtiquetas"><i data-feather="tag" class="w-4 h-4"></i>Imprimir Etiquetas</button>
                                 </div>
-                            </div>
-                            <div class="flex flex-col md:flex-row md:items-end gap-3 my-4">
-                                 <div class="grid grid-cols-1 gap-3 flex-1 md:flex-initial md:grid-cols-3">
-                                    <label class="text-xs text-gray-500 font-semibold w-full md:w-40">Cliente (Celular)<input type="text" id="filtroCliente" placeholder="Ej: 987654321" class="input p-2.5 border border-gray-200 rounded-xl bg-white w-full text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100 mt-1" /></label>
-                                    <label class="text-xs text-gray-500 font-semibold w-full md:w-36">Fecha de Envío<input type="date" id="filtroFecha" class="input p-2.5 border border-gray-200 rounded-xl bg-white w-full text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100 mt-1" /></label>
-                                    <label class="text-xs text-gray-500 font-semibold w-full md:w-48">Courier
-                                        <select id="filtroTipo" class="select p-2.5 border border-gray-200 rounded-xl bg-white w-full text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100 mt-1">
-                                            <option value="">Todos</option>
-                                            <option value="DELIVERY">Delivery Propio</option>
-                                            <option value="SHALOM">Shalom</option>
-                                            <option value="OLVA">Olva</option>
-                                        </select>
-                                    </label>
-                                </div>
-                                <button class="btn primary bg-gradient-to-r from-accent to-accent-alt text-white py-2.5 px-4 rounded-xl font-bold text-sm shadow-md shadow-accent/20 hover:shadow-lg hover:shadow-accent/30 hover:-translate-y-0.5 transition-all duration-200 w-full md:w-auto" id="btnAplicarFiltros">Filtrar</button>
-                            </div>
+
                             <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 my-3 hidden" id="batchActionsContainer">
                                 <div class="lote-left flex gap-3 items-center flex-wrap">
                                     <label class="nowrap text-sm text-gray-900"><input type="checkbox" id="checkTodos" class="rounded border-gray-300 text-accent focus:ring-accent" /> Seleccionar todo</label>
@@ -263,9 +271,6 @@
                 <!-- CORRECCIÓN: Se eliminó la clase 'h-full' de la sección. -->
                 <section id="link" class="h-full">
                     <div class="card bg-white rounded-xl shadow-lg shadow-gray-100 p-6 border border-gray-200">
-                        <h2 class="text-2xl font-bold text-accent mb-4 flex items-center gap-2">
-                            <i data-feather="link" class="w-6 h-6"></i>Tu Enlace Mágico
-                        </h2>
                         <p class="text-gray-500 text-sm mb-5">Comparte este link único con tus clientes. Ellos completarán sus datos de envío directamente y la información aparecerá en tu panel, ¡sin errores y sin que tengas que transcribir nada!</p>
                         <div class="form-group">
                             <label for="linkUnicoInput" class="block text-sm text-gray-500 font-semibold mb-1.5">Tu enlace personal</label>
@@ -288,9 +293,6 @@
                 <!-- CORRECCIÓN: Se eliminó la clase 'md:h-full' de la sección. -->
                 <section id="reportes" class="h-full">
                     <div class="card bg-white rounded-xl shadow-lg shadow-gray-100 p-6 border border-gray-200">
-                        <h2 class="text-2xl font-bold text-accent mb-4 flex items-center gap-2">
-                            <i data-feather="bar-chart-2" class="w-6 h-6"></i>Reportes (Este Mes)
-                        </h2>
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
                             <div class="stat-card text-center bg-bg-soft p-5 rounded-xl border border-orange-100">
                                 <div class="value text-4xl font-bold text-accent" id="statTotal">128</div>
@@ -319,11 +321,8 @@
                 </section>
 
                 <!-- ======================= SECCIÓN MENSAJES ======================= -->
-                <section id="mensajes" class="h-full overflow-y-auto">
-                    <div class="flex-grow">
-                        <h2 class="text-2xl font-bold text-accent mb-4 flex items-center gap-2">
-                            <i data-feather="message-square" class="w-6 h-6"></i> Mensajes para Clientes
-                        </h2>
+                <section id="mensajes">
+                    <div class="flex-grow p-6">
                         <div class="card bg-white rounded-xl shadow-lg shadow-gray-100 p-6 border border-gray-200 mb-6">
                             <p class="text-sm text-gray-500 mb-4">Define las plantillas que se enviarán a tus clientes. Haz clic en las variables para insertarlas en tus mensajes. Los cambios se guardan automáticamente.</p>
                             <div class="flex flex-wrap gap-2 mb-6" id="messageVariables">
@@ -363,11 +362,8 @@
 
                 <!-- ======================= SECCIÓN MI CUENTA ======================= -->
                 <!-- CORRECCIÓN: Se eliminó 'flex-col'. El layout ahora lo controla 'main > section.active' -->
-                <section id="cuenta" class="h-full overflow-y-auto">
-                    <div class="flex-grow">
-                        <h2 class="text-2xl font-bold text-accent mb-4 flex items-center gap-2">
-                            <i data-feather="settings" class="w-6 h-6"></i>Configuración de tu Cuenta
-                        </h2>
+                <section id="cuenta">
+                    <div class="flex-grow p-6">
                         <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
                             <div class="lg:col-span-3 space-y-6">
                                 <div class="card bg-white rounded-xl shadow-lg shadow-gray-100 p-6 border border-gray-200">
@@ -533,8 +529,8 @@
             <h3 class="text-lg leading-6 font-bold text-gray-900 mt-4" id="modal-title">Confirmar Eliminación</h3>
             <div class="mt-2"><p class="text-sm text-gray-500" id="modalMessage">...</p></div>
             <div class="mt-6 flex justify-center gap-4">
-                <button type="button" id="confirmDeleteBtn" class="... bg-red-600 ...">Eliminar</button>
-                <button type="button" id="cancelDeleteBtn" class="... bg-white ...">Cancelar</button>
+                <button type="button" id="confirmDeleteBtn" class="inline-flex justify-center rounded-xl border border-transparent bg-red-600 px-4 py-2 text-sm font-bold text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-200">Eliminar</button>
+                <button type="button" id="cancelDeleteBtn" class="inline-flex justify-center rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-bold text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 transition-all duration-200">Cancelar</button>
             </div>
         </div>
     </div>
@@ -548,6 +544,7 @@ document.addEventListener('DOMContentLoaded', () => {
     feather.replace();
 
     // --- LÓGICA PARA EL MENÚ COLAPSABLE ---
+    const rootContainer = document.getElementById('root-container'); // <--- AÑADE ESTA LÍNEA
     const sidebarToggle = document.getElementById('sidebarToggle');
     const sidebar = document.getElementById('sidebar');
     const sidebarOverlay = document.getElementById('sidebarOverlay');
@@ -588,9 +585,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- LÓGICA PARA EL NUEVO MENÚ VERTICAL ---
+    // --- LÓGICA PARA EL NUEVO MENÚ VERTICAL ---   
     const navLinks = document.querySelectorAll('.nav-link');
     const sections = document.querySelectorAll('main > section');
+    const headerTitle = document.getElementById('headerTitle'); // <--- AÑADE ESTA LÍNEA
     const activeClasses = ['bg-sidebar-active-bg', 'text-white'];
     const inactiveClasses = ['text-gray-300', 'hover:bg-sidebar-hover', 'hover:text-white'];
 
@@ -598,7 +596,20 @@ document.addEventListener('DOMContentLoaded', () => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
             const targetId = link.getAttribute('href').substring(1);
-            
+
+            // Actualizar el título del header  <--- AÑADE ESTE BLOQUE
+            const newTitle = link.querySelector('span').textContent;
+            headerTitle.textContent = newTitle;
+
+            // --- INICIO DEL BLOQUE A AÑADIR ---
+            // Añade o quita una clase para controlar el scroll con CSS
+            if (targetId === 'cuenta' || targetId === 'mensajes') {
+                document.body.classList.add('scroll-enabled');
+            } else {
+                document.body.classList.remove('scroll-enabled');
+            }
+            // --- FIN DEL BLOQUE A AÑADIR ---
+
             navLinks.forEach(l => {
                 l.classList.remove(...activeClasses);
                 l.classList.add(...inactiveClasses);
@@ -626,6 +637,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // ===================================================================================
     
     // --- ELEMENTOS DEL DOM ---
+    const btnLimpiarFiltros = document.getElementById('btnLimpiarFiltros');
+    const templateLinks = document.querySelectorAll('#plantillasDropdownMenu a');
+    const btnEtiquetas = document.getElementById('btnEtiquetas');
     const tbodyEnvios = document.getElementById('tbodyEnvios');
     const mobileCardContainer = document.getElementById('mobileCardContainer');
     const filtroCliente = document.getElementById('filtroCliente');
@@ -757,6 +771,13 @@ document.addEventListener('DOMContentLoaded', () => {
         contarSeleccionados();
     }
 
+    function obtenerIdsSeleccionados() {
+        if (window.innerWidth < 768) {
+            return [...mobileCardContainer.querySelectorAll('.rowCheck:checked')].map(chk => parseInt(chk.dataset.id));
+        } else {
+            return [...tbodyEnvios.querySelectorAll('.rowCheck:checked')].map(chk => parseInt(chk.dataset.id));
+        }
+    }
 
     // --- LÓGICA DE ACCIONES EN LOTE ---
     function contarSeleccionados() {
@@ -773,13 +794,71 @@ document.addEventListener('DOMContentLoaded', () => {
         thCheckTodos.checked = allChecked;
 
         // Muestra/oculta el panel de acciones en lote
-        // batchActionsContainer.classList.toggle('hidden', seleccionados === 0);
+        batchActionsContainer.classList.toggle('hidden', seleccionados === 0);
     }
     
     function seleccionarTodos(checked) {
         document.querySelectorAll('.rowCheck').forEach(chk => chk.checked = checked);
         contarSeleccionados();
     }
+
+    accionLote.addEventListener('change', () => {
+        if (accionLote.value === 'REPROGRAMADO') {
+            fechaReprog.classList.remove('oculto');
+        } else {
+            fechaReprog.classList.add('oculto');
+        }
+    });    
+
+    btnAplicarLote.addEventListener('click', () => {
+        let seleccionadosIds;
+        if (window.innerWidth < 768) {
+            // En vista móvil, contamos solo los checkboxes de las tarjetas.
+            seleccionadosIds = [...mobileCardContainer.querySelectorAll('.rowCheck:checked')].map(chk => parseInt(chk.dataset.id));
+        } else {
+            // En vista de escritorio, contamos solo los checkboxes de la tabla.
+            seleccionadosIds = [...tbodyEnvios.querySelectorAll('.rowCheck:checked')].map(chk => parseInt(chk.dataset.id));
+        }
+        const accion = accionLote.value;
+
+        if (seleccionadosIds.length === 0) {
+            showToast('No has seleccionado ningún envío.');
+            return;
+        }
+
+        if (!accion) {
+            showToast('Por favor, selecciona una acción en lote.');
+            return;
+        }
+
+        if (accion === 'REPROGRAMADO') {
+            if (!fechaReprog.value) {
+                showToast('Debes seleccionar una fecha para reprogramar.');
+                return;
+            }
+            todosLosEnvios.forEach(envio => {
+                if (seleccionadosIds.includes(envio.id)) {
+                    envio.estado = 'REPROGRAMADO';
+                    envio.fechaEnvio = fechaReprog.value;
+                }
+            });
+        } else if (accion === 'ELIMINAR') {
+            // La lógica de eliminación la haremos en el siguiente paso.
+            abrirModalConfirmacion(seleccionadosIds);
+            return; // Detenemos la ejecución aquí hasta que el usuario confirme.
+        } else {
+            // Para 'ENVIADO' y 'ENTREGADO'
+            todosLosEnvios.forEach(envio => {
+                if (seleccionadosIds.includes(envio.id)) {
+                    envio.estado = accion;
+                }
+            });
+        }
+
+        aplicarFiltros(); // Re-renderiza la tabla con los nuevos datos.
+        showToast('Acción en lote aplicada con éxito.');
+        accionLote.value = ''; // Resetea el dropdown
+    });
 
     checkTodos.addEventListener('change', (e) => seleccionarTodos(e.target.checked));
     thCheckTodos.addEventListener('change', (e) => seleccionarTodos(e.target.checked));
@@ -796,8 +875,50 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- EVENT LISTENERS ---
+    btnEtiquetas.addEventListener('click', () => {
+        const seleccionadosIds = obtenerIdsSeleccionados();
+        if (seleccionadosIds.length === 0) {
+            showToast('Debes seleccionar al menos un envío para imprimir etiquetas.');
+            return; // Detiene la ejecución si no hay nada seleccionado
+        }
+
+        // Aquí iría la lógica futura para imprimir
+        console.log('Imprimiendo etiquetas para los envíos:', seleccionadosIds);
+        showToast(`Preparando ${seleccionadosIds.length} etiquetas para imprimir...`);
+    });  
+    templateLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault(); // Previene que el enlace intente navegar a otra página
+
+            const seleccionadosIds = obtenerIdsSeleccionados();
+            if (seleccionadosIds.length === 0) {
+                showToast('Debes seleccionar al menos un envío para descargar la plantilla.');
+                plantillasMenu.classList.add('hidden'); // Cierra el menú
+                return;
+            }
+
+            // Aquí iría la lógica futura para descargar el archivo
+            const templateName = e.target.textContent;
+            console.log(`Descargando ${templateName} para los envíos:`, seleccionadosIds);
+            showToast(`Descargando ${templateName}...`);
+            plantillasMenu.classList.add('hidden'); // Cierra el menú
+        });
+    });      
     btnAplicarFiltros.addEventListener('click', aplicarFiltros);
     filtroCliente.addEventListener('keyup', (e) => { if(e.key === 'Enter') aplicarFiltros() });
+
+    btnLimpiarFiltros.addEventListener('click', () => {
+        // 1. Resetea los valores de los campos de filtro
+        filtroCliente.value = '';
+        filtroFecha.value = '';
+        filtroTipo.value = '';
+
+        // 2. Vuelve a renderizar la tabla con todos los datos
+        aplicarFiltros();
+
+        // 3. Muestra una notificación de confirmación
+        showToast('Filtros limpiados.');
+    });
 
     // --- SINCRONIZACIÓN CON "MI CUENTA" ---
     const businessNameInput = document.getElementById('businessName');
@@ -850,6 +971,35 @@ document.addEventListener('DOMContentLoaded', () => {
     goToAccountBtn.addEventListener('click', () => {
         document.querySelector('a.nav-link[href="#cuenta"]').click();
     });
+
+    // --- LÓGICA DEL MODAL DE CONFIRMACIÓN ---
+    const deleteModal = document.getElementById('deleteModal');
+    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+    const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+    const modalMessage = document.getElementById('modalMessage');
+    let idsParaEliminar = [];
+
+    function abrirModalConfirmacion(ids) {
+        idsParaEliminar = ids;
+        modalMessage.textContent = `¿Estás seguro de que quieres eliminar ${ids.length} envío(s) seleccionados? Esta acción no se puede deshacer.`;
+        deleteModal.classList.remove('hidden');
+    }
+
+    function cerrarModalConfirmacion() {
+        deleteModal.classList.add('hidden');
+        idsParaEliminar = [];
+    }
+
+    confirmDeleteBtn.addEventListener('click', () => {
+        todosLosEnvios = todosLosEnvios.filter(envio => !idsParaEliminar.includes(envio.id));
+        const eliminadosCount = idsParaEliminar.length; // <--- AÑADE ESTA LÍNEA
+        cerrarModalConfirmacion();
+        aplicarFiltros();
+        showToast(`${eliminadosCount} envío(s) eliminados correctamente.`); // <--- MODIFICA ESTA LÍNEA
+        accionLote.value = '';
+    });
+
+    cancelDeleteBtn.addEventListener('click', cerrarModalConfirmacion);
 
     // --- UTILIDADES ---
     const toast = document.getElementById('toast');
