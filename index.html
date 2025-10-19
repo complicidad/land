@@ -623,10 +623,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 targetSection.classList.add('active');
             }
             
-            // Si la pantalla es pequeña, cierra el menú al hacer clic
-            if (window.innerWidth < 768) {
-                closeSidebar();
-            }
+            // Cierra el menú al hacer clic (ahora en todos los dispositivos)
+            closeSidebar();        
         });
     });
     document.querySelector('.nav-link.active')?.classList.remove(...inactiveClasses);
