@@ -110,6 +110,10 @@
             }
         }
 
+        .col-hidden {
+            display: none;
+        }
+
     </style>
 </head>
 <body class="font-sans bg-bg-soft text-gray-900 antialiased">
@@ -236,11 +240,11 @@
                                             <th class="p-3 text-left text-xs font-bold text-accent uppercase tracking-wider">Courier</th>
                                             <th class="p-3 text-left text-xs font-bold text-accent uppercase tracking-wider col-responsive-hide">Destinatario</th>
                                             <th class="p-3 text-left text-xs font-bold text-accent uppercase tracking-wider col-responsive-hide">Teléfono</th>
-                                            <th class="p-3 text-left text-xs font-bold text-accent uppercase tracking-wider col-responsive-hide">Distrito</th>
-                                            <th class="p-3 text-left text-xs font-bold text-accent uppercase tracking-wider col-responsive-hide">Dirección</th>
-                                            <th class="p-3 text-left text-xs font-bold text-accent uppercase tracking-wider col-responsive-hide">Referencia</th>
-                                            <th class="p-3 text-left text-xs font-bold text-accent uppercase tracking-wider col-responsive-hide">DNI/CE</th>
-                                            <th class="p-3 text-left text-xs font-bold text-accent uppercase tracking-wider col-responsive-hide">Agencia</th>
+                                            <th class="p-3 text-left text-xs font-bold text-accent uppercase tracking-wider col-responsive-hide col-delivery">Distrito</th>
+                                            <th class="p-3 text-left text-xs font-bold text-accent uppercase tracking-wider col-responsive-hide col-delivery">Dirección</th>
+                                            <th class="p-3 text-left text-xs font-bold text-accent uppercase tracking-wider col-responsive-hide col-delivery">Referencia</th>
+                                            <th class="p-3 text-left text-xs font-bold text-accent uppercase tracking-wider col-responsive-hide col-agencia">DNI/CE</th>
+                                            <th class="p-3 text-left text-xs font-bold text-accent uppercase tracking-wider col-responsive-hide col-agencia">Agencia</th>
                                             <th class="p-3 text-left text-xs font-bold text-accent uppercase tracking-wider">Fecha Envío</th>
                                             <th class="p-3 text-left text-xs font-bold text-accent uppercase tracking-wider">Estado</th>
                                             <th class="p-3 text-left text-xs font-bold text-accent uppercase tracking-wider rounded-tr-xl">Notificar</th>
@@ -540,6 +544,7 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyhlKeKpyhBTtQTzYEdITXUErRjH9kmLACnaEAlmmXMDp1fVHJeVJx4N7Lw3dZgYShjfA/exec"; // <--- AÑADE ESTA LÍNEA
     feather.replace();
 
     // --- LÓGICA PARA EL MENÚ COLAPSABLE ---
@@ -657,26 +662,44 @@ document.addEventListener('DOMContentLoaded', () => {
     
     let todosLosEnvios = []; // Variable global para almacenar todos los envíos.
 
-    // --- DATOS SIMULADOS ---
-    const sampleData = [
-        { id: 1, fechaReg: '2025-10-16', cliente: '987654321', courier: 'SHALOM', destinatario: 'Ana Torres', telefono: '912345678', distrito: 'Miraflores', direccion: 'Av. Larco 123', referencia: 'Frente al parque', dni: '12345678', agencia: 'Shalom Miraflores', fechaEnvio: '2025-10-17', estado: 'PENDIENTE', notificar: true },
-        { id: 2, fechaReg: '2025-10-16', cliente: '911223344', courier: 'DELIVERY', destinatario: 'Carlos Briceño', telefono: '922334455', distrito: 'Surco', direccion: 'Calle Monte Umbroso 456', referencia: 'Casa con rejas negras', dni: '', agencia: '', fechaEnvio: '2025-10-17', estado: 'ENVIADO', notificar: false },
-        { id: 3, fechaReg: '2025-10-15', cliente: '933445566', courier: 'OLVA', destinatario: 'Luisa Mendoza', telefono: '933445566', distrito: 'San Isidro', direccion: 'Paseo de la República 3210', referencia: 'Oficina 501', dni: '87654321', agencia: 'Olva Corpac', fechaEnvio: '2025-10-16', estado: 'ENTREGADO', notificar: true },
-        { id: 4, fechaReg: '2025-10-15', cliente: '944556677', courier: 'SHALOM', destinatario: 'Jorge Paredes', telefono: '944556677', distrito: 'La Molina', direccion: 'Av. Javier Prado Este 5595', referencia: 'Cerca a la USIL', dni: '11223344', agencia: 'Shalom La Molina', fechaEnvio: '2025-10-16', estado: 'REPROGRAMADO', notificar: false },
-        { id: 5, fechaReg: '2025-10-14', cliente: '955667788', courier: 'DELIVERY', destinatario: 'Mariela Solano', telefono: '955667788', distrito: 'Barranco', direccion: 'Jr. Batalla de Junín 182', referencia: 'Portón de madera', dni: '', agencia: '', fechaEnvio: '2025-10-15', estado: 'ENTREGADO', notificar: true },
-        { id: 6, fechaReg: '2025-10-13', cliente: '966778899', courier: 'OLVA', destinatario: 'Ricardo Palma', telefono: '966778899', distrito: 'Lince', direccion: 'Av. Arequipa 2245', referencia: 'Edificio Los Robles', dni: '44332211', agencia: 'Olva Risso', fechaEnvio: '2025-10-14', estado: 'ENTREGADO', notificar: true },
-        { id: 7, fechaReg: '2025-10-12', cliente: '977889900', courier: 'SHALOM', destinatario: 'Patricia Guzman', telefono: '977889900', distrito: 'San Borja', direccion: 'Av. Aviación 3140', referencia: 'Al costado del grifo', dni: '55667788', agencia: 'Shalom San Borja', fechaEnvio: '2025-10-13', estado: 'PENDIENTE', notificar: false },
-        { id: 8, fechaReg: '2025-10-11', cliente: '988990011', courier: 'DELIVERY', destinatario: 'Miguel Grau', telefono: '988990011', distrito: 'Magdalena', direccion: 'Jr. San Martín 789', referencia: 'Frente al mercado', dni: '', agencia: '', fechaEnvio: '2025-10-12', estado: 'ENVIADO', notificar: true },
-        { id: 9, fechaReg: '2025-10-10', cliente: '999001122', courier: 'OLVA', destinatario: 'Sofia Mulanovich', telefono: '999001122', distrito: 'Punta Hermosa', direccion: 'Calle Las Olas 111', referencia: 'Casa de playa amarilla', dni: '99887766', agencia: 'Olva Lurín', fechaEnvio: '2025-10-11', estado: 'ENTREGADO', notificar: true },
-        { id: 10, fechaReg: '2025-10-09', cliente: '912121212', courier: 'SHALOM', destinatario: 'Juan Diego Flórez', telefono: '912121212', distrito: 'San Miguel', direccion: 'Av. La Marina 2233', referencia: 'Cerca a Plaza San Miguel', dni: '10102020', agencia: 'Shalom San Miguel', fechaEnvio: '2025-10-10', estado: 'PENDIENTE', notificar: true }
-    ];
-
-    function cargarDatosSimulados() {
-        todosLosEnvios = sampleData;
-        aplicarFiltros();
+    async function fetchDataFromSheet() {
+        showToast('Cargando envíos...');
+        try {
+            const response = await fetch(SCRIPT_URL);
+            if (!response.ok) {
+                throw new Error('Error al cargar los datos.');
+            }
+            const data = await response.json();
+            todosLosEnvios = data;
+            aplicarFiltros();
+            showToast('Envíos cargados.');
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            showToast('Error: No se pudieron cargar los envíos.');
+            // En caso de error, muestra la tabla vacía.
+            todosLosEnvios = [];
+            aplicarFiltros();
+        }
     }
     
     // --- LÓGICA DE LA TABLA Y FILTROS ---
+
+    function manejarVisibilidadColumnas(filtro) {
+        const columnasDelivery = document.querySelectorAll('.col-delivery');
+        const columnasAgencia = document.querySelectorAll('.col-agencia');
+
+        // Primero, aseguramos que todas las columnas sean visibles
+        columnasDelivery.forEach(col => col.classList.remove('col-hidden'));
+        columnasAgencia.forEach(col => col.classList.remove('col-hidden'));
+
+        // Luego, ocultamos las que no correspondan
+        if (filtro === 'SHALOM' || filtro === 'OLVA' || filtro === 'DINSIDES') {
+            columnasDelivery.forEach(col => col.classList.add('col-hidden'));
+        } else if (filtro === 'DELIVERY') {
+            columnasAgencia.forEach(col => col.classList.add('col-hidden'));
+        }
+    }
+
     function aplicarFiltros() {
         const clienteFilter = filtroCliente.value.toLowerCase();
         const fechaFilter = filtroFecha.value;
@@ -684,11 +707,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const enviosFiltrados = todosLosEnvios.filter(envio => {
             const clienteMatch = !clienteFilter || envio.cliente.toLowerCase().includes(clienteFilter);
-            const fechaMatch = !fechaFilter || envio.fechaEnvio === fechaFilter;
-            const tipoMatch = !tipoFilter || envio.courier === tipoFilter;
+            const fechaMatch = !fechaFilter || (envio.fechaEnvio && envio.fechaEnvio.substring(0, 10) === fechaFilter);
+            const tipoMatch = !tipoFilter || envio.tipo === tipoFilter;
             return clienteMatch && fechaMatch && tipoMatch;
         });
         renderizarTabla(enviosFiltrados);
+        manejarVisibilidadColumnas(filtroTipo.value); // <--- AÑADE ESTA LÍNEA
     }
 
     function renderizarTabla(envios) {
@@ -719,17 +743,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 tr.dataset.id = envio.id;
                 tr.innerHTML = `
                     <td class="p-3 text-center"><input type="checkbox" class="rowCheck rounded border-gray-300 text-accent focus:ring-accent" data-id="${envio.id}"></td>
-                    <td class="p-3 text-sm text-gray-700">${envio.fechaReg}</td>
+                    <td class="p-3 text-sm text-gray-700">${envio.fechaReg ? envio.fechaReg.substring(0, 10) : ''}</td>
                     <td class="p-3 text-sm text-gray-700">${envio.cliente}</td>
-                    <td class="p-3 text-sm text-gray-700">${envio.courier}</td>
-                    <td class="p-3 text-sm text-gray-700 col-responsive-hide">${envio.destinatario}</td>
+                    <td class="p-3 text-sm text-gray-700">${envio.tipo}</td>
+                    <td class="p-3 text-sm text-gray-700 col-responsive-hide">${envio.nombre}</td>
                     <td class="p-3 text-sm text-gray-700 col-responsive-hide">${envio.telefono}</td>
-                    <td class="p-3 text-sm text-gray-700 col-responsive-hide">${envio.distrito}</td>
-                    <td class="p-3 text-sm text-gray-700 col-responsive-hide">${envio.direccion}</td>
-                    <td class="p-3 text-sm text-gray-700 col-responsive-hide">${envio.referencia}</td>
-                    <td class="p-3 text-sm text-gray-700 col-responsive-hide">${envio.dni}</td>
-                    <td class="p-3 text-sm text-gray-700 col-responsive-hide">${envio.agencia}</td>
-                    <td class="p-3 text-sm text-gray-700">${envio.fechaEnvio}</td>
+                    <td class="p-3 text-sm text-gray-700 col-responsive-hide col-delivery">${envio.distrito}</td>
+                    <td class="p-3 text-sm text-gray-700 col-responsive-hide col-delivery">${envio.direccion}</td>
+                    <td class="p-3 text-sm text-gray-700 col-responsive-hide col-delivery">${envio.referencia}</td>
+                    <td class="p-3 text-sm text-gray-700 col-responsive-hide col-agencia">${envio.dni}</td>
+                    <td class="p-3 text-sm text-gray-700 col-responsive-hide col-agencia">${envio.agencia}</td>
+                    <td class="p-3 text-sm text-gray-700">${envio.fechaEnvio ? envio.fechaEnvio.substring(0, 10) : ''}</td>
                     <td class="p-3 text-sm"><span class="px-2 py-1 text-xs font-bold rounded-full ${getEstadoClass(envio.estado)}">${envio.estado}</span></td>
                     <td class="p-3 text-center"><button class="text-accent hover:text-accent-alt" title="Notificar al cliente"><i data-feather="send" class="w-4 h-4"></i></button></td>
                 `;
@@ -744,7 +768,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="flex items-center gap-3">
                             <input type="checkbox" class="rowCheck rounded border-gray-300 text-accent focus:ring-accent" data-id="${envio.id}">
                             <div>
-                                <p class="font-bold text-gray-800">${envio.destinatario}</p>
+                                <p class="font-bold text-gray-800">${envio.nombre}</p>
                                 <p class="text-sm text-gray-500">${envio.distrito}</p>
                             </div>
                         </div>
@@ -752,8 +776,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     <div class="text-sm text-gray-600 space-y-2 pl-8">
                         <p><strong class="text-gray-500">Cliente:</strong> ${envio.cliente}</p>
-                        <p><strong class="text-gray-500">Courier:</strong> ${envio.courier}</p>
-                        <p><strong class="text-gray-500">Fecha Envío:</strong> ${envio.fechaEnvio}</p>
+                        <p><strong class="text-gray-500">Courier:</strong> ${envio.tipo}</p>
+                        <p><strong class="text-gray-500">Fecha Envío:</strong> ${envio.fechaEnvio ? envio.fechaEnvio.substring(0, 10) : ''}</p>
                     </div>
                     <div class="flex justify-end pt-2">
                         <button class="text-accent hover:text-accent-alt text-sm font-bold inline-flex items-center gap-1" title="Notificar al cliente">
@@ -807,54 +831,45 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });    
 
-    btnAplicarLote.addEventListener('click', () => {
-        let seleccionadosIds;
-        if (window.innerWidth < 768) {
-            // En vista móvil, contamos solo los checkboxes de las tarjetas.
-            seleccionadosIds = [...mobileCardContainer.querySelectorAll('.rowCheck:checked')].map(chk => parseInt(chk.dataset.id));
-        } else {
-            // En vista de escritorio, contamos solo los checkboxes de la tabla.
-            seleccionadosIds = [...tbodyEnvios.querySelectorAll('.rowCheck:checked')].map(chk => parseInt(chk.dataset.id));
-        }
+    btnAplicarLote.addEventListener('click', async () => {
+        const seleccionadosIds = obtenerIdsSeleccionados();
         const accion = accionLote.value;
 
-        if (seleccionadosIds.length === 0) {
-            showToast('No has seleccionado ningún envío.');
+        if (seleccionadosIds.length === 0 || !accion) {
+            showToast(!accion ? 'Por favor, selecciona una acción.' : 'No has seleccionado ningún envío.');
             return;
         }
 
-        if (!accion) {
-            showToast('Por favor, selecciona una acción en lote.');
-            return;
-        }
+        let payload;
+        let action;
 
         if (accion === 'REPROGRAMADO') {
             if (!fechaReprog.value) {
                 showToast('Debes seleccionar una fecha para reprogramar.');
                 return;
             }
-            todosLosEnvios.forEach(envio => {
-                if (seleccionadosIds.includes(envio.id)) {
-                    envio.estado = 'REPROGRAMADO';
-                    envio.fechaEnvio = fechaReprog.value;
-                }
-            });
-        } else if (accion === 'ELIMINAR') {
-            // La lógica de eliminación la haremos en el siguiente paso.
-            abrirModalConfirmacion(seleccionadosIds);
-            return; // Detenemos la ejecución aquí hasta que el usuario confirme.
-        } else {
-            // Para 'ENVIADO' y 'ENTREGADO'
-            todosLosEnvios.forEach(envio => {
-                if (seleccionadosIds.includes(envio.id)) {
-                    envio.estado = accion;
-                }
-            });
+            action = 'batchUpdateStatus';
+            payload = { ids: seleccionadosIds, status: 'REPROGRAMADO', newDate: fechaReprog.value };
+        } else { // Para 'ENVIADO' y 'ENTREGADO'
+            action = 'batchUpdateStatus';
+            payload = { ids: seleccionadosIds, status: accion };
         }
 
-        aplicarFiltros(); // Re-renderiza la tabla con los nuevos datos.
-        showToast('Acción en lote aplicada con éxito.');
-        accionLote.value = ''; // Resetea el dropdown
+        showToast('Aplicando cambios...');
+        try {
+            const response = await fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action, payload }),
+            });
+            await response.json();
+            await fetchDataFromSheet(); // Recarga los datos
+            showToast('Acción en lote aplicada con éxito.');
+        } catch (error) {
+            console.error('Error batch updating:', error);
+            showToast('Error al aplicar la acción.');
+        } finally {
+            accionLote.value = '';
+        }
     });
 
     checkTodos.addEventListener('change', (e) => seleccionarTodos(e.target.checked));
@@ -983,13 +998,26 @@ document.addEventListener('DOMContentLoaded', () => {
         idsParaEliminar = [];
     }
 
-    confirmDeleteBtn.addEventListener('click', () => {
-        todosLosEnvios = todosLosEnvios.filter(envio => !idsParaEliminar.includes(envio.id));
-        const eliminadosCount = idsParaEliminar.length; // <--- AÑADE ESTA LÍNEA
-        cerrarModalConfirmacion();
-        aplicarFiltros();
-        showToast(`${eliminadosCount} envío(s) eliminados correctamente.`); // <--- MODIFICA ESTA LÍNEA
-        accionLote.value = '';
+    confirmDeleteBtn.addEventListener('click', async () => {
+        const eliminadosCount = idsParaEliminar.length;
+        if (eliminadosCount === 0) return;
+
+        showToast('Eliminando envíos...');
+        try {
+            const response = await fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: 'deleteShipments', payload: { ids: idsParaEliminar } }),
+            });
+            await response.json();
+            cerrarModalConfirmacion();
+            await fetchDataFromSheet(); // Recarga los datos
+            showToast(`${eliminadosCount} envío(s) eliminados correctamente.`);
+        } catch (error) {
+            console.error('Error deleting shipments:', error);
+            showToast('Error al eliminar los envíos.');
+        } finally {
+            accionLote.value = '';
+        }
     });
 
     cancelDeleteBtn.addEventListener('click', cerrarModalConfirmacion);
@@ -1010,7 +1038,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- INICIALIZACIÓN ---
     syncBusinessInfo();
-    cargarDatosSimulados();
+    fetchDataFromSheet();
 });
 </script>
 </body>
