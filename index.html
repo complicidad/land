@@ -12,6 +12,9 @@
     
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <script>
         // Configuración de Tailwind para usar colores y fuentes personalizados
         tailwind.config = {
@@ -162,6 +165,13 @@
                     <p class="mt-1 text-sm opacity-90">Bienvenido, <strong id="headerBusinessName">[Nombre del emprendimiento]</strong></p>
                 </div>
             </header>
+
+<!-- Botón de Migración Temporal -->
+    <div id="migration-banner" class="p-4 bg-yellow-100 border-b border-yellow-300 text-center">
+        <button id="btnMigrarDatos" class="bg-red-600 text-white font-bold py-2 px-4 rounded-xl hover:bg-red-700 transition-colors">Iniciar Carga Masiva a Firestore</button>
+    </div>
+
+    <main class="flex-grow p-4 md:p-6">
 
             <main class="flex-grow p-4 md:p-6">
                 
@@ -544,7 +554,20 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyhlKeKpyhBTtQTzYEdITXUErRjH9kmLACnaEAlmmXMDp1fVHJeVJx4N7Lw3dZgYShjfA/exec"; // <--- AÑADE ESTA LÍNEA
+    // Your web app's Firebase configuration
+    const firebaseConfig = {
+    apiKey: "AIzaSyBrajHuHwjIASJA7Ar9ViprWw8ZUmXH6wc",
+    authDomain: "complicidad-envios.firebaseapp.com",
+    projectId: "complicidad-envios",
+    storageBucket: "complicidad-envios.firebasestorage.app",
+    messagingSenderId: "418888054311",
+    appId: "1:418888054311:web:2a08b637b7b96b2b6b4002"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    
     feather.replace();
 
     // --- LÓGICA PARA EL MENÚ COLAPSABLE ---
@@ -662,24 +685,35 @@ document.addEventListener('DOMContentLoaded', () => {
     
     let todosLosEnvios = []; // Variable global para almacenar todos los envíos.
 
-    async function fetchDataFromSheet() {
-        showToast('Cargando envíos...');
-        try {
-            const response = await fetch(SCRIPT_URL);
-            if (!response.ok) {
-                throw new Error('Error al cargar los datos.');
-            }
-            const data = await response.json();
-            todosLosEnvios = data;
+    function listenForShipments() {
+        showToast('Conectando a la base de datos...');
+        db.collection('envios').orderBy('fechaReg', 'desc').onSnapshot(snapshot => {
+            const envios = [];
+            snapshot.forEach(doc => {
+                const data = doc.data();
+
+                // Función para convertir Timestamps de Firestore a fechas YYYY-MM-DD
+                const formatTimestamp = (timestamp) => {
+                    if (timestamp && typeof timestamp.toDate === 'function') {
+                        return timestamp.toDate().toISOString().substring(0, 10);
+                    }
+                    return timestamp || ''; // Devuelve el valor original si no es un timestamp
+                };
+
+                envios.push({
+                    id: doc.id, // ¡Importante! Usamos el ID de Firestore
+                    ...data,
+                    fechaReg: formatTimestamp(data.fechaReg),
+                    fechaEnvio: formatTimestamp(data.fechaEnvio)
+                });
+            });
+            todosLosEnvios = envios;
             aplicarFiltros();
-            showToast('Envíos cargados.');
-        } catch (error) {
-            console.error('Error fetching data:', error);
-            showToast('Error: No se pudieron cargar los envíos.');
-            // En caso de error, muestra la tabla vacía.
-            todosLosEnvios = [];
-            aplicarFiltros();
-        }
+            showToast('Datos sincronizados.');
+        }, error => {
+            console.error("Error al escuchar los envíos: ", error);
+            showToast('Error de conexión.');
+        });
     }
     
     // --- LÓGICA DE LA TABLA Y FILTROS ---
@@ -794,9 +828,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function obtenerIdsSeleccionados() {
         if (window.innerWidth < 768) {
-            return [...mobileCardContainer.querySelectorAll('.rowCheck:checked')].map(chk => parseInt(chk.dataset.id));
+            return [...mobileCardContainer.querySelectorAll('.rowCheck:checked')].map(chk => chk.dataset.id);
         } else {
-            return [...tbodyEnvios.querySelectorAll('.rowCheck:checked')].map(chk => parseInt(chk.dataset.id));
+            return [...tbodyEnvios.querySelectorAll('.rowCheck:checked')].map(chk => chk.dataset.id);
         }
     }
 
@@ -1038,7 +1072,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- INICIALIZACIÓN ---
     syncBusinessInfo();
-    fetchDataFromSheet();
+    listenForShipments(); // <-- LÍNEA CAMBIADA
 });
 </script>
 </body>
