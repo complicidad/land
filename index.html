@@ -187,6 +187,10 @@
                                         </label>
                                         <button class="btn primary bg-gradient-to-r from-accent to-accent-alt text-white py-2.5 px-4 rounded-xl font-bold text-sm shadow-md shadow-accent/20 hover:shadow-lg hover:shadow-accent/30 hover:-translate-y-0.5 transition-all duration-200" id="btnAplicarFiltros">Filtrar</button>
                                         <button id="btnLimpiarFiltros" class="btn ghost bg-transparent border border-gray-300 text-gray-700 hover:bg-gray-50 py-2.5 px-4 rounded-xl font-bold text-sm transition-all duration-200">Limpiar</button>
+                                        <label class="flex items-center text-sm text-gray-700 ml-4 cursor-pointer">
+                                            <input type="checkbox" id="filtroDuplicados" class="rounded border-gray-300 text-accent focus:ring-accent mr-2">
+                                            <span>Mostrar solo duplicados</span>
+                                        </label>
                                     </div>
                                     <!-- Grupo de Acciones (Derecha) -->
                                     <div class="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
@@ -649,6 +653,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const filtroCliente = document.getElementById('filtroCliente');
     const filtroFecha = document.getElementById('filtroFecha');
     const filtroTipo = document.getElementById('filtroTipo');
+    const filtroDuplicados = document.getElementById('filtroDuplicados');
     const btnAplicarFiltros = document.getElementById('btnAplicarFiltros');
     const tableContainer = document.getElementById('tableContainer').querySelector('.overflow-auto'); // Apunta al contenedor con scroll
     const mobileContainerParent = document.getElementById('mobileCardContainer').parentElement;
@@ -712,43 +717,55 @@ document.addEventListener('DOMContentLoaded', () => {
         const hoy = new Date().toISOString().split('T')[0];
         const clienteFilter = filtroCliente.value.toLowerCase();
         const tipoFilter = filtroTipo.value;
+        const mostrarSoloDuplicados = filtroDuplicados.checked;
+
+        // --- Lógica para detectar duplicados en TODA la base de datos ---
+        const seen = {};
+        const duplicates = new Set();
+        todosLosEnvios.forEach(envio => {
+            const key = `${envio.cliente}-${envio.fechaEnvio ? envio.fechaEnvio.substring(0, 10) : 'sin-fecha'}`;
+            if (seen[key]) {
+                duplicates.add(key);
+            } else {
+                seen[key] = true;
+            }
+        });
 
         const enviosFiltrados = todosLosEnvios.filter(envio => {
             const clienteMatch = !clienteFilter || String(envio.cliente).toLowerCase().includes(clienteFilter);
-
-            // ▼▼▼ LÍNEA CORREGIDA ▼▼▼
             const fechaMatch = filtroFecha.value
                 ? (envio.fechaEnvio && envio.fechaEnvio.substring(0, 10) === filtroFecha.value) 
                 : (envio.fechaEnvio && envio.fechaEnvio.substring(0, 10) >= hoy);
-
             const tipoMatch = !tipoFilter || envio.tipo === tipoFilter;
+            
+            if (mostrarSoloDuplicados) {
+                const key = `${envio.cliente}-${envio.fechaEnvio ? envio.fechaEnvio.substring(0, 10) : 'sin-fecha'}`;
+                const esDuplicado = duplicates.has(key);
+                return esDuplicado && clienteMatch && fechaMatch && tipoMatch;
+            }
+
             return clienteMatch && fechaMatch && tipoMatch;
         });
           
         // Ordena los envíos filtrados antes de mostrarlos
         enviosFiltrados.sort((a, b) => {
-            // Maneja casos donde las propiedades puedan faltar para evitar errores
             const fechaA = a.fechaEnvio || '';
             const fechaB = b.fechaEnvio || '';
-            // FIX: Convertimos a String para asegurar que la comparación funcione aunque el dato sea numérico
             const clienteA = String(a.cliente || '');
             const clienteB = String(b.cliente || '');
 
-            // 1. Primero, compara por fecha de envío (de más reciente a más antigua)
             const comparacionFecha = fechaB.localeCompare(fechaA);
             if (comparacionFecha !== 0) {
                 return comparacionFecha;
             }
-
-            // 2. Si las fechas son iguales, compara por nombre de cliente (en orden Z-A)
             return clienteB.localeCompare(clienteA);
         });        
         
-        renderizarTabla(enviosFiltrados);
-        manejarVisibilidadColumnas(filtroTipo.value); // <--- AÑADE ESTA LÍNEA
+        renderizarTabla(enviosFiltrados, duplicates);
+        manejarVisibilidadColumnas(filtroTipo.value);
     }
 
-    function renderizarTabla(envios) {
+    function renderizarTabla(envios, duplicates) {
         tbodyEnvios.innerHTML = '';
         mobileCardContainer.innerHTML = '';
 
@@ -756,20 +773,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if(visibleCountEl) {
             visibleCountEl.textContent = `Mostrando ${envios.length} de ${todosLosEnvios.length} envíos`;
         }
-
-        // --- Lógica para detectar duplicados ---
-        const seen = {};
-        const duplicates = new Set();
-        envios.forEach(envio => {
-            // Se crea una clave única por cliente y fecha
-            const key = `${envio.cliente}-${envio.fechaEnvio ? envio.fechaEnvio.substring(0, 10) : 'sin-fecha'}`;
-            if (seen[key]) {
-                // Si ya hemos visto esta clave, la marcamos como duplicada
-                duplicates.add(key);
-            } else {
-                seen[key] = true;
-            }
-        });
 
         const hasEnvios = envios.length > 0;
         
@@ -789,10 +792,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 };
 
-                // --- Se determina si la fila actual es un duplicado ---
                 const key = `${envio.cliente}-${envio.fechaEnvio ? envio.fechaEnvio.substring(0, 10) : 'sin-fecha'}`;
                 const isDuplicate = duplicates.has(key);
-                // Si es duplicado, se le añade una clase para resaltarlo
                 const duplicateClass = isDuplicate ? 'bg-yellow-200/50' : '';
 
                 // --- Renderizar para tabla (Desktop) ---
@@ -999,6 +1000,7 @@ document.addEventListener('DOMContentLoaded', () => {
         filtroCliente.value = '';
         filtroFecha.value = '';
         filtroTipo.value = '';
+        filtroDuplicados.checked = false; // También resetea el nuevo checkbox
 
         // 2. Vuelve a renderizar la tabla con todos los datos
         aplicarFiltros();
@@ -1119,13 +1121,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
 
