@@ -91,13 +91,49 @@
             background-color: #fef3c7; /* Se usa un color sólido para evitar transparencias */
         }
         
+        /* Contenedor de etiquetas oculto por defecto */
+        .print-container { display: none; }
+
         @media print {
             body > * { display: none; }
-            .print-container { display: block; width: 100%; column-count: 2; column-gap: 1.5cm; padding: 1cm; }
-            .label-card { break-inside: avoid-column; page-break-inside: avoid; margin-bottom: 1.5cm; border: 1px solid #000; padding: 10px; width: 100%; min-height: 100px; }
-            .label-header { font-size: 14px; font-weight: bold; border-bottom: 1px dashed #000; padding-bottom: 5px; margin-bottom: 5px; }
-            .label-info { font-size: 12px; margin-top: 5px; }
-            .qr-placeholder { text-align: center; margin-top: 10px; font-size: 10px; border: 1px solid #ccc; padding: 5px; height: 50px; display: flex; align-items: center; justify-content: center; }
+            .print-container { 
+                display: block; 
+                width: 100%; 
+                column-count: 2; 
+                column-gap: 1.5cm; 
+                padding: 1cm; 
+            }
+            .label-card { 
+                break-inside: avoid; 
+                page-break-inside: avoid; 
+                margin-bottom: 1.5cm; 
+                border: 1px solid #000; 
+                padding: 10px; 
+                width: 100%; 
+                min-height: 100px; 
+                font-family: Arial, sans-serif;
+            }
+            .label-header { 
+                font-size: 14px; 
+                font-weight: bold; 
+                border-bottom: 1px dashed #000; 
+                padding-bottom: 5px; 
+                margin-bottom: 5px; 
+            }
+            .label-info { font-size: 12px; margin-top: 5px; line-height: 1.4; }
+            .label-info strong { font-weight: 600; }
+            .qr-placeholder { 
+                text-align: center; 
+                margin-top: 10px; 
+                font-size: 10px; 
+                border: 1px solid #ccc; 
+                padding: 5px; 
+                height: 50px; 
+                display: flex; 
+                align-items: center; 
+                justify-content: center; 
+                color: #888;
+            }
         }
 
         @media (min-width: 768px) {
@@ -558,6 +594,8 @@
     <aside id="editPanel" class="fixed top-0 right-0 h-full w-full max-w-md bg-bg-soft shadow-2xl transform translate-x-full z-30 flex flex-col">
     </aside>
 
+    <!-- Contenedor oculto para las etiquetas de impresión -->
+    <div id="print-container" class="print-container"></div>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
@@ -978,13 +1016,51 @@ document.addEventListener('DOMContentLoaded', () => {
         const seleccionadosIds = obtenerIdsSeleccionados();
         if (seleccionadosIds.length === 0) {
             showToast('Debes seleccionar al menos un envío para imprimir etiquetas.');
-            return; // Detiene la ejecución si no hay nada seleccionado
+            return;
         }
 
-        // Aquí iría la lógica futura para imprimir
-        console.log('Imprimiendo etiquetas para los envíos:', seleccionadosIds);
-        showToast(`Preparando ${seleccionadosIds.length} etiquetas para imprimir...`);
-    });  
+        const enviosSeleccionados = todosLosEnvios.filter(envio => seleccionadosIds.includes(envio.id));
+        const printContainer = document.getElementById('print-container');
+        
+        let labelsHtml = '';
+        enviosSeleccionados.forEach(envio => {
+            let infoHtml = '';
+            // --- Lógica condicional para el contenido de la etiqueta ---
+            if (envio.tipo === 'DELIVERY') {
+                const direccionCompleta = [envio.direccion, envio.distrito].filter(Boolean).join(', ');
+                infoHtml = `
+                    <strong>Dirección:</strong> ${direccionCompleta}<br>
+                    <strong>Referencia:</strong> ${envio.referencia || 'N/A'}<br>
+                    <strong>Teléfono:</strong> ${envio.telefono || 'N/A'}
+                `;
+            } else { // Para envíos por agencia
+                infoHtml = `
+                    <strong>DNI/CE:</strong> ${envio.dni || 'N/A'}<br>
+                    <strong>Agencia Destino:</strong> ${envio.agencia || 'N/A'}<br>
+                    <strong>Teléfono:</strong> ${envio.telefono || 'N/A'}
+                `;
+            }
+            
+            labelsHtml += `
+                <div class="label-card">
+                    <div class="label-header">
+                        <span>DESTINATARIO: ${String(envio.nombre || '').toUpperCase()}</span>
+                    </div>
+                    <div class="label-info">
+                        ${infoHtml}
+                        <br><strong>Courier:</strong> ${envio.tipo || 'N/A'}
+                    </div>
+                    <div class="qr-placeholder">
+                        Espacio para QR Code
+                    </div>
+                </div>
+            `;
+        });
+
+        printContainer.innerHTML = labelsHtml;
+        window.print();
+    });
+
     templateLinks.forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault(); // Previene que el enlace intente navegar a otra página
