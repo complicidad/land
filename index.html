@@ -212,9 +212,10 @@
                             <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 my-3 hidden" id="batchActionsContainer">
                                 <div class="lote-left flex gap-3 items-center flex-wrap">
                                     <label class="nowrap text-sm text-gray-900"><input type="checkbox" id="checkTodos" class="rounded border-gray-300 text-accent focus:ring-accent" /> Seleccionar todo</label>
-                                    <span class="text-gray-500 text-sm" id="selCount">0 seleccionados</span>
+                                    <span class="text-gray-500 text-sm hidden" id="selCount">0 seleccionados</span>
+                                    <span id="visibleCount" class="text-gray-500 text-sm border-l border-gray-300 pl-3 ml-3"></span>
                                 </div>
-                                <div class="lote-right flex flex-col sm:flex-row gap-2 items-center w-full md:w-auto">
+                                <div class="lote-right flex flex-col sm:flex-row gap-2 items-center w-full md:w-auto hidden">
                                     <select id="accionLote" class="select p-2.5 border border-gray-200 rounded-xl bg-white w-full sm:w-auto text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100">
                                         <option value="" selected>Acción en lote…</option>
                                         <option value="ENVIADO">Marcar como Enviado</option>
@@ -670,7 +671,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error('Error al cargar los datos.');
             }
             const data = await response.json();
-            todosLosEnvios = data;
+            // Filtra los envíos para excluir los que están marcados como "ELIMINADO"
+            todosLosEnvios = data.filter(envio => envio.estado !== 'ELIMINADO');
             aplicarFiltros();
             showToast('Envíos cargados.');
         } catch (error) {
@@ -701,16 +703,41 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function aplicarFiltros() {
+        const hoy = new Date().toISOString().split('T')[0];
         const clienteFilter = filtroCliente.value.toLowerCase();
-        const fechaFilter = filtroFecha.value;
         const tipoFilter = filtroTipo.value;
 
         const enviosFiltrados = todosLosEnvios.filter(envio => {
-            const clienteMatch = !clienteFilter || envio.cliente.toLowerCase().includes(clienteFilter);
-            const fechaMatch = !fechaFilter || (envio.fechaEnvio && envio.fechaEnvio.substring(0, 10) === fechaFilter);
+            const clienteMatch = !clienteFilter || String(envio.cliente).toLowerCase().includes(clienteFilter);
+
+            // ▼▼▼ LÍNEA CORREGIDA ▼▼▼
+            const fechaMatch = filtroFecha.value
+                ? (envio.fechaEnvio && envio.fechaEnvio.substring(0, 10) === filtroFecha.value) 
+                : (envio.fechaEnvio && envio.fechaEnvio.substring(0, 10) >= hoy);
+
             const tipoMatch = !tipoFilter || envio.tipo === tipoFilter;
             return clienteMatch && fechaMatch && tipoMatch;
         });
+          
+        // Ordena los envíos filtrados antes de mostrarlos
+        enviosFiltrados.sort((a, b) => {
+            // Maneja casos donde las propiedades puedan faltar para evitar errores
+            const fechaA = a.fechaEnvio || '';
+            const fechaB = b.fechaEnvio || '';
+            // FIX: Convertimos a String para asegurar que la comparación funcione aunque el dato sea numérico
+            const clienteA = String(a.cliente || '');
+            const clienteB = String(b.cliente || '');
+
+            // 1. Primero, compara por fecha de envío (de más reciente a más antigua)
+            const comparacionFecha = fechaB.localeCompare(fechaA);
+            if (comparacionFecha !== 0) {
+                return comparacionFecha;
+            }
+
+            // 2. Si las fechas son iguales, compara por nombre de cliente (en orden Z-A)
+            return clienteB.localeCompare(clienteA);
+        });        
+        
         renderizarTabla(enviosFiltrados);
         manejarVisibilidadColumnas(filtroTipo.value); // <--- AÑADE ESTA LÍNEA
     }
@@ -718,6 +745,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderizarTabla(envios) {
         tbodyEnvios.innerHTML = '';
         mobileCardContainer.innerHTML = '';
+
+        const visibleCountEl = document.getElementById('visibleCount');
+        if(visibleCountEl) {
+            visibleCountEl.textContent = `Mostrando ${envios.length} de ${todosLosEnvios.length} envíos`;
+        }
 
         const hasEnvios = envios.length > 0;
         
@@ -806,16 +838,26 @@ document.addEventListener('DOMContentLoaded', () => {
         const seleccionadosMobile = mobileCardContainer.querySelectorAll('.rowCheck:checked').length;
         const seleccionados = Math.max(seleccionadosDesktop, seleccionadosMobile);
 
-        const totalRows = todosLosEnvios.length;
+        const totalVisibleRows = (window.innerWidth < 768) 
+            ? mobileCardContainer.children.length 
+            : tbodyEnvios.rows.length;
         
         selCount.textContent = `${seleccionados} seleccionados`;
         
-        const allChecked = totalRows > 0 && seleccionados === totalRows;
+        const allChecked = totalVisibleRows > 0 && seleccionados === totalVisibleRows;
         checkTodos.checked = allChecked;
         thCheckTodos.checked = allChecked;
 
-        // Muestra/oculta el panel de acciones en lote
-        batchActionsContainer.classList.toggle('hidden', seleccionados === 0);
+        // En lugar de ocultar todo el contenedor, ahora controlamos las partes específicas
+        // que dependen de la selección.
+        const loteRightControls = batchActionsContainer.querySelector('.lote-right');
+        const hasSelections = seleccionados > 0;
+
+        // Muestra u oculta el contador de seleccionados y los controles de acción (dropdown, botón aplicar)
+        selCount.classList.toggle('hidden', !hasSelections);
+        if (loteRightControls) {
+            loteRightControls.classList.toggle('hidden', !hasSelections);
+        }
     }
     
     function seleccionarTodos(checked) {
@@ -837,6 +879,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (seleccionadosIds.length === 0 || !accion) {
             showToast(!accion ? 'Por favor, selecciona una acción.' : 'No has seleccionado ningún envío.');
+            return;
+        }
+
+        // Si la acción es eliminar, abre el modal de confirmación y detiene la ejecución aquí.
+        if (accion === 'ELIMINAR') {
+            abrirModalConfirmacion(seleccionadosIds);
             return;
         }
 
@@ -1006,7 +1054,8 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch(SCRIPT_URL, {
                 method: 'POST',
-                body: JSON.stringify({ action: 'deleteShipments', payload: { ids: idsParaEliminar } }),
+                // Cambiamos la acción para que actualice el estado a 'ELIMINADO' en lugar de borrar la fila
+                body: JSON.stringify({ action: 'batchUpdateStatus', payload: { ids: idsParaEliminar, status: 'ELIMINADO' } }),
             });
             await response.json();
             cerrarModalConfirmacion();
@@ -1043,5 +1092,10 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
+
+
+
+
 
 
