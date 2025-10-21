@@ -95,9 +95,14 @@
         .print-container { display: none; }
 
         @media print {
-            body > * { display: none; }
+            /* Oculta explícitamente los elementos de la interfaz principal. */
+            #root-container, .toast, #deleteModal, #editPanelOverlay, #editPanel {
+                display: none !important;
+            }
+            
+            /* Muestra el contenedor de impresión y lo prepara. */
             .print-container { 
-                display: block; 
+                display: block !important; 
                 width: 100%; 
                 column-count: 2; 
                 column-gap: 1.5cm; 
@@ -1212,5 +1217,6 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
 
 
