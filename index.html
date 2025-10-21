@@ -672,8 +672,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error('Error al cargar los datos.');
             }
             const data = await response.json();
-            // Filtra los envíos para excluir los que están marcados como "ELIMINADO"
-            todosLosEnvios = data.filter(envio => envio.estado !== 'ELIMINADO');
+            // Procesa los datos: si el estado está vacío, lo establece como 'PENDIENTE'.
+            // Luego, filtra los envíos para excluir los que están marcados como "ELIMINADO".
+            todosLosEnvios = data.map(envio => ({
+                ...envio,
+                estado: envio.estado || 'PENDIENTE'
+            })).filter(envio => envio.estado !== 'ELIMINADO');
+            
             aplicarFiltros();
             showToast('Envíos cargados.');
         } catch (error) {
@@ -1093,5 +1098,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-
 
