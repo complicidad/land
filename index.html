@@ -153,13 +153,24 @@
 
         <div id="mainContent" class="flex-1 flex flex-col transition-all duration-300 ease-in-out">
              <!-- ---------- HEADER (Fijo, no se expande) ---------- -->
-            <header class="bg-gradient-to-br from-brand-accent to-orange-400 text-white p-6 shadow-xl shadow-accent/25 flex items-center gap-4 flex-shrink-0">
-                <button id="sidebarToggle" class="text-white p-2 rounded-md hover:bg-black/20 focus:outline-none focus:ring-2 focus:ring-white">
-                    <i data-feather="menu" class="w-6 h-6"></i>
-                </button>
-                <div>
-                    <h1 id="headerTitle" class="text-2xl font-bold">Envíos</h1>
-                    <p class="mt-1 text-sm opacity-90">Bienvenido, <strong id="headerBusinessName">[Nombre del emprendimiento]</strong></p>
+            <header class="bg-gradient-to-br from-brand-accent to-orange-400 text-white p-6 shadow-xl shadow-accent/25 flex items-center justify-between flex-shrink-0">
+                <!-- Izquierda: Toggle y Título -->
+                <div class="flex items-center gap-4">
+                    <button id="sidebarToggle" class="text-white p-2 rounded-md hover:bg-black/20 focus:outline-none focus:ring-2 focus:ring-white">
+                        <i data-feather="menu" class="w-6 h-6"></i>
+                    </button>
+                    <div>
+                        <h1 id="headerTitle" class="text-2xl font-bold">Envíos</h1>
+                    </div>
+                </div>
+
+                <!-- Derecha: Logo y Nombre del Negocio (Visible en pantallas medianas y grandes) -->
+                <div class="hidden md:flex items-center gap-3">
+                    <div class="text-right">
+                         <p class="text-sm opacity-90">Bienvenido,</p>
+                         <strong id="headerBusinessName" class="font-bold">[Nombre del emprendimiento]</strong>
+                    </div>
+                    <img id="headerLogo" src="" alt="Logo" class="h-12 w-12 rounded-md object-cover bg-white p-1 hidden">
                 </div>
             </header>
 
@@ -1017,6 +1028,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnGuardarConfig = document.getElementById('btnGuardarConfig');
     const sidebarTitle = document.getElementById('sidebarTitle');
     const sidebarLogo = document.getElementById('sidebarLogo');
+    const headerLogo = document.getElementById('headerLogo');
 
     function syncBusinessInfo() {
         const name = localStorage.getItem('businessName') || 'Mi Tienda de Prueba';
@@ -1027,11 +1039,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const logoSrc = localStorage.getItem('businessLogo');
         if (logoSrc) {
             sidebarLogo.src = logoSrc;
+            headerLogo.src = logoSrc;
             logoPreview.src = logoSrc;
             sidebarLogo.classList.remove('hidden');
+            headerLogo.classList.remove('hidden');
             logoPreview.classList.remove('hidden');
         } else {
             sidebarLogo.classList.add('hidden');
+            headerLogo.classList.add('hidden');
             logoPreview.classList.add('hidden');
         }
     }
@@ -1121,4 +1136,5 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
 
