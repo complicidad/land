@@ -816,21 +816,47 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // --- LÓGICA DE LA TABLA Y FILTROS ---
 
-    function manejarVisibilidadColumnas(filtro) {
+    function manejarVisibilidadColumnas(filtro, enviosMostrados) {
         const columnasDelivery = document.querySelectorAll('.col-delivery');
         const columnasAgencia = document.querySelectorAll('.col-agencia');
+        const columnasDinsides = document.querySelectorAll('.col-dinsides'); // NUEVO
 
-        // Primero, aseguramos que todas las columnas sean visibles
-        columnasDelivery.forEach(col => col.classList.remove('col-hidden'));
-        columnasAgencia.forEach(col => col.classList.remove('col-hidden'));
+        // Oculta todas las columnas especiales primero
+        columnasDelivery.forEach(col => col.classList.add('col-hidden'));
+        columnasAgencia.forEach(col => col.classList.add('col-hidden'));
+        columnasDinsides.forEach(col => col.classList.add('col-hidden')); // NUEVO
 
-        // Luego, ocultamos las que no correspondan
-        if (filtro === 'SHALOM' || filtro === 'OLVA' || filtro === 'DINSIDES') {
-            columnasDelivery.forEach(col => col.classList.add('col-hidden'));
-        } else if (filtro === 'DELIVERY') {
-            columnasAgencia.forEach(col => col.classList.add('col-hidden'));
+        if (filtro) {
+            // Lógica existente si hay un filtro específico
+            if (filtro === 'SHALOM' || filtro === 'OLVA') {
+                columnasAgencia.forEach(col => col.classList.remove('col-hidden'));
+            } else if (filtro === 'DINSIDES') {
+                columnasAgencia.forEach(col => col.classList.remove('col-hidden')); // Muestra DNI/Agencia
+                columnasDinsides.forEach(col => col.classList.remove('col-hidden')); // Y Muestra Detalle/Cobrar
+            } else if (filtro === 'DELIVERY') {
+                columnasDelivery.forEach(col => col.classList.remove('col-hidden'));
+            }
+            // Si el filtro es "" (Todos), esta parte se salta
+        } else {
+            // NUEVA LÓGICA: Si el filtro es "Todos", inspecciona los datos mostrados
+            const hasDelivery = enviosMostrados.some(e => e.tipo === 'DELIVERY');
+            const hasAgencia = enviosMostrados.some(e => e.tipo === 'SHALOM' || e.tipo === 'OLVA');
+            const hasDinsides = enviosMostrados.some(e => e.tipo === 'DINSIDES');
+
+            if (hasDelivery) {
+                columnasDelivery.forEach(col => col.classList.remove('col-hidden'));
+            }
+            if (hasAgencia || hasDinsides) {
+                // Muestra DNI/Agencia si hay Shalom, Olva O Dinsides
+                columnasAgencia.forEach(col => col.classList.remove('col-hidden'));
+            }
+            if (hasDinsides) {
+                // Muestra Detalle/Cobrar solo si hay Dinsides
+                columnasDinsides.forEach(col => col.classList.remove('col-hidden'));
+            }
         }
     }
+
 
     function aplicarFiltros() {
         const hoy = new Date().toISOString().split('T')[0];
@@ -881,7 +907,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });        
         
         renderizarTabla(enviosFiltrados, duplicates);
-        manejarVisibilidadColumnas(filtroTipo.value);
+        manejarVisibilidadColumnas(filtroTipo.value, enviosFiltrados);
     }
 
     function renderizarTabla(envios, duplicates) {
@@ -1300,6 +1326,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
 
 
 
