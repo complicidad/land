@@ -1,194 +1,221 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="h-full bg-gray-100">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestor de Negocio</title>
-    <!-- Carga de Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Configuración de Fuentes (Inter) -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
+        body { font-family: 'Inter', sans-serif; }
+        .page { display: none; animation: fadeIn 0.5s; }
+        .page.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        /* Clases para el sidebar colapsable */
+        .sidebar-expanded {
+            width: 16rem; /* 64 * 0.25rem = 256px */
+            padding: 1.5rem; /* 6 * 0.25rem = 24px */
+            transition: width 0.3s ease, padding 0.3s ease, opacity 0.3s ease;
+            opacity: 1;
+            overflow: hidden;
         }
-        /* Ocultar páginas por defecto */
-        .page {
-            display: none;
+        .sidebar-collapsed {
+            width: 0;
+            padding: 0;
+            opacity: 0;
+            transition: width 0.3s ease, padding 0.3s ease, opacity 0.3s ease;
+            overflow: hidden;
         }
-        /* Mostrar la página activa */
-        .page.active {
-            display: block;
+        .content-full {
+            margin-left: 0;
+            transition: margin-left 0.3s ease;
         }
-
-        /* Estilos para los botones de navegación de la barra lateral (desktop) */
-        .sidebar-nav .nav-button {
-            display: flex;
-            align-items: center;
-            width: 100%;
-            text-align: left;
-            padding: 0.75rem 1rem; /* 12px 16px */
-            border-radius: 0.5rem; /* 8px */
-            color: #D1D5DB; /* text-gray-300 */
-            transition: background-color 0.2s, color 0.2s;
-            white-space: nowrap; /* Evita que el texto se parta al colapsar */
+        .content-shifted {
+            margin-left: 16rem; /* 256px */
+            transition: margin-left 0.3s ease;
         }
-        .sidebar-nav .nav-button:hover {
-            background-color: #374151; /* bg-gray-700 */
-            color: white;
-        }
-        .sidebar-nav .nav-button.active {
-            background-color: #F97316; /* bg-orange-500 */
-            color: white;
-            font-weight: 600;
-        }
-
-        /* Estilos para los botones de navegación inferiores (móvil) */
-        .mobile-nav .nav-button {
-            color: #D1D5DB; /* text-gray-300 */
-        }
-        .mobile-nav .nav-button.active {
-            color: #F97316; /* text-orange-500 */
-        }
-
-        /* Asegurar que el contenido principal tenga padding inferior en móvil */
-        @media (max-width: 639px) {
-            body {
-                padding-bottom: 72px; /* Altura de la barra de navegación móvil */
-            }
-        }
+        /* Ocultar scrollbar pero permitir scroll */
+        #product-search-results::-webkit-scrollbar { display: none; }
+        #product-search-results { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen">
+<body class="h-full">
+    
+    <!-- NUEVO: Contenedor de Autenticación -->
+    <div id="auth-container" class="flex min-h-full flex-col justify-center items-center px-6 py-12 lg:px-8 bg-gray-100">
+        <div class="sm:mx-auto sm:w-full sm:max-w-sm">
+            <svg class="mx-auto h-10 w-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-orange-600">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.75A.75.75 0 013 4.5h.75m0 0H21m-12 6.75h.008v.008H9v-.008zM12 15h.008v.008H12v-.008zM15 15h.008v.008H15v-.008zM9 15h.008v.008H9v-.008zm0-3.75h.008v.008H9v-.008zm3 0h.008v.008H12v-.008zm3 0h.008v.008H15v-.008zm3 0h.008v.008H18v-.008zm-9 7.5h.008v.008H9v-.008zm3 0h.008v.008H12v-.008zm3 0h.008v.008H15v-.008zm3 0h.008v.008H18v-.008z" />
+            </svg>
+            <h2 class="mt-4 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">Gestor de Negocio</h2>
+        </div>
 
-    <div class="flex h-screen">
-        <!-- Barra Lateral (Sidebar) - Oculta en móvil -->
-        <aside id="sidebar" class="w-64 bg-gray-800 text-white p-6 hidden sm:flex flex-col flex-shrink-0 transition-all duration-300 ease-in-out">
-            <!-- Título del Gestor (Se oculta al colapsar) -->
-            <span class="text-2xl font-bold text-white mb-8 sidebar-content">Mi Gestor</span>
-            
-            <!-- Navegación de la Sidebar -->
-            <nav class="flex flex-col space-y-2 sidebar-nav sidebar-content">
-                <!-- NUEVO: Resumen -->
-                <button data-page="page-resumen" data-title="Resumen" class="nav-button">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 20 20" fill="currentColor"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" /></svg>
+        <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
+            <!-- Formulario de Login -->
+            <form id="form-login" class="space-y-6">
+                <h3 class="text-xl font-semibold text-gray-800">Iniciar Sesión</h3>
+                <div>
+                    <label for="login-email" class="block text-sm font-medium leading-6 text-gray-900">Correo Electrónico</label>
+                    <div class="mt-2">
+                        <input id="login-email" name="email" type="email" autocomplete="email" required class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-orange-600 sm:text-sm sm:leading-6">
+                    </div>
+                </div>
+                <div>
+                    <label for="login-password" class="block text-sm font-medium leading-6 text-gray-900">Contraseña</label>
+                    <div class="mt-2">
+                        <input id="login-password" name="password" type="password" autocomplete="current-password" required class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-orange-600 sm:text-sm sm:leading-6">
+                    </div>
+                </div>
+                <div>
+                    <button type="submit" class="flex w-full justify-center rounded-md bg-orange-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-orange-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600">Iniciar Sesión</button>
+                </div>
+            </form>
+
+            <!-- Formulario de Registro -->
+            <form id="form-register" class="space-y-6 mt-10 border-t border-gray-200 pt-10">
+                <h3 class="text-xl font-semibold text-gray-800">¿Eres nuevo? Regístrate</h3>
+                <div>
+                    <label for="register-email" class="block text-sm font-medium leading-6 text-gray-900">Correo Electrónico</label>
+                    <div class="mt-2">
+                        <input id="register-email" name="email" type="email" autocomplete="email" required class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-orange-600 sm:text-sm sm:leading-6">
+                    </div>
+                </div>
+                <div>
+                    <label for="register-password" class="block text-sm font-medium leading-6 text-gray-900">Contraseña (mínimo 6 caracteres)</label>
+                    <div class="mt-2">
+                        <input id="register-password" name="password" type="password" required class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-orange-600 sm:text-sm sm:leading-6">
+                    </div>
+                </div>
+                <div>
+                    <button type="submit" class="flex w-full justify-center rounded-md bg-gray-800 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-gray-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-800">Registrarse</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- NUEVO: Contenedor Principal de la App (oculto por defecto) -->
+    <div id="app-container" class="h-full hidden">
+        <!-- Barra Lateral Oscura (Sidebar) - Solo en Escritorio -->
+        <aside id="sidebar" class="hidden sm:block fixed top-0 left-0 h-full bg-gray-800 text-white transition-all duration-300 ease-in-out sidebar-expanded z-20">
+            <div class="p-6">
+                <h1 class="text-2xl font-bold text-white">Mi Negocio</h1>
+            </div>
+            <nav>
+                <a href="#page-resumen" class="nav-link block py-3 px-6 text-gray-300 hover:bg-gray-700 hover:text-white rounded-md">
+                    <svg class="inline-block w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" /></svg>
                     Resumen
-                </button>
-                <!-- RENOMBRADO: Productos (antes Inventario) -->
-                <button data-page="page-productos" data-title="Productos" class="nav-button">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 20 20" fill="currentColor"><path d="M5 8a1 1 0 011-1h1V6a1 1 0 011-1h4a1 1 0 011 1v1h1a1 1 0 011 1v2h1.172a1 1 0 01.707 1.707l-4.172 4.172a1 1 0 01-1.414 0L4.293 11.707A1 1 0 015 10.172V8z" /><path d="M15 11.172V16a1 1 0 01-1 1H6a1 1 0 01-1-1v-4.828l-1.707 1.707A1 1 0 012 11.707V10a1 1 0 011-1h2V8a1 1 0 011-1h6a1 1 0 011 1v1h2a1 1 0 011 1v1.707a1 1 0 01-.293.707L15 11.172zM7 6v1h6V6H7z" /></svg>
+                </a>
+                <a href="#page-productos" class="nav-link block py-3 px-6 text-gray-300 hover:bg-gray-700 hover:text-white rounded-md">
+                    <svg class="inline-block w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.75A.75.75 0 013 4.5h.75m0 0H21m-12 6.75h.008v.008H9v-.008zM12 15h.008v.008H12v-.008zM15 15h.008v.008H15v-.008zM9 15h.008v.008H9v-.008zm0-3.75h.008v.008H9v-.008zm3 0h.008v.008H12v-.008zm3 0h.008v.008H15v-.008zm3 0h.008v.008H18v-.008zm-9 7.5h.008v.008H9v-.008zm3 0h.008v.008H12v-.008zm3 0h.008v.008H15v-.008zm3 0h.008v.008H18v-.008z" /></svg>
                     Productos
-                </button>
-                <!-- RENOMBRADO: Registrar Venta (antes Ventas) -->
-                <button data-page="page-registrar-venta" data-title="Registrar Venta" class="nav-button">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 2a4 4 0 00-4 4v1H5a1 1 0 00-.994.89l-1 9A1 1 0 004 18h12a1 1 0 00.994-1.11l-1-9A1 1 0 0015 7h-1V6a4 4 0 00-4-4zm-2 5V6a2 2 0 114 0v1H8zm2 3a1 1 0 011 1v3a1 1 0 11-2 0v-3a1 1 0 011-1z" clip-rule="evenodd" /></svg>
+                </a>
+                <a href="#page-registrar-venta" class="nav-link block py-3 px-6 text-gray-300 hover:bg-gray-700 hover:text-white rounded-md">
+                    <svg class="inline-block w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                     Registrar Venta
-                </button>
-                <!-- RENOMBRADO: Registrar Compra (antes Compras) -->
-                <button data-page="page-registrar-compra" data-title="Registrar Compra" class="nav-button">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 20 20" fill="currentColor"><path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" /></svg>
+                </a>
+                <a href="#page-registrar-compra" class="nav-link block py-3 px-6 text-gray-300 hover:bg-gray-700 hover:text-white rounded-md">
+                    <svg class="inline-block w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                     Registrar Compra
-                </button>
-                 <!-- NUEVO: Historial de Ventas -->
-                <button data-page="page-historial-ventas" data-title="Historial de Ventas" class="nav-button">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2H4zm0 6a2 2 0 00-2 2v4a2 2 0 002 2h12a2 2 0 002-2v-4a2 2 0 00-2-2H4z" clip-rule="evenodd" /></svg>
-                    Historial Ventas
-                </button>
-                <!-- NUEVO: Historial de Compras -->
-                <button data-page="page-historial-compras" data-title="Historial de Compras" class="nav-button">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 20 20" fill="currentColor"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" /><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h.01a1 1 0 100-2H10zm3 0a1 1 0 000 2h.01a1 1 0 100-2H13z" clip-rule="evenodd" /></svg>
-                    Historial Compras
-                </button>
+                </a>
+                <a href="#page-historial-ventas" class="nav-link block py-3 px-6 text-gray-300 hover:bg-gray-700 hover:text-white rounded-md">
+                    <svg class="inline-block w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z" /></svg>
+                    Historial de Ventas
+                </a>
+                <a href="#page-historial-compras" class="nav-link block py-3 px-6 text-gray-300 hover:bg-gray-700 hover:text-white rounded-md">
+                    <svg class="inline-block w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10.5 11.25h3M12 15V7.5" /></svg>
+                    Historial de Compras
+                </a>
             </nav>
-
-            <!-- ID de Usuario al final (Se oculta al colapsar) -->
-            <div class="mt-auto text-xs text-gray-400 sidebar-content" id="user-id-display">Cargando...</div>
         </aside>
 
-        <!-- Contenido Principal (Wrapper) -->
-        <div class="flex-1 flex flex-col overflow-y-auto">
+        <!-- Contenedor Principal (Derecha) -->
+        <div id="content" class="relative min-h-full sm:pb-0 pb-20 transition-all duration-300 ease-in-out content-shifted">
             
-            <!-- Barra Superior (Header) - Naranja como en la imagen -->
-            <header class="bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-md p-4 flex justify-between items-center sticky top-0 z-10">
-                <div class="flex items-center">
-                    <!-- Botón para colapsar/expandir sidebar (visible en desktop) -->
-                    <button id="sidebar-toggle" class="text-white p-2 rounded-md hover:bg-orange-600 hidden sm:block mr-2">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+            <!-- Header Naranja -->
+            <header class="sticky top-0 bg-orange-600 shadow-md text-white p-4 z-10">
+                <div class="flex items-center justify-between">
+                    <!-- Botón de Menú (Hamburguesa) - Solo Escritorio -->
+                    <button id="sidebar-toggle" class="hidden sm:block p-2 rounded-md hover:bg-orange-700">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                        </svg>
                     </button>
-                    <h1 id="page-title" class="text-xl font-bold">Resumen</h1>
-                </div>
-                <div class="flex items-center">
-                    <span class="hidden sm:inline text-sm">Bienvenido</span>
-                    <!-- Icono de usuario simple -->
-                    <div class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-white text-orange-600 font-bold ml-2 shadow-inner">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
-                          </svg>
+                    <!-- Título de la Página (se actualiza con JS) -->
+                    <h1 id="header-title" class="text-xl font-bold">Resumen</h1>
+                    <!-- Info de Usuario -->
+                    <div class="flex items-center space-x-4">
+                        <span id="user-display" class="text-sm hidden sm:block"></span>
+                        <button id="logout-button" title="Cerrar Sesión" class="p-2 rounded-md hover:bg-orange-700">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
+                            </svg>
+                        </button>
                     </div>
                 </div>
             </header>
 
-            <!-- Contenido de la Página -->
-            <main class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 w-full">
-
-                <!-- NUEVO: Página de Resumen (Dashboard) -->
-                <section id="page-resumen" class="page">
+            <!-- Contenido de las Páginas -->
+            <main class="p-6">
+                <!-- Página: Resumen -->
+                <section id="page-resumen" class="page active">
                     <h1 class="text-2xl font-bold text-gray-800 mb-6 sm:hidden">Resumen</h1>
-                    
-                    <!-- NUEVO: Botón de Datos de Prueba -->
-                    <div class="mb-6">
-                        <button id="mock-data-btn" class="bg-yellow-400 text-gray-800 font-medium py-2 px-4 rounded-lg hover:bg-yellow-500 transition duration-150 ease-in-out">
-                            Añadir Datos de Prueba
-                        </button>
-                    </div>
-
-                    <!-- Tarjetas de Estadísticas -->
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                    <!-- Tarjetas de Métricas -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                         <!-- Ingresos Totales -->
                         <div class="bg-white p-6 rounded-lg shadow-md">
-                            <h2 class="text-sm font-medium text-gray-500">Ingresos Totales (Ventas)</h2>
-                            <p id="ingresos-stat" class="text-3xl font-bold text-green-600 mt-2">S/ 0.00</p>
+                            <h2 class="text-sm font-medium text-gray-500 mb-2">Ingresos Totales (Ventas)</h2>
+                            <p id="total-ingresos" class="text-3xl font-bold text-green-600">S/ 0.00</p>
                         </div>
                         <!-- Costos Totales -->
                         <div class="bg-white p-6 rounded-lg shadow-md">
-                            <h2 class="text-sm font-medium text-gray-500">Costos Totales (Compras)</h2>
-                            <p id="costos-stat" class="text-3xl font-bold text-red-600 mt-2">S/ 0.00</p>
+                            <h2 class="text-sm font-medium text-gray-500 mb-2">Costos Totales (Compras)</h2>
+                            <p id="total-costos" class="text-3xl font-bold text-red-600">S/ 0.00</p>
                         </div>
                         <!-- Ganancia Bruta -->
                         <div class="bg-white p-6 rounded-lg shadow-md">
-                            <h2 class="text-sm font-medium text-gray-500">Ganancia Bruta</h2>
-                            <p id="ganancias-stat" class="text-3xl font-bold text-blue-600 mt-2">S/ 0.00</p>
+                            <h2 class="text-sm font-medium text-gray-500 mb-2">Ganancia Bruta</h2>
+                            <p id="total-ganancia" class="text-3xl font-bold text-blue-600">S/ 0.00</p>
                         </div>
                     </div>
                     
                     <!-- Alerta de Stock Bajo -->
-                    <div class="bg-white p-6 rounded-lg shadow-md">
+                    <div class="bg-white p-6 rounded-lg shadow-md mb-8">
                         <h2 class="text-xl font-bold text-gray-800 mb-4">Alerta de Stock Bajo (5 o menos)</h2>
-                        <div id="low-stock-list" class="space-y-3">
-                            <p class="text-gray-500">Cargando...</p>
-                        </div>
+                        <ul id="low-stock-list" class="space-y-2">
+                            <li id="low-stock-empty" class="text-gray-500">¡Todo bien! No hay productos con stock bajo.</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- NUEVO: Botón de Datos de Prueba -->
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h2 class="text-xl font-bold text-gray-800 mb-4">Datos de Prueba</h2>
+                        <p class="text-gray-600 mb-4">Usa este botón solo una vez (con tu cuenta nueva) para añadir datos de ejemplo y probar la app.</p>
+                        <button id="mock-data-button" class="bg-yellow-500 text-white font-bold py-2 px-4 rounded-md hover:bg-yellow-600 transition-colors">
+                            Añadir Datos de Prueba
+                        </button>
                     </div>
                 </section>
 
-                <!-- Página: Productos (antes Inventario) -->
+                <!-- Página: Productos -->
                 <section id="page-productos" class="page">
                     <h1 class="text-2xl font-bold text-gray-800 mb-6 sm:hidden">Productos</h1>
                     <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h2 class="text-xl font-bold text-gray-800 mb-4">Inventario Actual</h2>
                         <div class="overflow-x-auto">
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead class="bg-gray-50">
                                     <tr>
+                                        <!-- NUEVO: Columna de SKU -->
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Código (SKU)</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Producto</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock Actual</th>
                                     </tr>
                                 </thead>
                                 <tbody id="inventario-list-table" class="bg-white divide-y divide-gray-200">
-                                    <!-- Filas de productos se insertarán aquí -->
+                                    <!-- Los productos se insertarán aquí -->
                                 </tbody>
                             </table>
-                        </div>
-                        <div id="inventario-list-empty" class="hidden text-center py-8 text-gray-500">
-                            No hay productos en tu inventario. Agrega una compra para comenzar.
                         </div>
                     </div>
                 </section>
@@ -197,26 +224,30 @@
                 <section id="page-registrar-venta" class="page">
                     <h1 class="text-2xl font-bold text-gray-800 mb-6 sm:hidden">Registrar Venta</h1>
                     <form id="form-ventas" class="bg-white p-6 rounded-lg shadow-md space-y-4 max-w-xl mx-auto">
-                        <div>
-                            <label for="venta-producto" class="block text-sm font-medium text-gray-700">Nombre del Producto</label>
-                            <input type="text" id="venta-producto" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                        <!-- MODIFICADO: Buscador de Productos -->
+                        <div class="relative">
+                            <label for="venta-producto-search" class="block text-sm font-medium text-gray-700">Nombre del Producto</label>
+                            <input type="text" id="venta-producto-search" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="Escribe para buscar un producto..." autocomplete="off">
+                            <input type="hidden" id="venta-sku-hidden">
+                            
+                            <!-- NUEVO: Contenedor de resultados del desplegable -->
+                            <div id="product-search-results" class="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto hidden mt-1">
+                                <!-- Los resultados se insertarán aquí -->
+                            </div>
                         </div>
                         <div>
                             <label for="venta-cantidad" class="block text-sm font-medium text-gray-700">Cantidad Vendida</label>
                             <input type="number" id="venta-cantidad" min="1" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                         </div>
                         <div>
-                            <label for="venta-precio" class="block text-sm font-medium text-gray-700">Precio de Venta (Total)</label>
-                            <input type="number" id="venta-precio" min="0" step="0.01" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                            <label for="venta-precio" class="block text-sm font-medium text-gray-700">Precio Total de Venta (S/)</label>
+                            <input type="number" id="venta-precio" min="0" step="0.01" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="Ej: 50.00">
                         </div>
-                        <!-- NUEVO: Campo para WhatsApp del Cliente -->
                         <div>
                             <label for="venta-cliente-ws" class="block text-sm font-medium text-gray-700">WhatsApp del Cliente (Opcional)</label>
                             <input type="tel" id="venta-cliente-ws" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="Ej: 987654321">
                         </div>
-                        <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out">
-                            Registrar Venta
-                        </button>
+                        <button type="submit" class="w-full bg-green-600 text-white font-bold py-2 px-4 rounded-md hover:bg-green-700 transition-colors">Registrar Venta</button>
                     </form>
                 </section>
 
@@ -225,32 +256,33 @@
                     <h1 class="text-2xl font-bold text-gray-800 mb-6 sm:hidden">Registrar Compra</h1>
                     <form id="form-compras" class="bg-white p-6 rounded-lg shadow-md space-y-4 max-w-xl mx-auto">
                         <div>
-                            <label for="compra-producto" class="block text-sm font-medium text-gray-700">Nombre del Producto</label>
-                            <input type="text" id="compra-producto" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                            <label for="compra-nombre" class="block text-sm font-medium text-gray-700">Nombre del Producto</label>
+                            <input type="text" id="compra-nombre" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="Ej: Polo Negro Talla M">
                         </div>
                         <div>
-                            <label for="compra-cantidad" class="block text-sm font-medium text-gray-700">Cantidad Comprada</label>
+                            <label for="compra-cantidad" class="block text-sm font-medium text-gray-700">Cantidad Comprada</S/)</label>
                             <input type="number" id="compra-cantidad" min="1" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                         </div>
                         <div>
-                            <label for="compra-costo" class="block text-sm font-medium text-gray-700">Costo de Compra (Total)</Dlabel>
-                            <input type="number" id="compra-costo" min="0" step="0.01" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                            <label for="compra-costo" class="block text-sm font-medium text-gray-700">Costo Total de Compra (S/)</label>
+                            <input type="number" id="compra-costo" min="0" step="0.01" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="Ej: 200.00">
                         </div>
-                        <button type="submit" class="w-full bg-green-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-150 ease-in-out">
-                            Añadir al Inventario
-                        </button>
+                        <button type="submit" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-700 transition-colors">Añadir al Inventario</button>
                     </form>
                 </section>
-                
-                <!-- NUEVO: Página Historial Ventas -->
+
+                <!-- Página: Historial de Ventas -->
                 <section id="page-historial-ventas" class="page">
                     <h1 class="text-2xl font-bold text-gray-800 mb-6 sm:hidden">Historial de Ventas</h1>
                     <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h2 class="text-xl font-bold text-gray-800 mb-4">Todas las Ventas</h2>
                         <div class="overflow-x-auto">
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead class="bg-gray-50">
                                     <tr>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
+                                        <!-- NUEVO: Columna SKU -->
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SKU</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Producto</th>
                                         <!-- NUEVO: Columna Cliente -->
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente (WhatsApp)</th>
@@ -258,21 +290,19 @@
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Precio Total</th>
                                     </tr>
                                 </thead>
-                                <tbody id="historial-ventas-table" class="bg-white divide-y divide-gray-200">
-                                    <!-- Filas de ventas se insertarán aquí -->
+                                <tbody id="historial-ventas-list" class="bg-white divide-y divide-gray-200">
+                                    <!-- Historial se insertará aquí -->
                                 </tbody>
                             </table>
-                        </div>
-                        <div id="historial-ventas-empty" class="hidden text-center py-8 text-gray-500">
-                            No has registrado ninguna venta.
                         </div>
                     </div>
                 </section>
 
-                <!-- NUEVO: Página Historial Compras -->
+                <!-- Página: Historial de Compras -->
                 <section id="page-historial-compras" class="page">
                     <h1 class="text-2xl font-bold text-gray-800 mb-6 sm:hidden">Historial de Compras</h1>
                     <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h2 class="text-xl font-bold text-gray-800 mb-4">Todas las Compras</h2>
                         <div class="overflow-x-auto">
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead class="bg-gray-50">
@@ -283,58 +313,43 @@
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Costo Total</th>
                                     </tr>
                                 </thead>
-                                <tbody id="historial-compras-table" class="bg-white divide-y divide-gray-200">
-                                    <!-- Filas de compras se insertarán aquí -->
+                                <tbody id="historial-compras-list" class="bg-white divide-y divide-gray-200">
+                                    <!-- Historial se insertará aquí -->
                                 </tbody>
                             </table>
-                        </div>
-                        <div id="historial-compras-empty" class="hidden text-center py-8 text-gray-500">
-                            No has registrado ninguna compra.
                         </div>
                     </div>
                 </section>
             </main>
+
+            <!-- Menú de Navegación Inferior (Solo Móvil) -->
+            <nav class="sm:hidden fixed bottom-0 left-0 w-full bg-gray-800 text-white flex justify-around p-2 shadow-lg z-20">
+                <a href="#page-resumen" class="nav-link flex flex-col items-center p-2 text-gray-300 hover:text-white">
+                    <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" /></svg>
+                    <span class="text-xs mt-1">Resumen</span>
+                </a>
+                <a href="#page-productos" class="nav-link flex flex-col items-center p-2 text-gray-300 hover:text-white">
+                    <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.75A.75.75 0 013 4.5h.75m0 0H21m-12 6.75h.008v.008H9v-.008zM12 15h.008v.008H12v-.008zM15 15h.008v.008H15v-.008zM9 15h.008v.008H9v-.008zm0-3.75h.008v.008H9v-.008zm3 0h.008v.008H12v-.008zm3 0h.008v.008H15v-.008zm3 0h.008v.008H18v-.008zm-9 7.5h.008v.008H9v-.008zm3 0h.008v.008H12v-.008zm3 0h.008v.008H15v-.008zm3 0h.008v.008H18v-.008z" /></svg>
+                    <span class="text-xs mt-1">Stock</span>
+                </a>
+                <a href="#page-registrar-venta" class="nav-link flex flex-col items-center p-2 text-gray-300 hover:text-white">
+                    <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    <span class="text-xs mt-1">Venta</span>
+                </a>
+                <a href="#page-registrar-compra" class="nav-link flex flex-col items-center p-2 text-gray-300 hover:text-white">
+                    <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    <span class="text-xs mt-1">Compra</span>
+                </a>
+            </nav>
         </div>
     </div>
-
-    <!-- Navegación Móvil (Barra Inferior) - Visible solo en móvil -->
-    <nav class="sm:hidden fixed bottom-0 left-0 right-0 bg-gray-800 text-white grid grid-cols-5 p-2 border-t border-gray-700 shadow-lg mobile-nav">
-        <button data-page="page-resumen" data-title="Resumen" class="nav-button flex flex-col items-center p-2 rounded-md text-xs font-medium">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mb-1" viewBox="0 0 20 20" fill="currentColor"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" /></svg>
-            Resumen
-        </button>
-        <button data-page="page-productos" data-title="Productos" class="nav-button flex flex-col items-center p-2 rounded-md text-xs font-medium">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mb-1" viewBox="0 0 20 20" fill="currentColor"><path d="M5 8a1 1 0 011-1h1V6a1 1 0 011-1h4a1 1 0 011 1v1h1a1 1 0 011 1v2h1.172a1 1 0 01.707 1.707l-4.172 4.172a1 1 0 01-1.414 0L4.293 11.707A1 1 0 015 10.172V8z" /><path d="M15 11.172V16a1 1 0 01-1 1H6a1 1 0 01-1-1v-4.828l-1.707 1.707A1 1 0 012 11.707V10a1 1 0 011-1h2V8a1 1 0 011-1h6a1 1 0 011 1v1h2a1 1 0 011 1v1.707a1 1 0 01-.293.707L15 11.172zM7 6v1h6V6H7z" /></svg>
-            Productos
-        </button>
-        <button data-page="page-registrar-venta" data-title="Registrar Venta" class="nav-button flex flex-col items-center p-2 rounded-md text-xs font-medium">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mb-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 2a4 4 0 00-4 4v1H5a1 1 0 00-.994.89l-1 9A1 1 0 004 18h12a1 1 0 00.994-1.11l-1-9A1 1 0 0015 7h-1V6a4 4 0 00-4-4zm-2 5V6a2 2 0 114 0v1H8zm2 3a1 1 0 011 1v3a1 1 0 11-2 0v-3a1 1 0 011-1z" clip-rule="evenodd" /></svg>
-            Venta
-        </button>
-        <button data-page="page-registrar-compra" data-title="Registrar Compra" class="nav-button flex flex-col items-center p-2 rounded-md text-xs font-medium">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mb-1" viewBox="0 0 20 20" fill="currentColor"><path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" /></svg>
-            Compra
-        </button>
-        <!-- Historial (combinado en móvil) -->
-        <button data-page="page-historial-ventas" data-title="Historial de Ventas" class="nav-button flex flex-col items-center p-2 rounded-md text-xs font-medium">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mb-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2H4zm0 6a2 2 0 00-2 2v4a2 2 0 002 2h12a2 2 0 002-2v-4a2 2 0 00-2-2H4z" clip-rule="evenodd" /></svg>
-            Historial
-        </button>
-    </nav>
-
-
-    <!-- Modal de Mensajes (Sin cambios) -->
-    <div id="message-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center" style="display: none; z-index: 50;">
-        <div class="bg-white p-6 rounded-lg shadow-xl w-11/12 max-w-sm mx-auto">
-            <h3 id="message-title" class="text-lg font-medium leading-6 text-gray-900">Mensaje</h3>
-            <div class="mt-2">
-                <p id="message-body" class="text-sm text-gray-500">...</p>
-            </div>
-            <div class="mt-4">
-                <button id="message-close-btn" type="button" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none sm:text-sm">
-                    Cerrar
-                </button>
-            </div>
+    
+    <!-- Modal de Mensajes -->
+    <div id="message-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center z-50" style="display: none;">
+        <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm mx-auto">
+            <h3 id="message-title" class="text-xl font-bold mb-4"></h3>
+            <p id="message-body" class="text-gray-700 mb-6"></p>
+            <button id="message-close" class="w-full bg-orange-600 text-white font-bold py-2 px-4 rounded-md hover:bg-orange-700 transition-colors">Entendido</button>
         </div>
     </div>
 
@@ -345,9 +360,10 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { 
             getAuth, 
-            signInAnonymously, 
-            signInWithCustomToken, 
-            onAuthStateChanged 
+            onAuthStateChanged,
+            createUserWithEmailAndPassword,
+            signInWithEmailAndPassword,
+            signOut 
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { 
             getFirestore, 
@@ -359,270 +375,517 @@
             onSnapshot, 
             collection, 
             query, 
-            where,
+            where, 
             increment,
             serverTimestamp,
             setLogLevel
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // --- Configuración de Firebase ---
-        const appId = 'mi-gestor-personal';
-        const firebaseConfig = {
-        apiKey: "AIzaSyBe_H0VfS-8K-n3Ihu-Io2q4SYDZAwbKoQ",
-        authDomain: "compliventas-fc79c.firebaseapp.com",
-        projectId: "compliventas-fc79c",
-        storageBucket: "compliventas-fc79c.firebasestorage.app",
-        messagingSenderId: "734491005717",
-        appId: "1:734491005717:web:85f0be05bc345cfd6bcf1c"
-        };
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        // --- Variables Globales de Firebase ---
+        let app, db, auth;
+        let userId; // El ID del usuario que ha iniciado sesión
+        let inventarioCollection, ventasCollection, comprasCollection; // Colecciones de Firestore
 
-        let app, db, auth, userId;
-        let inventarioCollection, ventasCollection, comprasCollection;
-        
-        // NUEVO: Variables para estadísticas
+        // --- Variables de Estado de la App ---
         let totalIngresos = 0;
         let totalCostos = 0;
+        let inventarioCache = []; // Caché para la búsqueda de productos
         
-        // NUEVO: Helper para formatear moneda
+        // --- Helper para formatear moneda ---
         const formatCurrency = (val) => `S/ ${(val || 0).toFixed(2)}`;
-        // NUEVO: Helper para formatear fecha
+        
+        // --- Helper para formatear fecha ---
         const formatDate = (timestamp) => {
-            if (!timestamp) return 'N/A';
-            return timestamp.toDate().toLocaleString('es-ES', {
-                year: '2-digit',
-                month: '2-digit',
+            if (!timestamp || !timestamp.toDate) return 'Fecha desconocida';
+            return timestamp.toDate().toLocaleDateString('es-ES', {
                 day: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit'
+                month: '2-digit',
+                year: 'numeric'
             });
         };
 
-        setLogLevel('Debug');
+        // 1. Inicialización Principal al Cargar la Página
+        document.addEventListener('DOMContentLoaded', () => {
+            // Configuración de Firebase (usando variables de Canvas)
+            const firebaseConfig = {
+            apiKey: "AIzaSyBe_H0VfS-8K-n3Ihu-Io2q4SYDZAwbKoQ",
+            authDomain: "compliventas-fc79c.firebaseapp.com",
+            projectId: "compliventas-fc79c",
+            storageBucket: "compliventas-fc79c.firebasestorage.app",
+            messagingSenderId: "734491005717",
+            appId: "1:734491005717:web:85f0be05bc345cfd6bcf1c"
+            };
+            const appId = 'mi-gestor-personal'; // O cualquier nombre simple
 
-        // --- Inicialización ---
-        try {
+            // Inicializar Firebase
             app = initializeApp(firebaseConfig);
             db = getFirestore(app);
             auth = getAuth(app);
-            
-            console.log("Firebase inicializado correctamente.");
+            setLogLevel('Debug'); // Para ver logs detallados en la consola
 
-            onAuthStateChanged(auth, async (user) => {
+            // Configurar listeners de autenticación (Login/Registro)
+            setupAuthListeners();
+
+            // Función clave: Escuchar cambios de estado de autenticación
+            onAuthStateChanged(auth, (user) => {
+                const authContainer = document.getElementById('auth-container');
+                const appContainer = document.getElementById('app-container');
+
                 if (user) {
-                    console.log("Usuario autenticado:", user.uid);
+                    // --- Usuario HA INICIADO SESIÓN ---
                     userId = user.uid;
-                    document.getElementById('user-id-display').textContent = `ID: ${userId.substring(0, 8)}...`;
-                    
-                    const userPath = `artifacts/${appId}/users/${userId}`;
-                    inventarioCollection = collection(db, userPath, 'inventario');
-                    ventasCollection = collection(db, userPath, 'ventas');
-                    comprasCollection = collection(db, userPath, 'compras');
-                    
+                    console.log("Usuario autenticado:", userId);
+                    document.getElementById('user-display').textContent = `Usuario: ${user.email}`;
+
+                    // Definir las colecciones con el path de seguridad correcto
+                    const basePath = `/artifacts/${appId}/users/${userId}`;
+                    inventarioCollection = collection(db, `${basePath}/inventario`);
+                    ventasCollection = collection(db, `${basePath}/ventas`);
+                    comprasCollection = collection(db, `${basePath}/compras`);
+
+                    // Mostrar la app y ocultar el login
+                    authContainer.style.display = 'none';
+                    appContainer.classList.remove('hidden');
+
+                    // Inicializar la lógica principal de la app
                     initializeAppLogic();
 
                 } else {
-                    console.log("Usuario no autenticado, intentando login...");
-                    document.getElementById('user-id-display').textContent = "Autenticando...";
-                    try {
-
-                            await signInAnonymously(auth);
-
-                    } catch (error) {
-                        console.error("Error en la autenticación:", error);
-                        showMessage("Error de Autenticación", "No se pudo conectar. Recarga la página.");
-                    }
+                    // --- Usuario NO HA INICIADO SESIÓN ---
+                    console.log("Usuario no autenticado.");
+                    userId = null;
+                    
+                    // Mostrar el login y ocultar la app
+                    authContainer.style.display = 'flex';
+                    appContainer.classList.add('hidden');
                 }
             });
+        });
 
-        } catch (error) {
-            console.error("Error al inicializar Firebase:", error);
-            showMessage("Error Crítico", "No se pudo inicializar la aplicación. Revisa la configuración.");
+        // 2. Lógica de Autenticación (Login, Registro, Logout)
+        function setupAuthListeners() {
+            const formLogin = document.getElementById('form-login');
+            const formRegister = document.getElementById('form-register');
+            const logoutButton = document.getElementById('logout-button');
+
+            formLogin.addEventListener('submit', handleLogin);
+            formRegister.addEventListener('submit', handleRegister);
+            logoutButton.addEventListener('click', handleSignOut);
         }
 
-        // --- Lógica de la Aplicación ---
+        async function handleLogin(e) {
+            e.preventDefault();
+            const email = e.target['login-email'].value;
+            const password = e.target['login-password'].value;
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                // onAuthStateChanged se encargará del resto
+            } catch (error) {
+                console.error("Error al iniciar sesión:", error);
+                showMessage("Error de Login", getFirebaseErrorMessage(error));
+            }
+        }
+
+        async function handleRegister(e) {
+            e.preventDefault();
+            const email = e.target['register-email'].value;
+            const password = e.target['register-password'].value;
+            try {
+                await createUserWithEmailAndPassword(auth, email, password);
+                // onAuthStateChanged se encargará del resto
+            } catch (error) {
+                console.error("Error al registrarse:", error);
+                showMessage("Error de Registro", getFirebaseErrorMessage(error));
+            }
+        }
+
+        async function handleSignOut() {
+            try {
+                await signOut(auth);
+                // onAuthStateChanged se encargará de mostrar el login
+            } catch (error) {
+                console.error("Error al cerrar sesión:", error);
+                showMessage("Error", "No se pudo cerrar la sesión.");
+            }
+        }
+        
+        function getFirebaseErrorMessage(error) {
+            switch (error.code) {
+                case 'auth/invalid-email':
+                    return 'El correo electrónico no es válido.';
+                case 'auth/user-not-found':
+                    return 'No se encontró un usuario con ese correo.';
+                case 'auth/wrong-password':
+                    return 'La contraseña es incorrecta.';
+                case 'auth/email-already-in-use':
+                    return 'Ese correo electrónico ya está registrado.';
+                case 'auth/weak-password':
+                    return 'La contraseña debe tener al menos 6 caracteres.';
+                default:
+                    return 'Ocurrió un error. Revisa la consola para más detalles.';
+            }
+        }
+
+
+        // 3. Lógica Principal de la App (Se llama DESPUÉS del login)
         function initializeAppLogic() {
             setupNavigation();
             setupSidebarToggle();
             setupForms();
             setupModal();
-            setupMockDataButton(); // <-- NUEVO: Activar el botón de prueba
-            
-            // NUEVO: Iniciar los listeners para todas las colecciones
+            setupMockDataButton(); // Configurar el botón de datos de prueba
+
+            // Iniciar los listeners de la base de datos
             listenToInventario();
             listenToVentas();
             listenToCompras();
-        }
 
-        // --- Lógica de Navegación (Actualizada) ---
-        function setupNavigation() {
-            const navButtons = document.querySelectorAll('.nav-button');
-            
-            navButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    const pageId = button.dataset.page;
-                    showPage(pageId); 
-                });
-            });
-
-            // Establecer estado inicial (NUEVO: Resumen)
+            // Mostrar la página de resumen por defecto
             showPage('page-resumen');
         }
 
-        function showPage(pageId) {
-            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
-            const activePage = document.getElementById(pageId);
-            if (activePage) activePage.classList.add('active');
+        // 4. Configuración de Navegación (Menús y Páginas)
+        function setupNavigation() {
+            const navLinks = document.querySelectorAll('.nav-link');
+            const headerTitle = document.getElementById('header-title');
 
-            const pageTitleElement = document.getElementById('page-title');
-            const navButtons = document.querySelectorAll('.nav-button');
-            let newTitle = 'Resumen'; // Título por defecto
-
-            navButtons.forEach(btn => btn.classList.remove('active'));
-            
-            const activeButtons = document.querySelectorAll(`.nav-button[data-page="${pageId}"]`);
-            activeButtons.forEach(b => b.classList.add('active'));
-
-            if (activeButtons.length > 0) {
-                newTitle = activeButtons[0].dataset.title;
-            }
-            if (pageTitleElement) pageTitleElement.textContent = newTitle;
-        }
-
-        // --- Lógica para colapsar Sidebar (Modificada) ---
-        function setupSidebarToggle() {
-            const sidebar = document.getElementById('sidebar');
-            const sidebarToggle = document.getElementById('sidebar-toggle');
-            const sidebarContent = document.querySelectorAll('.sidebar-content'); // Contenido que se oculta
-            let isSidebarOpen = true;
-
-            if (!sidebar || !sidebarToggle) return;
-
-            sidebarToggle.addEventListener('click', () => {
-                isSidebarOpen = !isSidebarOpen;
-                if (isSidebarOpen) {
-                    sidebar.classList.remove('w-0', 'p-0', 'overflow-hidden');
-                    sidebar.classList.add('w-64', 'p-6');
-                    sidebarContent.forEach(el => el.classList.remove('hidden'));
-                } else {
-                    sidebar.classList.add('w-0', 'p-0', 'overflow-hidden');
-                    sidebar.classList.remove('w-64', 'p-6');
-                    sidebarContent.forEach(el => el.classList.add('hidden'));
-                }
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetId = link.getAttribute('href').substring(1);
+                    showPage(targetId);
+                    
+                    // Actualizar título del header
+                    const linkText = link.innerText.trim();
+                    headerTitle.textContent = linkText;
+                });
             });
         }
-
-        // --- Lógica del Modal de Mensajes (Sin cambios) ---
-        function setupModal() {
-            const modal = document.getElementById('message-modal');
-            const closeBtn = document.getElementById('message-close-btn');
-            closeBtn.onclick = () => {
-                modal.style.display = 'none';
-            };
+        
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
         }
 
-        function showMessage(title, body) {
-            document.getElementById('message-title').textContent = title;
-            document.getElementById('message-body').textContent = body;
-            document.getElementById('message-modal').style.display = 'flex';
+        // 5. Configuración del Sidebar Colapsable
+        function setupSidebarToggle() {
+            const toggleButton = document.getElementById('sidebar-toggle');
+            const sidebar = document.getElementById('sidebar');
+            const content = document.getElementById('content');
+
+            toggleButton.addEventListener('click', () => {
+                sidebar.classList.toggle('sidebar-expanded');
+                sidebar.classList.toggle('sidebar-collapsed');
+                content.classList.toggle('content-shifted');
+                content.classList.toggle('content-full');
+            });
+        }
+        
+        // 6. Configuración de Formularios
+        function setupForms() {
+            const formCompras = document.getElementById('form-compras');
+            const formVentas = document.getElementById('form-ventas');
+
+            formCompras.addEventListener('submit', handleCompra);
+            formVentas.addEventListener('submit', handleVenta);
+            
+            setupProductSearch(); // Inicializar el buscador
         }
 
-        // --- Lógica de Firestore (ACTUALIZADA) ---
+        // 7. Manejar Compra (Añadir a Stock)
+        async function handleCompra(e) {
+            e.preventDefault();
+            const form = e.target;
+            const nombre = form['compra-nombre'].value.trim();
+            const cantidad = parseInt(form['compra-cantidad'].value);
+            const costo = parseFloat(form['compra-costo'].value);
 
-        // 1. Escuchar y mostrar inventario (MODIFICADO)
-        function listenToInventario() {
-            if (!inventarioCollection) return;
+            if (!nombre || cantidad <= 0 || costo < 0) {
+                showMessage("Datos incompletos", "Por favor, ingresa nombre, cantidad y costo válidos.");
+                return;
+            }
 
-            onSnapshot(inventarioCollection, (snapshot) => {
-                const tableBody = document.getElementById('inventario-list-table');
-                const emptyMsg = document.getElementById('inventario-list-empty');
-                const lowStockList = document.getElementById('low-stock-list');
-                
-                if (snapshot.empty) {
-                    tableBody.innerHTML = '';
-                    emptyMsg.style.display = 'block';
-                    lowStockList.innerHTML = '<p class="text-gray-500">No hay productos.</p>';
+            try {
+                // Buscar si el producto ya existe (por nombre)
+                const productRef = await findProductByName(nombre);
+                let stockFinal = 0;
+
+                if (productRef) {
+                    // Producto existe, actualizar stock
+                    await updateDoc(productRef, { stock: increment(cantidad) });
+                    const updatedDoc = await getDoc(productRef);
+                    stockFinal = updatedDoc.data().stock;
+                } else {
+                    // Producto nuevo, generar SKU y crearlo
+                    const newProductRef = await addDoc(inventarioCollection, { 
+                        nombre: nombre, 
+                        stock: cantidad, 
+                        sku: 'generando...' // SKU temporal
+                    });
+                    const sku = newProductRef.id.substring(0, 8).toUpperCase();
+                    await updateDoc(newProductRef, { sku: sku }); // Actualizar con el SKU real
+                    stockFinal = cantidad;
+                }
+
+                await addDoc(comprasCollection, {
+                    producto: nombre,
+                    cantidad: cantidad,
+                    costo: costo,
+                    fecha: serverTimestamp()
+                });
+
+                showMessage("Éxito", `¡Compra registrada! Stock actual de "${nombre}": ${stockFinal} unidades.`);
+                form.reset();
+                showPage('page-productos'); // <-- Redirige a Productos
+            
+            } catch (error) {
+                console.error("Error al registrar compra:", error);
+                showMessage("Error", "No se pudo registrar la compra. Revisa la consola.");
+            }
+        }
+
+        // 8. Manejar Venta (Descontar de Stock)
+        async function handleVenta(e) {
+            e.preventDefault();
+            const form = e.target;
+            // Obtener SKU del campo oculto
+            const sku = form['venta-sku-hidden'].value.trim().toUpperCase(); 
+            const nombreInput = form['venta-producto-search'].value; // Para validación
+            const cantidad = parseInt(form['venta-cantidad'].value);
+            const precio = parseFloat(form['venta-precio'].value);
+            const clienteWs = form['venta-cliente-ws'].value.trim();
+
+            if (!sku || !nombreInput || cantidad <= 0 || precio < 0) { 
+                showMessage("Datos incompletos", "Por favor, busca y selecciona un producto válido, luego ingresa cantidad y precio.");
+                return;
+            }
+
+            try {
+                const productRef = await findProductBySku(sku); // Sigue buscando por SKU (más preciso)
+                if (!productRef) {
+                    showMessage("Error", `El producto seleccionado ya no existe.`);
                     return;
                 }
 
-                tableBody.innerHTML = ''; 
+                const productSnap = await getDoc(productRef);
+                const currentStock = productSnap.data().stock;
+                const nombre = productSnap.data().nombre; // Obtener nombre para mensajes
+
+                if (currentStock < cantidad) {
+                    showMessage("Stock Insuficiente", `No puedes vender ${cantidad} unidades de "${nombre}". Solo quedan ${currentStock}.`);
+                    return;
+                }
+
+                await updateDoc(productRef, { stock: increment(-cantidad) });
+
+                await addDoc(ventasCollection, {
+                    producto: nombre,
+                    sku: sku, // Guardar SKU en la venta
+                    cantidad: cantidad,
+                    precio: precio,
+                    clienteWhatsApp: clienteWs, // Guardar en DB
+                    fecha: serverTimestamp()
+                });
+
+                showMessage("Éxito", `¡Venta registrada! Stock restante de "${nombre}": ${currentStock - cantidad} unidades.`);
+                form.reset();
+                form['venta-producto-search'].value = ''; // Limpiar campos manualmente
+                form['venta-sku-hidden'].value = '';
+                showPage('page-resumen'); // <-- Redirige al Resumen
+
+            } catch (error) {
+                console.error("Error al registrar venta:", error);
+                showMessage("Error", "No se pudo registrar la venta. Revisa la consola.");
+            }
+        }
+        
+        // 9. Funciones de Ayuda (Buscar Producto)
+        async function findProductByName(nombre) {
+            if (!inventarioCollection) return null;
+            const q = query(inventarioCollection, where("nombre", "==", nombre));
+            const querySnapshot = await getDocs(q);
+
+            if (querySnapshot.empty) {
+                return null; // No encontrado
+            } else {
+                return querySnapshot.docs[0].ref; // Devuelve la referencia al documento
+            }
+        }
+
+        async function findProductBySku(sku) {
+            if (!inventarioCollection) return null;
+            const q = query(inventarioCollection, where("sku", "==", sku));
+            const querySnapshot = await getDocs(q);
+
+            if (querySnapshot.empty) {
+                return null; // No encontrado
+            } else {
+                return querySnapshot.docs[0].ref; // Devuelve la referencia al documento
+            }
+        }
+
+        // 10. Lógica para Buscador de Productos (Autocompletado)
+        function setupProductSearch() {
+            const searchInput = document.getElementById('venta-producto-search');
+            const resultsContainer = document.getElementById('product-search-results');
+            const hiddenSkuInput = document.getElementById('venta-sku-hidden');
+
+            searchInput.addEventListener('input', () => {
+                const searchTerm = searchInput.value.toLowerCase();
+                hiddenSkuInput.value = ''; // Limpiar SKU si el usuario edita el nombre
+
+                if (searchTerm.length === 0) {
+                    resultsContainer.classList.add('hidden');
+                    return;
+                }
+
+                const filtered = inventarioCache.filter(p => 
+                    p.nombre.toLowerCase().includes(searchTerm) || 
+                    p.sku.toLowerCase().includes(searchTerm)
+                );
+                
+                showSearchResults(filtered, searchInput, resultsContainer, hiddenSkuInput);
+            });
+            
+            searchInput.addEventListener('focus', () => {
+                const searchTerm = searchInput.value.toLowerCase();
+                if (searchTerm.length > 0) {
+                     const filtered = inventarioCache.filter(p => 
+                        p.nombre.toLowerCase().includes(searchTerm) || 
+                        p.sku.toLowerCase().includes(searchTerm)
+                    );
+                    showSearchResults(filtered, searchInput, resultsContainer, hiddenSkuInput);
+                }
+            });
+
+            // Ocultar resultados si se hace clic fuera
+            searchInput.addEventListener('blur', () => {
+                setTimeout(() => {
+                    resultsContainer.classList.add('hidden');
+                }, 200); // Pequeño retraso para permitir el clic en un resultado
+            });
+        }
+
+        function showSearchResults(results, searchInput, resultsContainer, hiddenSkuInput) {
+            resultsContainer.innerHTML = ''; // Limpiar resultados anteriores
+            
+            if (results.length === 0) {
+                resultsContainer.innerHTML = `<div class="p-3 text-sm text-gray-500">No hay coincidencias.</div>`;
+                resultsContainer.classList.remove('hidden');
+                return;
+            }
+
+            results.forEach(product => {
+                const resultDiv = document.createElement('div');
+                resultDiv.className = 'p-3 hover:bg-gray-100 cursor-pointer border-b border-gray-200';
+                resultDiv.innerHTML = `
+                    <div class="font-medium text-gray-800">${product.nombre}</div>
+                    <div class="text-sm text-gray-500">
+                        SKU: ${product.sku} - Stock: <span class="font-bold ${product.stock <= 5 ? 'text-red-500' : 'text-gray-700'}">${product.stock}</span>
+                    </div>
+                `;
+                
+                // Evento al hacer clic en un resultado
+                resultDiv.addEventListener('mousedown', () => {
+                    searchInput.value = product.nombre; // Poner nombre en el input
+                    hiddenSkuInput.value = product.sku;  // Guardar SKU en el campo oculto
+                    resultsContainer.classList.add('hidden'); // Ocultar desplegable
+                });
+                
+                resultsContainer.appendChild(resultDiv);
+            });
+
+            resultsContainer.classList.remove('hidden');
+        }
+
+        // 11. Listeners de Firestore (Actualización en Tiempo Real)
+        function listenToInventario() {
+            if (!inventarioCollection) return;
+            onSnapshot(inventarioCollection, (snapshot) => {
+                const tableBody = document.getElementById('inventario-list-table');
+                const lowStockList = document.getElementById('low-stock-list');
+                const emptyMsg = document.getElementById('low-stock-empty');
+                
+                tableBody.innerHTML = '';
                 lowStockList.innerHTML = '';
                 emptyMsg.style.display = 'none';
+                
+                inventarioCache = []; // Limpiar caché antes de rellenar
 
                 const docs = snapshot.docs;
                 docs.sort((a, b) => a.data().nombre.localeCompare(b.data().nombre));
-                
+
+                if (docs.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="3" class="px-6 py-4 text-gray-500 text-center">No hay productos en tu inventario.</td></tr>';
+                }
+
                 let lowStockCount = 0;
 
                 docs.forEach(doc => {
                     const item = doc.data();
                     const stockClass = item.stock <= 5 ? 'text-red-600 font-bold' : 'text-gray-900';
+                    
+                    // Llenar caché para búsqueda
+                    inventarioCache.push({ id: doc.id, ...item });
 
                     // 1.1: Llenar la tabla de Productos
                     const row = document.createElement('tr');
                     row.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-600">${item.sku}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">${item.nombre}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm ${stockClass}">${item.stock} unidades</td>
                     `;
                     tableBody.appendChild(row);
 
-                    // 1.2: Llenar la lista de Stock Bajo en el Resumen
+                    // 1.2: Llenar la lista de Stock Bajo (en Resumen)
                     if (item.stock <= 5) {
                         lowStockCount++;
-                        const lowItem = document.createElement('div');
-                        lowItem.className = 'flex justify-between items-center p-2 rounded';
-                        lowItem.innerHTML = `
-                            <span class="font-medium text-gray-700">${item.nombre}</span>
+                        const li = document.createElement('li');
+                        li.className = 'flex justify-between items-center text-sm';
+                        li.innerHTML = `
+                            <span class="font-medium text-gray-800">${item.nombre} (SKU: ${item.sku})</span>
                             <span class="font-bold text-red-600">${item.stock} unidades</span>
                         `;
-                        lowStockList.appendChild(lowItem);
+                        lowStockList.appendChild(li);
                     }
                 });
 
-                if (lowStockCount === 0) {
-                     lowStockList.innerHTML = '<p class="text-gray-500">¡Todo bien! No hay productos con stock bajo.</p>';
+                if (lowStockCount > 0) {
+                    emptyMsg.style.display = 'none';
+                } else {
+                    lowStockList.appendChild(emptyMsg);
+                    emptyMsg.style.display = 'block';
                 }
-
-            }, (error) => {
-                console.error("Error al escuchar inventario: ", error);
-                showMessage("Error de Conexión", "No se pudo cargar el inventario.");
             });
         }
-        
-        // 2. NUEVO: Escuchar historial de ventas y calcular ingresos
+
         function listenToVentas() {
             if (!ventasCollection) return;
-
             onSnapshot(ventasCollection, (snapshot) => {
-                const tableBody = document.getElementById('historial-ventas-table');
-                const emptyMsg = document.getElementById('historial-ventas-empty');
+                const tableBody = document.getElementById('historial-ventas-list');
+                const totalIngresosEl = document.getElementById('total-ingresos');
                 
-                totalIngresos = 0;
-                
-                if (snapshot.empty) {
-                    tableBody.innerHTML = '';
-                    emptyMsg.style.display = 'block';
-                    updateDashboardStats();
-                    return;
-                }
-
                 tableBody.innerHTML = '';
-                emptyMsg.style.display = 'none';
-
+                totalIngresos = 0; // Reiniciar
+                
                 const docs = snapshot.docs;
-                docs.sort((a, b) => (b.data().fecha || 0) - (a.data().fecha || 0)); // Más nuevas primero
+                docs.sort((a, b) => b.data().fecha - a.data().fecha); // Más recientes primero
 
+                if (docs.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="6" class="px-6 py-4 text-gray-500 text-center">No has registrado ninguna venta.</td></tr>';
+                }
+                
                 docs.forEach(doc => {
                     const venta = doc.data();
                     totalIngresos += venta.precio || 0;
-                    // NUEVO: Obtener el WhatsApp o mostrar N/A
                     const clienteDisplay = venta.clienteWhatsApp || 'N/A'; 
+                    const skuDisplay = venta.sku || 'N/A'; 
                     
                     const row = document.createElement('tr');
                     row.innerHTML = `
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${formatDate(venta.fecha)}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-500">${skuDisplay}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">${venta.producto}</td>
-                        <!-- NUEVO: Celda Cliente -->
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${clienteDisplay}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${venta.cantidad}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600">${formatCurrency(venta.precio)}</td>
@@ -630,32 +893,26 @@
                     tableBody.appendChild(row);
                 });
                 
-                updateDashboardStats();
+                totalIngresosEl.textContent = formatCurrency(totalIngresos);
+                updateGanancia();
             });
         }
         
-        // 3. NUEVO: Escuchar historial de compras y calcular costos
         function listenToCompras() {
             if (!comprasCollection) return;
-
             onSnapshot(comprasCollection, (snapshot) => {
-                const tableBody = document.getElementById('historial-compras-table');
-                const emptyMsg = document.getElementById('historial-compras-empty');
+                const tableBody = document.getElementById('historial-compras-list');
+                const totalCostosEl = document.getElementById('total-costos');
                 
-                totalCostos = 0;
-                
-                if (snapshot.empty) {
-                    tableBody.innerHTML = '';
-                    emptyMsg.style.display = 'block';
-                    updateDashboardStats();
-                    return;
-                }
-
                 tableBody.innerHTML = '';
-                emptyMsg.style.display = 'none';
+                totalCostos = 0; // Reiniciar
 
                 const docs = snapshot.docs;
-                docs.sort((a, b) => (b.data().fecha || 0) - (a.data().fecha || 0)); // Más nuevas primero
+                docs.sort((a, b) => b.data().fecha - a.data().fecha); // Más recientes primero
+                
+                if (docs.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="4" class="px-6 py-4 text-gray-500 text-center">No has registrado ninguna compra.</td></tr>';
+                }
 
                 docs.forEach(doc => {
                     const compra = doc.data();
@@ -671,251 +928,145 @@
                     tableBody.appendChild(row);
                 });
                 
-                updateDashboardStats();
+                totalCostosEl.textContent = formatCurrency(totalCostos);
+                updateGanancia();
             });
         }
         
-        // 4. NUEVO: Actualizar tarjetas del dashboard
-        function updateDashboardStats() {
-            const ingresosStat = document.getElementById('ingresos-stat');
-            const costosStat = document.getElementById('costos-stat');
-            const gananciasStat = document.getElementById('ganancias-stat');
-            
+        function updateGanancia() {
+            const totalGananciaEl = document.getElementById('total-ganancia');
             const ganancia = totalIngresos - totalCostos;
+            totalGananciaEl.textContent = formatCurrency(ganancia);
             
-            if(ingresosStat) ingresosStat.textContent = formatCurrency(totalIngresos);
-            if(costosStat) costosStat.textContent = formatCurrency(totalCostos);
-            if(gananciasStat) {
-                gananciasStat.textContent = formatCurrency(ganancia);
-                gananciasStat.classList.toggle('text-green-600', ganancia >= 0);
-                gananciasStat.classList.toggle('text-red-600', ganancia < 0);
-            }
-        }
-
-        // 5. Configurar formularios
-        function setupForms() {
-            const formCompras = document.getElementById('form-compras');
-            const formVentas = document.getElementById('form-ventas');
-
-            formCompras.addEventListener('submit', handleCompra);
-            formVentas.addEventListener('submit', handleVenta);
-        }
-
-        // 6. Manejar Compra (Añadir a Stock)
-        async function handleCompra(e) {
-            e.preventDefault();
-            const form = e.target;
-            const nombre = form['compra-producto'].value.trim();
-            const cantidad = parseInt(form['compra-cantidad'].value);
-            const costo = parseFloat(form['compra-costo'].value);
-
-            if (!nombre || cantidad <= 0 || costo < 0) {
-                showMessage("Datos incompletos", "Por favor, ingresa nombre, cantidad y costo válidos.");
-                return;
-            }
-
-            try {
-                const productRef = await findProductByName(nombre);
-                let stockFinal;
-
-                if (productRef) {
-                    await updateDoc(productRef, { stock: increment(cantidad) });
-                    const updatedDoc = await getDoc(productRef);
-                    stockFinal = updatedDoc.data().stock;
-                } else {
-                    await addDoc(inventarioCollection, { nombre: nombre, stock: cantidad });
-                    stockFinal = cantidad;
-                }
-
-                await addDoc(comprasCollection, {
-                    producto: nombre,
-                    cantidad: cantidad,
-                    costo: costo,
-                    fecha: serverTimestamp()
-                });
-
-                showMessage("Éxito", `¡Compra registrada! Nuevo stock de "${nombre}": ${stockFinal} unidades.`);
-                form.reset();
-                showPage('page-resumen'); // <-- Redirige al Resumen
-
-            } catch (error) {
-                console.error("Error al registrar compra: ", error);
-                showMessage("Error", "No se pudo registrar la compra.");
-            }
-        }
-
-        // 7. Manejar Venta (Descontar de Stock)
-        async function handleVenta(e) {
-            e.preventDefault();
-            const form = e.target;
-            const nombre = form['venta-producto'].value.trim();
-            const cantidad = parseInt(form['venta-cantidad'].value);
-            const precio = parseFloat(form['venta-precio'].value);
-            // NUEVO: Capturar el WhatsApp
-            const clienteWs = form['venta-cliente-ws'].value.trim();
-
-            if (!nombre || cantidad <= 0 || precio < 0) {
-                showMessage("Datos incompletos", "Por favor, ingresa nombre, cantidad y precio válidos.");
-                return;
-            }
-
-            try {
-                const productRef = await findProductByName(nombre);
-                if (!productRef) {
-                    showMessage("Error", `El producto "${nombre}" no existe en el inventario.`);
-                    return;
-                }
-
-                const productSnap = await getDoc(productRef);
-                const currentStock = productSnap.data().stock;
-
-                if (currentStock < cantidad) {
-                    showMessage("Stock Insuficiente", `No puedes vender ${cantidad} unidades de "${nombre}". Solo quedan ${currentStock}.`);
-                    return;
-                }
-
-                await updateDoc(productRef, { stock: increment(-cantidad) });
-
-                await addDoc(ventasCollection, {
-                    producto: nombre,
-                    cantidad: cantidad,
-                    precio: precio,
-                    clienteWhatsApp: clienteWs, // NUEVO: Guardar en DB
-                    fecha: serverTimestamp()
-                });
-
-                showMessage("Éxito", `¡Venta registrada! Stock restante de "${nombre}": ${currentStock - cantidad} unidades.`);
-                form.reset();
-                showPage('page-resumen'); // <-- Redirige al Resumen
-
-            } catch (error) {
-                console.error("Error al registrar venta: ", error);
-                showMessage("Error", "No se pudo registrar la venta.");
-            }
-        }
-
-        // 8. Función de ayuda: Buscar un producto por su nombre
-        async function findProductByName(nombre) {
-            const q = query(inventarioCollection, where("nombre", "==", nombre));
-            const querySnapshot = await getDocs(q);
-
-            if (querySnapshot.empty) {
-                return null; // No encontrado
+            if (ganancia > 0) {
+                totalGananciaEl.className = 'text-3xl font-bold text-blue-600';
             } else {
-                return querySnapshot.docs[0].ref; // Devuelve la referencia al documento
+                totalGananciaEl.className = 'text-3xl font-bold text-red-600';
             }
         }
 
-        // --- NUEVO: Lógica para Datos de Prueba ---
+        // 12. Modal de Mensajes
+        function setupModal() {
+            const modal = document.getElementById('message-modal');
+            const closeButton = document.getElementById('message-close');
+            closeButton.onclick = () => {
+                modal.style.display = 'none';
+            };
+        }
+        
+        function showMessage(title, body) {
+            document.getElementById('message-title').textContent = title;
+            document.getElementById('message-body').textContent = body;
+            document.getElementById('message-modal').style.display = 'flex';
+        }
 
+        // 13. Lógica para Datos de Prueba
         function setupMockDataButton() {
-            const mockDataBtn = document.getElementById('mock-data-btn');
-            if (mockDataBtn) {
-                mockDataBtn.addEventListener('click', addMockData);
-            }
+            const mockButton = document.getElementById('mock-data-button');
+            mockButton.addEventListener('click', addMockData);
         }
 
         async function addMockData() {
-            const btn = document.getElementById('mock-data-btn');
-            btn.textContent = 'Cargando datos...';
-            btn.disabled = true;
-
+            if (!inventarioCollection) return;
+            
+            // Comprobar si ya hay datos para no duplicar
+            const checkSnap = await getDocs(query(inventarioCollection));
+            if (!checkSnap.empty) {
+                showMessage("Datos de Prueba", "Parece que ya tienes productos en tu inventario. No se añadirán más datos.");
+                return;
+            }
+            
             try {
-                // 0. Comprobar si ya hay datos
-                const inventarioSnap = await getDocs(inventarioCollection);
-                if (!inventarioSnap.empty) {
-                    showMessage("Datos de Prueba", "La base de datos ya tiene productos. No se añadieron datos de prueba.");
-                    btn.textContent = 'Datos ya existen';
-                    return;
-                }
-
-                console.log("Añadiendo datos de prueba...");
+                showMessage("Procesando...", "Añadiendo datos de prueba. Esto puede tardar un momento.");
 
                 // 1. Añadir Productos (a través de Compras)
                 // Producto 1: Polos
-                await addDoc(inventarioCollection, { nombre: "Polo Negro", stock: 20 });
+                let poloRef = await addDoc(inventarioCollection, { nombre: "Polo Negro", stock: 20, sku: '...' });
+                let poloSku = poloRef.id.substring(0, 8).toUpperCase();
+                await updateDoc(poloRef, { sku: poloSku });
                 await addDoc(comprasCollection, {
                     producto: "Polo Negro",
                     cantidad: 20,
-                    costo: 300, // 20 * 15
+                    costo: 200, // 10 c/u
                     fecha: serverTimestamp()
                 });
 
                 // Producto 2: Gorras
-                await addDoc(inventarioCollection, { nombre: "Gorra Roja", stock: 15 });
+                let gorraRef = await addDoc(inventarioCollection, { nombre: "Gorra Roja", stock: 15, sku: '...' });
+                let gorraSku = gorraRef.id.substring(0, 8).toUpperCase();
+                await updateDoc(gorraRef, { sku: gorraSku });
                 await addDoc(comprasCollection, {
                     producto: "Gorra Roja",
                     cantidad: 15,
-                    costo: 150, // 15 * 10
+                    costo: 150, // 10 c/u
                     fecha: serverTimestamp()
                 });
 
                 // Producto 3: Tote Bag
-                await addDoc(inventarioCollection, { nombre: "Tote Bag", stock: 30 });
+                let toteRef = await addDoc(inventarioCollection, { nombre: "Tote Bag", stock: 30, sku: '...' });
+                let toteSku = toteRef.id.substring(0, 8).toUpperCase();
+                await updateDoc(toteRef, { sku: toteSku });
                 await addDoc(comprasCollection, {
                     producto: "Tote Bag",
                     cantidad: 30,
-                    costo: 240, // 30 * 8
+                    costo: 180, // 6 c/u
                     fecha: serverTimestamp()
                 });
                 
                 // Producto 4: Polo Blanco (Stock bajo)
-                await addDoc(inventarioCollection, { nombre: "Polo Blanco", stock: 5 });
+                let poloBRef = await addDoc(inventarioCollection, { nombre: "Polo Blanco", stock: 5, sku: '...' });
+                let poloBSku = poloBRef.id.substring(0, 8).toUpperCase();
+                await updateDoc(poloBRef, { sku: poloBSku });
                 await addDoc(comprasCollection, {
                     producto: "Polo Blanco",
                     cantidad: 5,
-                    costo: 75, // 5 * 15
+                    costo: 50, // 10 c/u
                     fecha: serverTimestamp()
                 });
 
                 // 2. Añadir Ventas (y descontar stock)
                 // Venta 1: 2 Polos Negros
-                const poloRef = await findProductByName("Polo Negro");
-                if(poloRef) await updateDoc(poloRef, { stock: increment(-2) });
+                await updateDoc(poloRef, { stock: increment(-2) });
                 await addDoc(ventasCollection, {
                     producto: "Polo Negro",
+                    sku: poloSku, 
                     cantidad: 2,
-                    precio: 60, // 2 * 30
-                    clienteWhatsApp: "987654321",
+                    precio: 60, // 30 c/u
+                    clienteWhatsApp: '987654321',
                     fecha: serverTimestamp()
                 });
-
+                
                 // Venta 2: 1 Gorra Roja
-                const gorraRef = await findProductByName("Gorra Roja");
-                if(gorraRef) await updateDoc(gorraRef, { stock: increment(-1) });
+                await updateDoc(gorraRef, { stock: increment(-1) });
                 await addDoc(ventasCollection, {
                     producto: "Gorra Roja",
+                    sku: gorraSku, 
                     cantidad: 1,
                     precio: 20,
-                    clienteWhatsApp: "912345678",
+                    clienteWhatsApp: '',
                     fecha: serverTimestamp()
                 });
                 
                 // Venta 3: 5 Tote Bags
-                const toteRef = await findProductByName("Tote Bag");
-                if(toteRef) await updateDoc(toteRef, { stock: increment(-5) });
+                await updateDoc(toteRef, { stock: increment(-5) });
                 await addDoc(ventasCollection, {
                     producto: "Tote Bag",
+                    sku: toteSku,
                     cantidad: 5,
-                    precio: 75, // 5 * 15
-                    clienteWhatsApp: "987654321", // Cliente recurrente
+                    precio: 75, // 15 c/u
+                    clienteWhatsApp: '999888777',
                     fecha: serverTimestamp()
                 });
-
-                showMessage("Éxito", "¡Datos de prueba cargados! El dashboard se actualizará en segundos.");
-                btn.textContent = '¡Datos Cargados!';
-
+                
+                showMessage("¡Éxito!", "Se añadieron 4 productos, 3 ventas y 4 compras de ejemplo.");
+            
             } catch (error) {
                 console.error("Error al añadir datos de prueba:", error);
-                showMessage("Error", "No se pudieron cargar los datos de prueba.");
-                btn.textContent = 'Error al cargar';
+                showMessage("Error", "No se pudieron añadir los datos de prueba. Revisa la consola.");
             }
         }
 
     </script>
-
 </body>
 </html>
-
-
 
