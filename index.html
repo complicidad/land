@@ -490,8 +490,8 @@ import {
                                             <th class="p-3 text-left text-xs font-bold text-accent uppercase tracking-wider">Fecha Reg.</th>
                                             <th class="p-3 text-left text-xs font-bold text-accent uppercase tracking-wider">Cliente</th>
                                             <th class="p-3 text-left text-xs font-bold text-accent uppercase tracking-wider">Courier</th>
-                                            <th class="p-3 text-left text-xs font-bold text-accent uppercase tracking-wider col-responsive-hide">Destinatario</th>
-                                            <th class="p-3 text-left text-xs font-bold text-accent uppercase tracking-wider col-responsive-hide">Destino</th>
+                                            <th class="p-3 text-left text-xs font-bold text-accent uppercase tracking-wider">Destinatario</th>
+                                            <th class="p-3 text-left text-xs font-bold text-accent uppercase tracking-wider">Destino</th>
                                             <th class="p-3 text-left text-xs font-bold text-accent uppercase tracking-wider">Fecha Envío</th>
                                             <th class="p-3 text-left text-xs font-bold text-accent uppercase tracking-wider">Estado</th>
                                             <th class="p-3 text-left text-xs font-bold text-accent uppercase tracking-wider rounded-tr-xl">Notificar</th>
@@ -981,15 +981,56 @@ function setupAuthListener() {
 
         onSnapshot(q, (snapshot) => {
             // Mapeamos los datos y añadimos el ID de Firestore
-            todosLosEnvios = snapshot.docs.map(doc => ({
-                id: doc.id, // ID del documento de Firestore (es un string)
-                ...doc.data(),
-                estado: doc.data().estado || 'PENDIENTE',
-                detalle: doc.data().detalle || '', // Asegura que existan
-                cobrar: doc.data().cobrar || ''    // Asegura que existan
-            }));
-            
-            aplicarFiltros(); // Redibuja la tabla con los nuevos datos
+// --- INICIO DE LA MODIFICACIÓN (Formato de Fechas) ---
+            todosLosEnvios = snapshot.docs.map(doc => {
+                const data = doc.data(); // Obtiene los datos del documento
+
+                // --- Función Auxiliar para Formatear ---
+                const formatTimestamp = (timestamp) => {
+                    if (!timestamp || !timestamp.toDate) {
+                        // Si ya es un string YYYY-MM-DD (de datos antiguos)
+                        if (typeof timestamp === 'string' && timestamp.includes('-')) {
+                            const parts = timestamp.split('-');
+                            if (parts.length === 3) {
+                                return {
+                                    display: `${parts[2]}-${parts[1]}-${parts[0]}`, // dd-mm-yyyy
+                                    input: timestamp // YYYY-MM-DD
+                                };
+                            }
+                        }
+                        return { display: '', input: '' }; // Vacío si no es válido
+                    }
+
+                    const jsDate = timestamp.toDate();
+                    const day = String(jsDate.getDate()).padStart(2, '0');
+                    const month = String(jsDate.getMonth() + 1).padStart(2, '0'); // +1 porque es 0-indexado
+                    const year = jsDate.getFullYear();
+
+                    return {
+                        display: `${day}-${month}-${year}`, // dd-mm-yyyy
+                        input: `${year}-${month}-${day}`   // YYYY-MM-DD
+                    };
+                };
+
+                // --- Traducción de Fechas ---
+                const fechaReg = formatTimestamp(data.fechaRegistro);
+                const fechaEnvio = formatTimestamp(data.fechaEnvio);
+
+                // Construimos el objeto 'envio'
+                return {
+                    id: doc.id, // ID del documento
+                    ...data, // Copia el resto de los datos (nombre, cliente, etc.)
+                    estado: data.estado || 'PENDIENTE',
+                    detalle: data.detalle || '', 
+                    cobrar: data.cobrar || '',
+                    fechaReg: fechaReg.display,         // <--- Formato dd-mm-yyyy
+                    fechaEnvioDisplay: fechaEnvio.display, // <--- Formato dd-mm-yyyy
+                    fechaEnvioInput: fechaEnvio.input,     // <--- Formato YYYY-MM-DD (para el input)
+                };
+            });
+            // --- FIN DE LA MODIFICACIÓN ---
+
+            aplicarFiltros();
             showToast('Envíos sincronizados.');
 
         }, (error) => {
@@ -1000,7 +1041,7 @@ function setupAuthListener() {
         });
     }
     // ======================= FIN DEL REEMPLAZO =======================
-    
+
     // --- LÓGICA DE LA TABLA Y FILTROS ---
 
     function aplicarFiltros() {
@@ -1013,7 +1054,7 @@ function setupAuthListener() {
         const seen = {};
         const duplicates = new Set();
         todosLosEnvios.forEach(envio => {
-            const key = `${envio.cliente}-${envio.fechaEnvio ? envio.fechaEnvio.substring(0, 10) : 'sin-fecha'}`;
+            const key = `${envio.cliente}-${envio.fechaEnvioDisplay || ''}`;
             if (seen[key]) {
                 duplicates.add(key);
             } else {
@@ -1026,10 +1067,10 @@ function setupAuthListener() {
             const fechaMatch = filtroFecha.value
                 ? (envio.fechaEnvio && envio.fechaEnvio.substring(0, 10) === filtroFecha.value) 
                 : true; // <--- CAMBIO: Mostrar todos si no hay filtro de fecha
-            const tipoMatch = !tipoFilter || envio.tipo === tipoFilter;
+            const tipoMatch = !tipoFilter || envio.courier === tipoFilter;
             
             if (mostrarSoloDuplicados) {
-                const key = `${envio.cliente}-${envio.fechaEnvio ? envio.fechaEnvio.substring(0, 10) : 'sin-fecha'}`;
+                const key = `${envio.cliente}-${envio.fechaEnvioDisplay || ''}`;
                 const esDuplicado = duplicates.has(key);
                 return esDuplicado && clienteMatch && fechaMatch && tipoMatch;
             }
@@ -1081,7 +1122,7 @@ function setupAuthListener() {
                     }
                 };
 
-                const key = `${envio.cliente}-${envio.fechaEnvio ? envio.fechaEnvio.substring(0, 10) : 'sin-fecha'}`;
+                const key = `${envio.cliente}-${envio.fechaEnvioDisplay || ''}`;
                 const isDuplicate = duplicates.has(key);
                 const duplicateClass = isDuplicate ? 'bg-yellow-200/50' : '';
 
@@ -1091,10 +1132,10 @@ function setupAuthListener() {
                 tr.dataset.id = envio.id; // ID de Firestore (string)
                 tr.innerHTML = `
                     <td class="p-3 text-center"><input type="checkbox" class="rowCheck rounded border-gray-300 text-accent focus:ring-accent" data-id="${envio.id}"></td>
-                    <td class="p-3 text-sm text-gray-700">${envio.fechaReg ? envio.fechaReg.substring(0, 10) : ''}</td>
+                    <td class="p-3 text-sm text-gray-700">${envio.fechaReg || ''}</td>
                     <td class="p-3 text-sm text-gray-700">${envio.cliente}</td>
-                    <td class="p-3 text-sm text-gray-700">${envio.tipo}</td>
-                    <td class="p-3 text-sm text-gray-700 col-responsive-hide">
+                    <td class="p-3 text-sm text-gray-700">${envio.courier}</td>
+                    <td class="p-3 text-sm text-gray-700">
                         <span class="font-bold text-gray-900">${envio.nombre || 'N/A'}</span>
                         <span class="block text-sm text-gray-500">${envio.telefono || 'N/A'}</span>
                         ${
@@ -1104,11 +1145,11 @@ function setupAuthListener() {
                             : ''
                         }
                     </td>
-                    <td class="p-3 text-sm text-gray-700 col-responsive-hide">
+                    <td class="p-3 text-sm text-gray-700">
                         ${
                             // --- INICIO: Lógica de Destino Dinámico (sin DNI) ---
                             (() => {
-                                if (envio.tipo === 'DELIVERY' || envio.tipo === 'DINSIDES') {
+                                if (envio.courier === 'DELIVERY' || envio.courier === 'DINSIDES') {
                                     return `
                                         <span class="font-semibold text-gray-800">${envio.distrito || 'N/A'}</span>
                                         <span class="block text-xs text-gray-500">${envio.direccion || 'N/A'}</span>
@@ -1123,7 +1164,7 @@ function setupAuthListener() {
                             // --- FIN: Lógica de Destino Dinámico ---
                         }
                     </td>
-                    <td class="p-3 text-sm text-gray-700">${envio.fechaEnvio ? envio.fechaEnvio.substring(0, 10) : ''}</td>
+                    <td class="p-3 text-sm text-gray-700">${envio.fechaEnvioDisplay || ''}</td>
                     <td class="p-3 text-sm">
                         <!-- Contenedor para edición inline -->
                         <div class="inline-edit-container">
@@ -1134,7 +1175,7 @@ function setupAuthListener() {
                                 <option value="REPROGRAMADO" ${envio.estado === 'REPROGRAMADO' ? 'selected' : ''}>Reprogramado</option>
                                 <option value="ELIMINAR" class="text-red-600 font-semibold">Eliminar...</option>
                             </select>
-                            <input type="date" class="inline-edit-fecha input border border-gray-200 bg-white focus:outline-none focus:border-accent focus:ring-1 focus:ring-orange-100 oculto" value="${envio.fechaEnvio ? envio.fechaEnvio.substring(0, 10) : ''}" data-original-fecha="${envio.fechaEnvio ? envio.fechaEnvio.substring(0, 10) : ''}">
+                            <input type="date" class="inline-edit-fecha input border border-gray-200 bg-white focus:outline-none focus:border-accent focus:ring-1 focus:ring-orange-100 oculto" value="${envio.fechaEnvioDisplay || ''}" data-original-fecha="${envio.fechaEnvioDisplay || ''}">
                             <button class="inline-save-btn btn primary bg-accent text-white shadow-md shadow-accent/20 hover:shadow-lg hover:shadow-accent/30 hover:-translate-y-0.5 transition-all duration-200 inline-flex items-center justify-center gap-1 oculto">
                                 <i data-feather="save" class="w-3 h-3"></i>
                             </button>
@@ -1157,7 +1198,7 @@ function setupAuthListener() {
                                 <p class="font-bold text-gray-800">${envio.nombre}</p>
                                 ${
                                     (() => {
-                                        if (envio.tipo === 'DELIVERY' || envio.tipo === 'DINSIDES') {
+                                        if (envio.courier === 'DELIVERY' || envio.courier === 'DINSIDES') {
                                             return `<p class="text-sm text-gray-500">${envio.distrito || 'N/A'}</p>`;
                                         } else { // Shalom, Olva, etc.
                                             return `<p class="text-sm text-gray-500">${envio.agencia || 'N/A'}</p>`;
@@ -1170,8 +1211,8 @@ function setupAuthListener() {
                     </div>
                     <div class="text-sm text-gray-600 space-y-2 pl-8">
                         <p><strong class="text-gray-500">Cliente:</strong> ${envio.cliente}</p>
-                        <p><strong class="text-gray-500">Courier:</strong> ${envio.tipo}</p>
-                        <p><strong class="text-gray-500">Fecha Envío:</strong> ${envio.fechaEnvio ? envio.fechaEnvio.substring(0, 10) : ''}</p>
+                        <p><strong class="text-gray-500">Courier:</strong> ${envio.courier}</p>
+                        <p><strong class="text-gray-500">Fecha Envío:</strong> ${envio.fechaEnvioDisplay || ''}</p>
                         <!-- Info Dinsides para móvil eliminada de aquí -->
                     </div>
 
@@ -1184,7 +1225,7 @@ function setupAuthListener() {
                             <option value="ENTREGADO" ${envio.estado === 'ENTREGADO' ? 'selected' : ''}>Entregado</option>
                             <option value="REPROGRAMADO" ${envio.estado === 'REPROGRAMADO' ? 'selected' : ''}>Reprogramado</option>
                         </select>
-                        <input type="date" class="inline-edit-fecha input p-2 border border-gray-200 rounded-lg bg-white w-full text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-orange-100 oculto" value="${envio.fechaEnvio ? envio.fechaEnvio.substring(0, 10) : ''}" data-original-fecha="${envio.fechaEnvio ? envio.fechaEnvio.substring(0, 10) : ''}">
+                        <input type="date" class="inline-edit-fecha input p-2 border border-gray-200 rounded-lg bg-white w-full text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-orange-100 oculto" value="${envio.fechaEnvioDisplay || ''}" data-original-fecha="${envio.fechaEnvioDisplay || ''}">
                         <button class="inline-save-btn btn primary bg-accent text-white rounded-lg font-bold text-sm shadow-md shadow-accent/20 hover:shadow-lg hover:shadow-accent/30 hover:-translate-y-0.5 transition-all duration-200 inline-flex items-center justify-center gap-1 oculto py-2">
                             <i data-feather="save" class="w-4 h-4"></i> Guardar Cambio
                         </button>
@@ -1334,7 +1375,7 @@ function setupAuthListener() {
             let destinationHtml = '';
             let detailsHtml = ''; // Variable para los detalles extra
 
-            if (envio.tipo === 'DELIVERY') {
+            if (envio.courier === 'DELIVERY') {
                 const direccionCompleta = [envio.direccion, envio.distrito].filter(Boolean).join(', ');
                 destinationHtml = `
                     <div class="label-section">
@@ -1345,7 +1386,7 @@ function setupAuthListener() {
                         </p>
                     </div>
                 `;
-            } else if (envio.tipo === 'DINSIDES') {
+            } else if (envio.courier === 'DINSIDES') {
                 // HTML de Destino para Dinsides
                 // --- INICIO DE LA MODIFICACIÓN ---
                 const monto = parseFloat(envio.cobrar);
@@ -1356,7 +1397,7 @@ function setupAuthListener() {
                         <div class="label-section-title">Destino:</div>
                         <p class="label-destination-text">
                             <strong>Distrito:</strong> ${envio.distrito || 'N/A'}<br>
-                            <strong>Fecha Entrega:</strong> ${envio.fechaEnvio ? envio.fechaEnvio.substring(0, 10) : 'N/A'}<br>
+                            <strong>Fecha Entrega:</strong> ${envio.fechaEnvioDisplay || ''}<br>
                             <!-- Campos movidos y sin estilo especial -->
                             <strong>Detalle:</strong> ${envio.detalle || 'Ropa'}<br>
                             <strong>Cobrar:</strong> ${montoDisplay}
@@ -1397,7 +1438,7 @@ function setupAuthListener() {
                     <div class="label-footer">
                         <div class="label-courier-info">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
-                            <span>${envio.tipo || 'N/A'}</span>
+                            <span>${envio.courier || 'N/A'}</span>
                         </div>
                         <!-- <div class="label-qr-code">QR Code</div> -->
                     </div>
@@ -1555,9 +1596,14 @@ if (logoSrc) {
         // ======================= REEMPLAZO: DE GOOGLE SCRIPT A FIRESTORE =======================
         try {
             const docRef = doc(enviosCollectionRef, id); // Referencia al documento
-            delete payload.id; // Elimina el ID del objeto, ya que es el nombre del documento
-            
-            await setDoc(docRef, payload); // setDoc sobrescribe el documento completo
+            // Corrección: Usar updateDoc para no borrar los datos del cliente
+            // Creamos un objeto solo con los campos que se guardan en /envios
+            const datosParaActualizar = {
+                estado: payload.estado,
+                fechaEnvio: payload.fechaEnvio
+            };
+
+            await updateDoc(docRef, datosParaActualizar); // updateDoc actualiza, no sobrescribe
 
             // onSnapshot se encargará de actualizar la UI automáticamente.
             showToast('Envío actualizado.');
