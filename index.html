@@ -740,12 +740,6 @@ const {
 // Función para inicializar Firebase (SIN AUTENTICACIÓN)
 async function initFirebase() {
     try {
-        // 1. Obtener configuración y App ID
-        if (typeof __app_id === 'undefined') {
-            console.error("App ID is missing.");
-            showToast("Error: Faltan variables de configuración.");
-            return false;
-        }
 
         // Configuración de Firebase proporcionada por el usuario
         const firebaseConfig = {
@@ -756,8 +750,6 @@ async function initFirebase() {
             messagingSenderId: "942482653487",
             appId: "1:942482653487:web:4193c16f078992659521da"
         };
-
-        const appId = __app_id; // Mantenemos el __app_id
 
         // 2. Inicializar Firebase
         app = initializeApp(firebaseConfig);
@@ -826,7 +818,6 @@ function setupAuthListener() {
             userId = user.uid; // Establece el userId global
 
             // Define la ruta de la colección (privada del usuario)
-            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
             enviosCollectionRef = collection(db, 'envios');
 
             // Muestra el panel y oculta el login
