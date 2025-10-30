@@ -2,893 +2,1518 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8" />
+    <title>Panel de Control — Latam5S</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Agenda tu envío</title>
-
-    <!-- Meta Tags OGP y Twitter (se mantienen sin cambios) -->
-    <meta property="og:title" content="Agenda tu envío" />
-    <meta property="og:description" content="Agenda tu envío de manera simple, rápida y segura." />
-    <meta property="og:image" content="https://complicidad.github.io/form/Spin.png" />
-    <meta property="og:url" content="https://complicidad.github.io/form" />
-    <meta property="og:type" content="website" />
-    <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" content="Agenda tu envío" />
-    <meta name="twitter:description" content="Agenda tu envío de manera simple, rápida y segura." />
-    <meta name="twitter:image" content="https://complicidad.github.io/form/Spin.png" />
-
-    <!-- SDKs de Firebase (CORREGIDOS A VERSIÓN 8) -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-    
-    <!-- AÑADIDO: SDK de App Check -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app-check.js"></script>
-
-    <!-- jQuery (se mantiene para la lógica existente) -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-    <!-- Fuente Quicksand (Alineada con tu landing page) -->
+    <!-- Google Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
-
+    <script src="https://unpkg.com/feather-icons"></script>
+    
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        /* Configuración de Tailwind para usar la fuente Quicksand y colores de marca */
-        @layer base {
-            body {
-                font-family: 'Quicksand', sans-serif;
-            }
-        }
-        
-        /* Definición de colores de marca para su uso en clases personalizadas */
-        :root {
-            --brand-accent: #D96B4F;
-            --brand-accent-alt: #FF8B6A;
-            --danger-color: #d93025; 
-        }
-        
-        /* Estilos personalizados para manejo de estados (Tailwind no permite `!important` en focus/invalid sin config extendida) */
-        .is-invalid {
-            border-color: var(--danger-color) !important;
-            box-shadow: 0 0 0 3px rgba(217, 48, 37, 0.15) !important;
-        }
-
-        /* Keyframes para el spinner */
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-        .animate-spin-custom {
-          animation: spin 1s linear infinite;
-        }
-
-    </style>
     <script>
+        // Configuración de Tailwind para usar colores y fuentes personalizados
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        'brand-bg': '#fffaf6',
-                        'brand-card': '#ffffff',
-                        'brand-text': '#2b2b2b',
-                        'brand-muted': '#6b6b6b',
-                        'brand-accent': '#D96B4F', // Terracota principal
-                        'brand-accent-alt': '#FF8B6A', // Terracota claro para hover/sombra
-                        danger: '#d93025',
-                    },
-                    borderRadius: {
-                        'xl': '12px',
+                        'accent': '#D96B4F',
+                        'accent-alt': '#FF8B6A',
+                        'bg-soft': '#fffaf6',
+                        'badge-pending': '#9a6200',
+                        'badge-sent': '#D96B4F',
+                        'badge-delivered': '#1b7f3a',
+                        'badge-rescheduled': '#8e44ad',
+                        'brand-accent': '#D96B4F',
+                        // Colores para el nuevo menú lateral
+                        'sidebar-bg': '#1f2937', // Gris oscuro para el fondo
+                        'sidebar-hover': '#374151', // Gris más claro para el hover
+                        'sidebar-active-bg': '#D96B4F', // Color accent para el fondo del enlace activo
                     },
                     fontFamily: {
-                        'quicksand': ['Quicksand', 'sans-serif'],
-                    }
-                }
+                        sans: ['Quicksand', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'Arial', 'sans-serif'],
+                    },
+                    borderRadius: { 'xl': '14px' }
+                },
             }
         }
     </script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        /* El bloqueo del scroll principal se aplica solo en desktop */
+        @media (min-width: 768px) {
+            html, body, #root-container {
+                height: 100%;
+            }
+        }
+      
+        #sidebar {
+          z-index: 60; /* Asegura que quede por encima del header */
+        }
+
+        #sidebarOverlay {
+          z-index: 50; /* Queda justo debajo del sidebar, pero encima del contenido */
+        }
+
+        header {
+          position: sticky;
+          top: 0;
+          z-index: 40; /* Menor que el sidebar */
+        }      
+      
+        body { 
+            background-color: #fffaf6; 
+            color: #2b2b2b; 
+            line-height: 1.6;
+        }
+        .oculto { display: none !important; }
+
+        /* SOLUCIÓN DEFINITIVA: Se centraliza el control de visibilidad y layout. */
+        /* Todas las secciones están ocultas por defecto. */
+        main > section { display: none; }
+        /* La clase 'active' es la ÚNICA responsable de mostrar una sección y darle el layout de columna vertical. */
+        main > section.active { 
+            display: flex;
+            flex-direction: column;
+        }
+
+        .nowrap { white-space: nowrap; }
+        #editPanel { transition: transform 0.3s ease-in-out; }
+
+        /* Estilos para cabecera de tabla fija */
+        #tablaEnvios > thead > tr > th {
+            position: -webkit-sticky;
+            position: sticky;
+            top: 0;
+            z-index: 5;
+            background-color: #fef3c7; /* Se usa un color sólido para evitar transparencias */
+        }
+        
+        /* Contenedor de etiquetas oculto por defecto */
+        .print-container { display: none; }
+
+        @media print {
+            /* Oculta explícitamente los elementos de la interfaz principal. */
+            #root-container, .toast, #deleteModal, #editPanelOverlay, #editPanel {
+                display: none !important;
+            }
+            
+            /* Muestra el contenedor de impresión y lo prepara. */
+            .print-container { 
+                display: block !important; 
+                width: 100%; 
+                column-count: 2; 
+                column-gap: 1cm; 
+                padding: 0.5cm; 
+            }
+            
+            /* --- NUEVO Y MEJORADO DISEÑO DE ETIQUETA --- */
+            .label-card {
+                font-family: 'Quicksand', sans-serif;
+                break-inside: avoid;
+                page-break-inside: avoid;
+                margin-bottom: 1cm;
+                border: 1px solid #e0e0e0;
+                border-radius: 12px;
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+                background-color: #ffffff;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            }
+            .label-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 12px 16px;
+                background-color: #fffaf6; /* bg-soft */
+                border-bottom: 1px solid #e0e0e0;
+            }
+            .label-logo {
+                max-height: 40px;
+                max-width: 100px;
+                object-fit: contain;
+            }
+            .label-business-name {
+                font-size: 16px;
+                font-weight: 700;
+                color: #333;
+                text-align: right;
+            }
+            .label-body {
+                padding: 16px;
+                flex-grow: 1;
+            }
+            .label-section {
+                margin-bottom: 12px;
+            }
+            .label-section-title {
+                font-size: 10px;
+                font-weight: 700;
+                color: #D96B4F; /* accent */
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                margin-bottom: 4px;
+            }
+            .label-recipient-name {
+                font-size: 20px;
+                font-weight: 700;
+                color: #000;
+                line-height: 1.2;
+            }
+            .label-recipient-phone {
+                font-size: 14px;
+                color: #555;
+            }
+            .label-destination-text {
+                font-size: 14px;
+                line-height: 1.5;
+                color: #333;
+            }
+            /* Estilo específico para el monto a cobrar */
+            .label-amount-to-collect {
+                background-color: #1f2937; /* sidebar-bg */
+                color: #ffffff;
+                padding: 8px 12px;
+                border-radius: 8px;
+                text-align: center;
+                margin-top: 8px;
+            }
+            .label-amount-to-collect span {
+                font-size: 12px;
+            }
+            .label-amount-to-collect strong {
+                font-size: 20px;
+                letter-spacing: 1px;
+            }
+            .label-footer {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 12px 16px;
+                background-color: #f9fafb; /* gray-50 */
+                border-top: 1px solid #e0e0e0;
+            }
+            .label-courier-info {
+                font-size: 12px;
+                font-weight: 600;
+                color: #555;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+            }
+            .label-courier-info svg {
+                width: 16px;
+                height: 16px;
+                stroke-width: 2.5;
+            }
+            .label-qr-code {
+                width: 60px;
+                height: 60px;
+                border: 1px solid #ccc;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 10px;
+                color: #888;
+                text-align: center;
+            }
+        }
+
+        @media (min-width: 768px) {
+            body:not(.scroll-enabled) #root-container {
+                overflow: hidden;
+            }
+
+            body.scroll-enabled #mainContent {
+                overflow-y: auto;
+            }
+        }
+
+        .col-hidden {
+            display: none;
+        }
+
+        /* Estilos para edición inline */
+        .inline-edit-container {
+            display: flex;
+            align-items: center;
+            gap: 4px; /* Espacio entre select, input y botón */
+        }
+        .inline-edit-estado {
+            min-width: 120px; /* Ancho mínimo para el select */
+            flex-shrink: 0;
+            /* Estilos reducidos para inputs inline */
+            padding: 0.3rem 0.5rem !important; /* Más pequeño, !important para sobreescribir Tailwind */
+            font-size: 0.75rem !important; /* Más pequeño */
+            border-radius: 0.5rem !important; /* rounded-lg */
+        }
+         .inline-edit-fecha {
+             max-width: 150px; /* Ancho máximo para la fecha */
+             flex-shrink: 0;
+             /* Estilos reducidos para inputs inline */
+             padding: 0.3rem 0.5rem !important;
+             font-size: 0.75rem !important;
+             border-radius: 0.5rem !important;
+         }
+        .inline-save-btn {
+             padding: 4px 8px !important; /* Botón más pequeño */
+             flex-shrink: 0;
+             font-size: 0.75rem !important; /* Texto más pequeño */
+             border-radius: 0.5rem !important; /* rounded-lg */
+        }
+        .inline-save-btn svg {
+            width: 14px !important;
+            height: 14px !important;
+        }
+
+        /* Ajustes para tarjetas móviles */
+        #mobileCardContainer .inline-edit-container {
+            flex-direction: column;
+            align-items: flex-start; /* Alinear a la izquierda en móvil */
+            margin-top: 8px;
+            gap: 8px; /* Más espacio vertical en móvil */
+            padding-top: 8px;
+            border-top: 1px solid #eee; /* Separador visual */
+        }
+         #mobileCardContainer .inline-edit-fecha {
+             max-width: none; /* Ancho completo en móvil */
+             width: 100%;
+             padding: 0.5rem !important; /* Padding normal en móvil */
+             font-size: 0.875rem !important; /* Tamaño normal en móvil */
+         }
+          #mobileCardContainer .inline-edit-estado {
+             width: 100%;
+             padding: 0.5rem !important; /* Padding normal en móvil */
+             font-size: 0.875rem !important; /* Tamaño normal en móvil */
+         }
+         #mobileCardContainer .inline-save-btn {
+            width: 100%;
+            justify-content: center;
+            padding: 0.5rem 1rem !important; /* Padding normal en móvil */
+            font-size: 0.875rem !important; /* Tamaño normal en móvil */
+         }
+
+    </style>
 </head>
-
-<body class="flex flex-col bg-brand-bg text-brand-text">
-
-    <!-- Contenedor principal del formulario (main) -->
-    <main class="flex-grow p-5 max-w-xl mx-auto font-quicksand w-full">
-
-        <!-- La tarjeta usa el fondo blanco (brand-card) -->
-        <div class="bg-brand-card p-6 md:p-8 rounded-xl shadow-2xl">
-
-        <!-- Logo -->
-        <div class="text-center p-4">
-            <img src="https://raw.githubusercontent.com/complicidad/form/main/Spin.png" alt="Logo Complicidad" class="max-w-[225px] h-auto inline-block">
-        </div>      
-            
-            
-            <form id="formulario" novalidate>
-
-                <h2 class="mt-[0px] mb-2 text-center text-2xl font-bold text-brand-text">Agenda tu envío</h2>
-
-                <!-- Campo 1: WhatsApp usado -->
-                <!-- UX: Se usa type="tel" para facilitar el input en móvil y se añade asterisco -->
-                <label for="telefonoUsado" class="block mt-4 font-semibold text-sm text-brand-text">WhatsApp con el que compraste <span class="text-danger">*</span></label>
-                <input
-                    type="tel"
-                    id="telefonoUsado"
-                    name="telefonoUsado"
-                    required
-                    placeholder="Ej. 9XXXXXXXX"
-                    pattern="^9\d{8}$"
-                    title="Ingresa un número de teléfono válido de 9 dígitos (debe empezar con 9)"
-                    class="w-full p-2 mt-1 rounded-xl border border-gray-300 bg-white outline-none transition duration-150 ease-in-out focus:border-brand-accent focus:ring-4 focus:ring-brand-accent-alt/40 text-brand-text"
-                />
-
-                <!-- Campo 2: Tipo de servicio -->
-                <label for="tipoAccion" class="block mt-4 font-semibold text-sm text-brand-text">Selecciona el tipo de servicio <span class="text-danger">*</span></label>
-                <select id="tipoAccion" name="tipoAccion" required
-                    class="w-full p-2 mt-1 rounded-xl border border-gray-300 bg-white outline-none transition duration-150 ease-in-out focus:border-brand-accent focus:ring-4 focus:ring-brand-accent-alt/40 text-brand-text">
-                    <option value="" disabled selected>Elige una opción</option>
-                    <option value="delivery">Envío a domicilio/trabajo (Delivery)</option>
-                    <option value="shalom">Retiro en agencia Shalom</option>
-                    <!-- <option value="recoger">Recoger en almacén</option> -->
-                    <option value="usado">Usar mi dirección registrada</option>
-                </select>
-
-                <!-- Fieldset: Delivery -->
-                <fieldset id="camposDelivery" class="mt-8 border-none p-0" hidden>
-                    <legend class="text-xl font-bold mb-1 text-brand-text">📦 Delivery</legend>
-                    <p class="text-sm text-brand-muted mb-3">Datos de la persona que recibirá el pedido.</p>
-
-                    <label for="nombreDelivery" class="block mt-4 font-semibold text-sm text-brand-text">Nombre: <span class="text-danger">*</span></label>
-                    <input type="text" id="nombreDelivery" name="nombre" required
-                        class="w-full p-2 mt-1 rounded-xl border border-gray-300 bg-white outline-none transition duration-150 ease-in-out focus:border-brand-accent focus:ring-4 focus:ring-brand-accent-alt/40 text-brand-text" />
-
-                    <label for="telefonoDelivery" class="block mt-4 font-semibold text-sm text-brand-text">Teléfono: <span class="text-danger">*</span></label>
-                    <input
-                        type="tel"
-                        id="telefonoDelivery"
-                        name="telefono"
-                        required
-                        pattern="^9\d{8}$"
-                        title="Ingresa un número de teléfono válido de 9 dígitos"
-                        class="w-full p-2 mt-1 rounded-xl border border-gray-300 bg-white outline-none transition duration-150 ease-in-out focus:border-brand-accent focus:ring-4 focus:ring-brand-accent-alt/40 text-brand-text"
-                    />
-                    
-                    <!-- UX: Checkbox para usar el número de WhatsApp principal -->
-                    <div class="mt-1 flex items-center">
-                        <input type="checkbox" id="usarMismoTelefonoDelivery" class="h-4 w-4 text-brand-accent rounded border-gray-300 focus:ring-brand-accent-alt" />
-                        <label for="usarMismoTelefonoDelivery" class="ml-2 block text-sm text-brand-muted cursor-pointer">Usar mi número de WhatsApp (<span id="telefonoDisplayDelivery" class="font-semibold"></span>)</label>
-                    </div>
-
-                    <label for="distrito" class="block mt-4 font-semibold text-sm text-brand-text">Distrito: <span class="text-danger">*</span></label>
-                    <input type="text" id="distrito" name="distrito" required readonly
-                        class="w-full p-2 mt-1 rounded-xl border border-gray-300 bg-white outline-none transition duration-150 ease-in-out focus:border-brand-accent focus:ring-4 focus:ring-brand-accent-alt/40 cursor-pointer text-brand-text" />
-
-                    <label for="direccion" class="block mt-4 font-semibold text-sm text-brand-text">Dirección: <span class="text-danger">*</span></label>
-                    <input type="text" id="direccion" name="direccion" required
-                        class="w-full p-2 mt-1 rounded-xl border border-gray-300 bg-white outline-none transition duration-150 ease-in-out focus:border-brand-accent focus:ring-4 focus:ring-brand-accent-alt/40 text-brand-text" />
-
-                    <label for="referencia" class="block mt-4 font-semibold text-sm text-brand-text">Referencia: <span class="text-danger">*</span></label>
-                    <input type="text" id="referencia" name="referencia" required
-                        class="w-full p-2 mt-1 rounded-xl border border-gray-300 bg-white outline-none transition duration-150 ease-in-out focus:border-brand-accent focus:ring-4 focus:ring-brand-accent-alt/40 text-brand-text" />
-                    
-                    <!-- Modal oculto para Distritos -->
-                    <div class="modal hidden fixed inset-0 bg-brand-text bg-opacity-50 z-50 flex justify-center items-start pt-5 pb-5" id="modalDistrito">
-                        <!-- CAMBIOS: Se quitó 'overflow-y-auto', se añadió 'flex flex-col overflow-hidden' -->
-                        <div class="modal-content bg-brand-card p-5 rounded-xl w-[350px] max-h-[95vh] shadow-2xl flex flex-col overflow-hidden">
-                            <input type="text" id="buscadorDistrito" placeholder="Buscar distrito..."
-                                class="w-full p-2 mb-3 rounded-lg border border-gray-300 focus:border-brand-accent focus:ring-2 focus:ring-brand-accent-alt/40 text-brand-text" />
-                            <!-- CAMBIOS: Se quitó 'max-h-80vh', se añadió 'overflow-y-auto' para que esta lista sea la que scrollee -->
-                            <div id="listaDistritos" class="list list-none p-0 m-0 text-brand-text overflow-y-auto"></div>
-                        </div>
-                    </div>
-                </fieldset>
-
-                <!-- Fieldset: Shalom -->
-                <fieldset id="camposShalom" class="mt-8 border-none p-0" hidden>
-                    <legend class="text-xl font-bold mb-1 text-brand-text">📦 Shalom</legend>
-                    <p class="text-sm text-brand-muted mb-3">Datos para retiro en agencia Shalom.</p>
-
-                    <label for="nombreShalom" class="block mt-4 font-semibold text-sm text-brand-text">Nombre completo: <span class="text-danger">*</span></label>
-                    <input type="text" id="nombreShalom" name="nombre" required
-                        class="w-full p-2 mt-1 rounded-xl border border-gray-300 bg-white outline-none transition duration-150 ease-in-out focus:border-brand-accent focus:ring-4 focus:ring-brand-accent-alt/40 text-brand-text" />
-
-                    <label for="telefonoShalom" class="block mt-4 font-semibold text-sm text-brand-text">Teléfono: <span class="text-danger">*</span></label>
-                    <input
-                        type="tel"
-                        id="telefonoShalom"
-                        name="telefono"
-                        required
-                        pattern="^9\d{8}$"
-                        title="Ingresa un número de teléfono válido de 9 dígitos"
-                        class="w-full p-2 mt-1 rounded-xl border border-gray-300 bg-white outline-none transition duration-150 ease-in-out focus:border-brand-accent focus:ring-4 focus:ring-brand-accent-alt/40 text-brand-text"
-                    />
-                    
-                    <!-- UX: Checkbox para usar el número de WhatsApp principal -->
-                    <div class="mt-1 flex items-center">
-                        <input type="checkbox" id="usarMismoTelefonoShalom" class="h-4 w-4 text-brand-accent rounded border-gray-300 focus:ring-brand-accent-alt" />
-                        <label for="usarMismoTelefonoShalom" class="ml-2 block text-sm text-brand-muted cursor-pointer">Usar mi número de WhatsApp (<span id="telefonoDisplayShalom" class="font-semibold"></span>)</label>
-                    </div>
-
-                    <label for="DNI" class="block mt-4 font-semibold text-sm text-brand-text">DNI/CE: <span class="text-danger">*</span></label>
-                    <!-- UX: Se añade pattern para DNI (8 dígitos) o CE (5-15 alfanuméricos) -->
-                    <input type="text" id="DNI" name="DNI" required pattern="[A-Za-z0-9]{5,15}" title="Ingresa un DNI (8 dígitos) o CE válido (5-15 caracteres)"
-                        class="w-full p-2 mt-1 rounded-xl border border-gray-300 bg-white outline-none transition duration-150 ease-in-out focus:border-brand-accent focus:ring-4 focus:ring-brand-accent-alt/40 text-brand-text" />
-
-                    <label for="agencia" class="block mt-4 font-semibold text-sm text-brand-text">Agencia: <span class="text-danger">*</span></label>
-                    <input type="text" id="agencia" name="agencia" required readonly
-                        class="w-full p-2 mt-1 rounded-xl border border-gray-300 bg-white outline-none transition duration-150 ease-in-out focus:border-brand-accent focus:ring-4 focus:ring-brand-accent-alt/40 cursor-pointer text-brand-text" />
-                    
-                    <!-- Modal oculto para Agencias -->
-                    <div class="modal hidden fixed inset-0 bg-brand-text bg-opacity-50 z-50 flex justify-center items-start pt-5 pb-5" id="modalAgencia">
-                        <!-- CAMBIOS: Se quitó 'overflow-y-auto', se añadió 'flex flex-col overflow-hidden' -->
-                        <div class="modal-content bg-brand-card p-5 rounded-xl w-[350px] max-h-[95vh] shadow-2xl flex flex-col overflow-hidden">
-                            <input type="text" id="buscadorAgencia" placeholder="Buscar agencia..."
-                                class="w-full p-2 mb-3 rounded-lg border border-gray-300 focus:border-brand-accent focus:ring-2 focus:ring-brand-accent-alt/40 text-brand-text" />
-                            <!-- CAMBIOS: Se quitó 'max-h-80vh', se añadió 'overflow-y-auto' -->
-                            <div id="listaAgencias" class="list list-none p-0 m-0 text-brand-text overflow-y-auto"></div>
-                        </div>
-                    </div>
-                </fieldset>
-
-                <!-- Fieldset: Usado -->
-                <fieldset id="camposUsados" class="mt-8 border-none p-0" hidden>
-                    <legend class="text-xl font-bold mb-1 text-brand-text">📦 Dirección registrada</legend>
-                    <p class="text-sm text-brand-muted mb-3">Usaremos tu dirección guardada.</p>
-                </fieldset>
-
-                <!-- Campo de fecha reutilizable -->
-                <div id="contenedorFecha" class="mt-4" style="display: none;">
-                    <label for="fecha" class="block font-semibold text-sm text-brand-text">Fecha de envío: <span class="text-danger">*</span></label>
-                    <select id="fecha" name="fecha" required
-                        class="w-full p-2 mt-1 rounded-xl border border-gray-300 bg-white outline-none transition duration-150 ease-in-out focus:border-brand-accent focus:ring-4 focus:ring-brand-accent-alt/40 text-brand-text"></select>
-                </div>
-
-                <!-- Botón de envío, con el nuevo color de acento -->
-                <div class="flex justify-center w-full mt-6">
-                    <button type="submit"
-                        class="p-3 text-lg cursor-pointer bg-brand-accent text-white font-semibold border-none rounded-xl w-full transition duration-150 ease-in-out hover:bg-brand-accent-alt shadow-lg">
-                        Confirmar y agendar envío
-                    </button>
-                </div>
-
-                <!-- Texto de privacidad -->
-                <div class="mt-4 text-sm text-brand-muted text-center">
-                    Usaremos tus datos solo para procesar y entregar tu pedido.
-                    <a href="https://complicidad.github.io/privacy/" target="_blank" class="text-brand-accent hover:text-brand-accent-alt underline">Ver política de privacidad</a>
-                </div>
-
-            </form>
-
-            <!-- =========== NUEVO BLOQUE DE ÉXITO - INICIO =========== -->
-            <div id="successMessage" class="hidden flex-col items-center justify-center p-4 text-center">
-                <!-- Icono de Check (SVG) -->
-                <svg class="w-16 h-16 text-brand-accent" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                </svg>
-                <h2 class="mt-4 text-2xl font-bold text-brand-text">¡Envío agendado con éxito!</h2>
-                <p class="mt-2 text-brand-muted">Tu pedido ha sido registrado. Gracias por tu confianza.</p>
-
-                <!-- Redes sociales (MOVIDAS AQUÍ) -->
-                <p class="mt-6 font-semibold text-brand-text">Mientras esperas, ¡síguenos!</p>
-                <div class="mt-4 flex justify-center gap-4">
-                    <a href="https://wa.me/51981391159" target="_blank" rel="noopener noreferrer" class="inline-flex items-center hover:opacity-80 transition">
-                        <img src="https://raw.githubusercontent.com/complicidad/form/main/whatsapp.png" alt="WhatsApp" width="28" height="28">
-                    </a>
-                    <a href="https://www.tiktok.com/@complicidadboutique" target="_blank" rel="noopener noreferrer" class="inline-flex items-center hover:opacity-80 transition">
-                        <img src="https://raw.githubusercontent.com/complicidad/form/main/tik-tok.png" alt="TikTok" width="28" height="28">
-                    </a>
-                    <a href="https://www.instagram.com/complicidadboutique" target="_blank" rel="noopener noreferrer" class="inline-flex items-center hover:opacity-80 transition">
-                        <img src="https://raw.githubusercontent.com/complicidad/form/main/instagram.png" alt="Instagram" width="28" height="28">
-                    </a>
-                </div>
-
+<body class="font-sans bg-bg-soft text-gray-900 antialiased">
+    
+    <div id="root-container" class="flex bg-bg-soft min-h-screen">
+        <!-- ======================= INICIO: MENÚ VERTICAL (Ahora colapsable) ======================= -->
+        <aside id="sidebar" class="w-64 bg-sidebar-bg text-white flex flex-col fixed h-full shadow-lg z-40 transform -translate-x-full transition-transform duration-300 ease-in-out">
+            <div class="p-6 border-b border-gray-700 flex items-center gap-3">
+                <img id="sidebarLogo" src="" alt="Logo" class="h-10 w-10 rounded-md object-cover bg-white p-1 hidden">
+                <h1 id="sidebarTitle" class="text-2xl font-bold text-white">Panel</h1>
             </div>
-            <!-- =========== NUEVO BLOQUE DE ÉXITO - FIN =========== -->
+
+            <nav class="flex-1 p-4 space-y-2">
+                <a href="#envios" class="nav-link active flex items-center gap-3 p-3 rounded-lg font-semibold transition-colors duration-200">
+                    <i data-feather="truck" class="w-5 h-5"></i><span>Envíos</span>
+                </a>
+                <a href="#link" class="nav-link flex items-center gap-3 p-3 rounded-lg font-semibold transition-colors duration-200">
+                    <i data-feather="link" class="w-5 h-5"></i><span>Link Mágico</span>
+                </a>
+                <a href="#cuenta" class="nav-link flex items-center gap-3 p-3 rounded-lg font-semibold transition-colors duration-200">
+                    <i data-feather="settings" class="w-5 h-5"></i><span>Mi Cuenta</span>
+                </a>
+            </nav>
+
+            <div class="p-4 border-t border-gray-700 text-sm">
+                <a href="#" class="text-accent-alt hover:underline">Cerrar Sesión</a>
+            </div>
+        </aside>
+        <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden transition-opacity duration-300 ease-in-out"></div>
+        <!-- ======================= FIN: MENÚ VERTICAL ======================= -->
+
+        <div id="mainContent" class="flex-1 flex flex-col transition-all duration-300 ease-in-out">
+             <!-- ---------- HEADER (Fijo, no se expande) ---------- -->
+            <header class="bg-gradient-to-br from-brand-accent to-orange-400 text-white p-6 shadow-xl shadow-accent/25 flex items-center justify-between flex-shrink-0">
+                <!-- Izquierda: Toggle y Título -->
+                <div class="flex items-center gap-4">
+                    <button id="sidebarToggle" class="text-white p-2 rounded-md hover:bg-black/20 focus:outline-none focus:ring-2 focus:ring-white">
+                        <i data-feather="menu" class="w-6 h-6"></i>
+                    </button>
+                    <div>
+                        <h1 id="headerTitle" class="text-2xl font-bold">Envíos</h1>
+                    </div>
+                </div>
+
+                <!-- Derecha: Logo y Nombre del Negocio (Visible en pantallas medianas y grandes) -->
+                <div class="hidden md:flex items-center gap-3">
+                    <div class="text-right">
+                         <p class="text-sm opacity-90">Bienvenido,</p>
+                         <strong id="headerBusinessName" class="font-bold">[Nombre del emprendimiento]</strong>
+                    </div>
+                    <img id="headerLogo" src="" alt="Logo" class="h-12 w-12 rounded-md object-cover bg-white p-1 hidden">
+                </div>
+            </header>
+
+            <main class="flex-grow p-4 md:p-6">
+                
+                <!-- ======================= SECCIÓN ENVÍOS ======================= -->
+                <!-- CORRECCIÓN: Se eliminó la clase 'md:h-full' de la sección. El control de altura ahora es centralizado. -->
+                <section class="active md:h-full" id="envios">
+                    <div class="card bg-white rounded-xl shadow-lg shadow-gray-100 p-4 md:p-6 border border-gray-200 flex flex-col md:h-full">
+                        <!-- Contenido fijo de la tarjeta (título, botones, filtros) -->
+                        <div class="flex-shrink-0">
+                                <div class="flex flex-col md:flex-row justify-between md:items-end gap-4 border-b border-gray-200 pb-4 mb-4 flex-wrap">
+                                    <!-- Grupo de Filtros (Izquierda) -->
+                                    <div class="flex flex-col md:flex-row md:items-end gap-2 flex-wrap">
+                                        <label class="text-xs text-gray-500 font-semibold md:w-36">Cliente (Celular)<input type="text" id="filtroCliente" placeholder="Ej: 987654321" class="input p-2.5 border border-gray-200 rounded-xl bg-white w-full text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100 mt-1" /></label>
+                                        <label class="text-xs text-gray-500 font-semibold md:w-36">Fecha de Envío<input type="date" id="filtroFecha" class="input p-2.5 border border-gray-200 rounded-xl bg-white w-full text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100 mt-1" /></label>
+                                        <label class="text-xs text-gray-500 font-semibold md:w-36"">Courier
+                                            <select id="filtroTipo" class="select p-2.5 border border-gray-200 rounded-xl bg-white w-full text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100 mt-1">
+                                                <option value="">Todos</option>
+                                                <option value="SHALOM">Shalom</option>
+                                                <option value="OLVA">Olva</option>
+                                                <option value="DINSIDES">Dinsides</option>
+                                                <option value="DELIVERY">Delivery Propio</option>
+                                            </select>
+                                        </label>
+                                        <button class="btn primary bg-gradient-to-r from-accent to-accent-alt text-white py-2.5 px-4 rounded-xl font-bold text-sm shadow-md shadow-accent/20 hover:shadow-lg hover:shadow-accent/30 hover:-translate-y-0.5 transition-all duration-200" id="btnAplicarFiltros">Filtrar</button>
+                                        <button id="btnLimpiarFiltros" class="btn ghost bg-transparent border border-gray-300 text-gray-700 hover:bg-gray-50 py-2.5 px-4 rounded-xl font-bold text-sm transition-all duration-200">Limpiar</button>
+                                        <label class="flex items-center text-sm text-gray-700 ml-4 cursor-pointer">
+                                            <input type="checkbox" id="filtroDuplicados" class="rounded border-gray-300 text-accent focus:ring-accent mr-2">
+                                            <span>Mostrar solo duplicados</span>
+                                        </label>
+                                    </div>
+                                    <!-- Grupo de Acciones (Derecha) -->
+                                    <div class="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+                                        <div class="relative inline-block text-left">
+                                            <button type="button" class="btn ghost bg-transparent border border-gray-200 text-gray-900 hover:bg-gray-50 transition-all duration-200 py-2.5 px-4 rounded-xl font-bold text-sm inline-flex items-center justify-center gap-2 w-full" id="plantillasDropdownBtn">
+                                                <i data-feather="download" class="w-4 h-4"></i>
+                                                <span>Descargar Plantilla</span>
+                                                <i data-feather="chevron-down" class="w-4 h-4 -mr-1 ml-2"></i>
+                                            </button>
+                                            <div id="plantillasDropdownMenu" class="origin-top-right absolute right-0 mt-2 w-56 rounded-xl shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none hidden z-10">
+                                                <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="plantillasDropdownBtn">
+                                                    <a href="#" id="btnTplDelivery" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100" role="menuitem">Plantilla DELIVERY (.csv)</a>
+                                                    <a href="#" id="btnTplShalom" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100" role="menuitem">Plantilla SHALOM (.csv)</a>
+                                                    <a href="#" id="btnTplOlva" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100" role="menuitem">Plantilla OLVA (.csv)</a>
+                                                    <a href="#" id="btnTplDinsides" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100" role="menuitem">Plantilla DINSIDES (.csv)</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <button class="btn primary bg-gradient-to-r from-accent to-accent-alt text-white shadow-md shadow-accent/20 hover:shadow-lg hover:shadow-accent/30 hover:-translate-y-0.5 transition-all duration-200 py-2.5 px-4 rounded-xl font-bold text-sm inline-flex items-center justify-center gap-2" id="btnEtiquetas"><i data-feather="tag" class="w-4 h-4"></i>Imprimir Etiquetas</button>
+                                    </div>
+                                </div>
+
+                            <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 my-3 hidden" id="batchActionsContainer">
+                                <div class="lote-left flex gap-3 items-center flex-wrap">
+                                    <label class="nowrap text-sm text-gray-900"><input type="checkbox" id="checkTodos" class="rounded border-gray-300 text-accent focus:ring-accent" /> Seleccionar todo</label>
+                                    <span class="text-gray-500 text-sm hidden" id="selCount">0 seleccionados</span>
+                                    <span id="visibleCount" class="text-gray-500 text-sm border-l border-gray-300 pl-3 ml-3"></span>
+                                </div>
+                                <div class="lote-right flex flex-col sm:flex-row gap-2 items-center w-full md:w-auto hidden">
+                                    <select id="accionLote" class="select p-2.5 border border-gray-200 rounded-xl bg-white w-full sm:w-auto text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100">
+                                        <option value="" selected>Acción en lote…</option>
+                                        <option value="PENDIENTE">Marcar como Pendiente</option>
+                                        <option value="ENVIADO">Marcar como Enviado</option>
+                                        <option value="ENTREGADO">Marcar como Entregado</option>
+                                        <option value="REPROGRAMADO">Reprogramar</option>
+                                        <option value="ELIMINAR" class="text-red-600 font-semibold">Eliminar Seleccionados</option>
+                                    </select>
+                                    <input type="date" id="fechaReprog" class="input p-2.5 border border-gray-200 rounded-xl bg-white w-full sm:w-auto text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100 oculto" />
+                                    <button class="btn primary bg-accent text-white py-2.5 px-4 rounded-xl font-bold text-sm shadow-md shadow-accent/20 hover:shadow-lg hover:shadow-accent/30 hover:-translate-y-0.5 transition-all duration-200 w-full sm:w-auto" id="btnAplicarLote">Aplicar</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="tableContainer" class="md:flex-grow md:relative md:min-h-0">
+                            <!-- Tabla para Desktop -->
+                            <div class="overflow-auto absolute inset-0 hidden md:block shadow-lg shadow-gray-100 rounded-xl border border-gray-200">
+                                <table id="tablaEnvios" class="w-full border-collapse bg-white">
+                                    <thead>
+                                        <tr>
+                                            <th class="p-3 text-left text-xs font-bold text-accent uppercase tracking-wider rounded-tl-xl w-12"><input type="checkbox" id="thCheckTodos" class="rounded border-gray-300 text-accent focus:ring-accent" /></th>
+                                            <th class="p-3 text-left text-xs font-bold text-accent uppercase tracking-wider">Fecha Reg.</th>
+                                            <th class="p-3 text-left text-xs font-bold text-accent uppercase tracking-wider">Cliente</th>
+                                            <th class="p-3 text-left text-xs font-bold text-accent uppercase tracking-wider">Courier</th>
+                                            <th class="p-3 text-left text-xs font-bold text-accent uppercase tracking-wider col-responsive-hide">Destinatario</th>
+                                            <th class="p-3 text-left text-xs font-bold text-accent uppercase tracking-wider col-responsive-hide">Destino</th>
+                                            <th class="p-3 text-left text-xs font-bold text-accent uppercase tracking-wider">Fecha Envío</th>
+                                            <th class="p-3 text-left text-xs font-bold text-accent uppercase tracking-wider">Estado</th>
+                                            <th class="p-3 text-left text-xs font-bold text-accent uppercase tracking-wider rounded-tr-xl">Notificar</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tbodyEnvios"></tbody>
+                                </table>
+                            </div>
+                             <!-- Contenedor de Tarjetas para Móvil (Ahora con flujo normal en móvil) -->
+                             <div id="mobileCardContainer" class="md:hidden space-y-4 md:overflow-y-auto md:absolute md:inset-0">
+                                <!-- Las tarjetas para móvil se insertarán aquí vía JS -->
+                            </div>
+                        </div>
+
+                        <div id="emptyStateContainer" class="hidden text-center p-10 border-2 border-dashed rounded-xl mt-4 flex-grow items-center justify-center flex-col">
+                            <i data-feather="gift" class="w-16 h-16 mx-auto text-gray-300"></i>
+                            <h3 class="mt-4 text-xl font-bold text-gray-800">¡Bienvenido a tu panel de control!</h3>
+                            <p class="mt-2 text-sm text-gray-500 max-w-sm mx-auto">Aún no tienes envíos registrados. El primer paso es configurar tu 'Link Mágico' y compartirlo con tus clientes.</p>
+                            <button id="goToAccountBtn" class="mt-6 btn primary bg-gradient-to-r from-accent to-accent-alt text-white shadow-md shadow-accent/20 hover:shadow-lg hover:shadow-accent/30 hover:-translate-y-0.5 transition-all duration-200 py-2.5 px-4 rounded-xl font-bold text-sm inline-flex items-center gap-2">
+                                <i data-feather="settings" class="w-4 h-4"></i> Ir a Configuración
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ======================= SECCIÓN LINK MÁGICO ======================= -->
+                <!-- CORRECCIÓN: Se eliminó la clase 'h-full' de la sección. -->
+                <section id="link" class="h-full">
+                    <div class="card bg-white rounded-xl shadow-lg shadow-gray-100 p-6 border border-gray-200">
+                        <p class="text-gray-500 text-sm mb-5">Comparte este link único con tus clientes. Ellos completarán sus datos de envío directamente y la información aparecerá en tu panel, ¡sin errores y sin que tengas que transcribir nada!</p>
+                        <div class="form-group">
+                            <label for="linkUnicoInput" class="block text-sm text-gray-500 font-semibold mb-1.5">Tu enlace personal</label>
+                            <div id="linkUnicoContainer" class="flex flex-col sm:flex-row gap-2">
+                                <input type="text" id="linkUnicoInput" class="input p-2.5 border border-gray-200 rounded-xl bg-gray-50 flex-grow text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100" value="https://latam5s.com/form/tu-tienda" readonly>
+                                <button class="btn ghost bg-transparent border border-gray-200 text-gray-900 hover:bg-gray-50 transition-all duration-200 py-2.5 px-4 rounded-xl font-bold text-sm inline-flex items-center justify-center gap-2 w-full sm:w-auto" id="btnCopiarLink"><i data-feather="copy" class="w-4 h-4"></i>Copiar</button>
+                                <button class="btn primary bg-gradient-to-r from-accent to-accent-alt text-white shadow-md shadow-accent/20 hover:shadow-lg hover:shadow-accent/30 hover:-translate-y-0.5 transition-all duration-200 py-2.5 px-4 rounded-xl font-bold text-sm inline-flex items-center justify-center gap-2 w-full sm:w-auto" id="btnCompartirLink"><i data-feather="share-2" class="w-4 h-4"></i>Compartir</button>
+                            </div>
+                        </div>
+                    </div>
+                    <footer class="p-4 bg-bg-soft flex-shrink-0 flex justify-center items-center gap-2 text-gray-500 text-sm mt-auto">
+                        <span>Powered by</span>
+                        <svg height="20" viewBox="0 0 90 22" xmlns="http://www.w3.org/2000/svg">
+                            <text x="0" y="18" style="font-family: Quicksand, sans-serif; font-size: 20px; font-weight: 700; fill: #D96B4F;">Latam5S</text>
+                        </svg>
+                    </footer>
+                </section>
+
+                <!-- ======================= SECCIÓN MI CUENTA ======================= -->
+                <!-- CORRECCIÓN: Se eliminó 'flex-col'. El layout ahora lo controla 'main > section.active' -->
+                <section id="cuenta">
+                    <div class="flex-grow p-6">
+                        <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                            <div class="lg:col-span-3 space-y-6">
+                                <div class="card bg-white rounded-xl shadow-lg shadow-gray-100 p-6 border border-gray-200">
+                                    <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2 border-b border-gray-200 pb-3 mb-4"><i data-feather="briefcase" class="w-5 h-5 text-accent"></i> Perfil del Negocio</h3>
+                                    <div class="space-y-4">
+                                        <div class="form-group">
+                                            <label for="businessName" class="block text-sm text-gray-500 font-semibold mb-1.5">Nombre del Emprendimiento</label>
+                                            <input type="text" id="businessName" class="input p-2.5 border border-gray-200 rounded-xl bg-white w-full text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100" placeholder="Ej: La Tiendita de Ana" value="Mi Tienda de Prueba">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="logoInput" class="block text-sm text-gray-500 font-semibold mb-1.5">Logo del Negocio</label>
+                                            <input type="file" id="logoInput" class="input p-2.5 border border-gray-200 rounded-xl bg-white w-full text-sm file:mr-4 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-accent hover:file:bg-orange-100" accept="image/*">
+                                            <img id="logoPreview" src="" alt="Vista previa del logo" class="max-h-20 rounded-lg object-contain border border-dashed border-gray-300 p-1 mt-3 hidden">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card bg-white rounded-xl shadow-lg shadow-gray-100 p-6 border border-gray-200">
+                                    <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2 border-b border-gray-200 pb-3 mb-4"><i data-feather="calendar" class="w-5 h-5 text-accent"></i> Opciones de Despacho</h3>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div class="space-y-3">
+                                            <label class="block text-sm text-gray-500 font-semibold">Couriers Habilitados</label>
+                                            <div class="space-y-2">
+                                                <label class="block text-sm text-gray-900"><input type="checkbox" checked class="rounded border-gray-300 text-accent focus:ring-accent mr-2"> Delivery Propio</label>
+                                                <label class="block text-sm text-gray-900"><input type="checkbox" checked class="rounded border-gray-300 text-accent focus:ring-accent mr-2"> Shalom</label>
+                                                <label class="block text-sm text-gray-900"><input type="checkbox" class="rounded border-gray-300 text-accent focus:ring-accent mr-2"> Olva</label>
+                                                <label class="block text-sm text-gray-900"><input type="checkbox" class="rounded border-gray-300 text-accent focus:ring-accent mr-2"> Dinsides</label>
+                                            </div>
+                                        </div>
+                                         <div class="space-y-3">
+                                            <label class="block text-sm text-gray-500 font-semibold">Días de Despacho</label>
+                                            <div class="flex flex-wrap gap-x-4 gap-y-2 text-sm">
+                                                <label class="inline-flex items-center"><input type="checkbox" class="rounded border-gray-300 text-accent focus:ring-accent mr-1"> Lun</label>
+                                                <label class="inline-flex items-center"><input type="checkbox" checked class="rounded border-gray-300 text-accent focus:ring-accent mr-1"> Mar</label>
+                                                <label class="inline-flex items-center"><input type="checkbox" class="rounded border-gray-300 text-accent focus:ring-accent mr-1"> Mié</label>
+                                                <label class="inline-flex items-center"><input type="checkbox" checked class="rounded border-gray-300 text-accent focus:ring-accent mr-1"> Jue</label>
+                                                <label class="inline-flex items-center"><input type="checkbox" class="rounded border-gray-300 text-accent focus:ring-accent mr-1"> Vie</label>
+                                                <label class="inline-flex items-center"><input type="checkbox" checked class="rounded border-gray-300 text-accent focus:ring-accent mr-1"> Sáb</label>
+                                                <label class="inline-flex items-center"><input type="checkbox" class="rounded border-gray-300 text-accent focus:ring-accent mr-1"> Dom</label>
+                                            </div>
+                                        </div>
+                                        <div class="form-group md:col-span-2">
+                                            <label for="cutoffTime" class="block text-sm text-gray-500 font-semibold mb-1.5">Hora de Cierre de Pedidos</label>
+                                            <input type="time" id="cutoffTime" class="input p-2.5 border border-gray-200 rounded-xl bg-white w-full md:w-auto text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card bg-white rounded-xl shadow-lg shadow-gray-100 p-6 border border-gray-200">
+                                    <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2 border-b border-gray-200 pb-3 mb-4"><i data-feather="share-2" class="w-5 h-5 text-accent"></i> Redes Sociales</h3>
+                                    <div class="space-y-4">
+                                        <p class="text-sm text-gray-500 -mt-2">Estos enlaces aparecerán en tu formulario para que tus clientes puedan contactarte.</p>
+                                        <div class="form-group">
+                                            <label for="instagramUser" class="block text-sm text-gray-500 font-semibold mb-1.5">Usuario de Instagram</label>
+                                            <div class="relative">
+                                                <i data-feather="instagram" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"></i>
+                                                <input type="text" id="instagramUser" class="input p-2.5 pl-9 border border-gray-200 rounded-xl bg-white w-full text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100" placeholder="mitiendaonline">
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="whatsappNumber" class="block text-sm text-gray-500 font-semibold mb-1.5">Número de WhatsApp</label>
+                                            <div class="relative">
+                                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm pointer-events-none">+51</span>
+                                                <input type="number" id="whatsappNumber" class="input p-2.5 pl-10 border border-gray-200 rounded-xl bg-white w-full text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100" placeholder="987654321">
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="facebookUser" class="block text-sm text-gray-500 font-semibold mb-1.5">Usuario de Facebook</label>
+                                            <div class="relative">
+                                                <i data-feather="facebook" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"></i>
+                                                <input type="text" id="facebookUser" class="input p-2.5 pl-9 border border-gray-200 rounded-xl bg-white w-full text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100" placeholder="mitiendaonlinefb">
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="tiktokUser" class="block text-sm text-gray-500 font-semibold mb-1.5">Usuario de TikTok</label>
+                                            <div class="relative">
+                                                <i data-feather="music" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"></i>
+                                                <input type="text" id="tiktokUser" class="input p-2.5 pl-9 border border-gray-200 rounded-xl bg-white w-full text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100" placeholder="mitienda.tiktok">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="lg:col-span-2 space-y-6">
+                                <div class="card bg-white rounded-xl shadow-lg shadow-gray-100 p-6 border border-gray-200">
+                                    <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2 border-b border-gray-200 pb-3 mb-4"><i data-feather="award" class="w-5 h-5 text-accent"></i> Tu Suscripción</h3>
+                                    <div class="space-y-3 text-sm">
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-gray-500">Plan Actual:</span>
+                                            <span class="font-bold text-gray-900">Crecimiento</span>
+                                        </div>
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-gray-500">Estado:</span>
+                                            <span class="font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full text-xs">Activo</span>
+                                        </div>
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-gray-500">Próximo Pago:</span>
+                                            <span class="font-bold text-gray-900">15 Nov, 2025</span>
+                                        </div>
+                                        <div class="pt-2">
+                                            <button class="btn ghost bg-transparent border border-gray-200 text-gray-900 hover:bg-gray-50 transition-all duration-200 py-2.5 px-4 rounded-xl font-bold text-sm inline-flex items-center gap-2 w-full justify-center">Administrar Suscripción</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card bg-white rounded-xl shadow-lg shadow-gray-100 p-6 border border-gray-200">
+                                    <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2 border-b border-gray-200 pb-3 mb-4"><i data-feather="lock" class="w-5 h-5 text-accent"></i> Seguridad de la Cuenta</h3>
+                                    <div class="space-y-4">
+                                        <div class="form-group">
+                                            <label for="userEmail" class="block text-sm text-gray-500 font-semibold mb-1.5">Email de la Cuenta</label>
+                                            <input type="email" id="userEmail" class="input p-2.5 border border-gray-200 rounded-xl bg-gray-100 w-full text-sm text-gray-600 cursor-not-allowed" value="ana.ventas@email.com" readonly>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="newPassword" class="block text-sm text-gray-500 font-semibold mb-1.5">Nueva Contraseña</label>
+                                            <input type="password" id="newPassword" class="input p-2.5 border border-gray-200 rounded-xl bg-white w-full text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100" placeholder="Deja en blanco para no cambiar">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card bg-white rounded-xl shadow-lg shadow-gray-100 p-6 border border-gray-200">
+                                    <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2 border-b border-gray-200 pb-3 mb-4"><i data-feather="users" class="w-5 h-5 text-accent"></i> Gestión de Equipo</h3>
+                                    <div class="space-y-4">
+                                        <p class="text-sm text-gray-500 -mt-2">Invita a miembros de tu equipo para que colaboren en la gestión de envíos (Función del Plan Consolidado).</p>
+                                        <div class="flex gap-2">
+                                            <input type="email" placeholder="email@ejemplo.com" class="input p-2.5 border border-gray-200 rounded-xl bg-white w-full text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100 flex-grow">
+                                            <button class="btn primary bg-accent text-white py-2.5 px-4 rounded-xl font-bold text-sm shadow-md shadow-accent/20 hover:shadow-lg hover:shadow-accent/30 hover:-translate-y-0.5 transition-all duration-200 whitespace-nowrap">Invitar</button>
+                                        </div>
+                                        <div class="space-y-2 pt-2">
+                                            <label class="block text-sm text-gray-500 font-semibold mb-1">Miembros Actuales:</label>
+                                            <div class="flex justify-between items-center text-sm p-2 bg-gray-50 rounded-lg">
+                                                <span>ana.ventas@email.com (Tú)</span>
+                                                <span class="font-bold text-accent">Admin</span>
+                                            </div>
+                                            <div class="flex justify-between items-center text-sm p-2 bg-gray-50 rounded-lg">
+                                                <span>carlos.logistica@email.com</span>
+                                                <span class="text-gray-500">Miembro</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex justify-end mt-6">
+                            <button class="btn primary bg-gradient-to-r from-accent to-accent-alt text-white shadow-md shadow-accent/20 hover:shadow-lg hover:shadow-accent/30 hover:-translate-y-0.5 transition-all duration-200 py-2.5 px-4 rounded-xl font-bold text-sm inline-flex items-center gap-2" id="btnGuardarConfig"><i data-feather="save" class="w-4 h-4"></i>Guardar Cambios</button>
+                        </div>
+                    </div>
+                    <footer class="p-4 bg-bg-soft flex-shrink-0 flex justify-center items-center gap-2 text-gray-500 text-sm mt-6">
+                        <span>Powered by</span>
+                        <svg height="20" viewBox="0 0 90 22" xmlns="http://www.w3.org/2000/svg">
+                            <text x="0" y="18" style="font-family: Quicksand, sans-serif; font-size: 20px; font-weight: 700; fill: #D96B4F;">Latam5S</text>
+                        </svg>
+                    </footer>
+                </section>
+                
+            </main>
 
         </div>
-    </main>
-
-        <footer class="mt-0 mb-5 text-center text-gray-500 text-xs">
-            <!-- La atribución a la herramienta ahora se omite en la vista del usuario final. -->
-            <p>Hecho con ❤️ para tu emprendimiento.</p>
-        </footer>
-
-    <!-- Toast de Notificación (Nuevo estilo) -->
-    <div class="toast fixed right-5 top-5 text-white p-3 rounded-xl shadow-xl shadow-brand-accent/25 opacity-0 translate-y-2 transition-all duration-300 z-50 max-w-sm" id="toast">Acción aplicada</div>
-
-
-    <!-- SPINNER DE CARGA CORREGIDO -->
-    <!-- Se añadieron 'inset-0' para cubrir toda la pantalla y 'justify-center items-center' para centrar el contenido. -->
-    <div id="spinner" class="fixed inset-0 bg-brand-bg bg-opacity-85 z-50 flex justify-center items-center flex-col hidden">
-        <img src="https://raw.githubusercontent.com/complicidad/form/main/Spin.png" alt="Cargando..." class="w-[150px] h-auto animate-spin-custom">
-        <p class="mt-4 text-lg text-brand-text">Cargando...</p>
     </div>
+
+    <!-- Elementos Flotantes (Toast, Modals, Panel de Edición) -->
+    <div class="toast fixed right-5 bottom-5 bg-gradient-to-r from-accent to-accent-alt text-white p-3 rounded-xl shadow-xl shadow-accent/25 opacity-0 translate-y-2 transition-all duration-300 z-50" id="toast">Acción aplicada</div>
+    <div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md text-center">
+            <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0">
+                <i data-feather="alert-triangle" class="h-6 w-6 text-red-600"></i>
+            </div>
+            <h3 class="text-lg leading-6 font-bold text-gray-900 mt-4" id="modal-title">Confirmar Eliminación</h3>
+            <div class="mt-2"><p class="text-sm text-gray-500" id="modalMessage">...</p></div>
+            <div class="mt-6 flex justify-center gap-4">
+                <button type="button" id="confirmDeleteBtn" class="inline-flex justify-center rounded-xl border border-transparent bg-red-600 px-4 py-2 text-sm font-bold text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-200">Eliminar</button>
+                <button type="button" id="cancelDeleteBtn" class="inline-flex justify-center rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-bold text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 transition-all duration-200">Cancelar</button>
+            </div>
+        </div>
+    </div>
+    <!-- Contenedor oculto para las etiquetas de impresión -->
+    <div id="print-container" class="print-container"></div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyhlKeKpyhBTtQTzYEdITXUErRjH9kmLACnaEAlmmXMDp1fVHJeVJx4N7Lw3dZgYShjfA/exec"; // <--- AÑADE ESTA LÍNEA
+    feather.replace();
+
+    // --- LÓGICA PARA EL MENÚ COLAPSABLE ---
+    const rootContainer = document.getElementById('root-container'); // <--- AÑADE ESTA LÍNEA
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+    function closeSidebar() {
+        sidebar.classList.add('-translate-x-full');
+        sidebarOverlay.classList.add('hidden');
+    }
+
+    function openSidebar() {
+        sidebar.classList.remove('-translate-x-full');
+        sidebarOverlay.classList.remove('hidden');
+    }
     
-    <!-- Script para los modales de lista. -->
-    <script>
-
-        // Se elimina la función updateMessageClasses antigua.
-        
-        // --- Lógica del modal de Distritos (Vanilla JS) ---
-        const campoDistrito = document.getElementById("distrito");
-        const overlay = document.getElementById("modalDistrito");
-        const buscador = document.getElementById("buscadorDistrito");
-        const listaDistritos = document.getElementById("listaDistritos");
-        let distritos = [];
-        
-        // Abrir popup al hacer click en el campo
-        campoDistrito.addEventListener("click", () => {
-          overlay.style.display = "flex";
-          buscador.value = "";
-          mostrarDistritos(distritos);
-          buscador.focus();
-        });
-        
-        // Cerrar popup si clic fuera de la caja
-        overlay.addEventListener("click", (e) => {
-          if (e.target === overlay) {
-            overlay.style.display = "none";
-          }
-        });
-        
-        // Buscar distritos
-        buscador.addEventListener("input", () => {
-          const filtro = buscador.value.toLowerCase();
-          const filtrados = distritos.filter(d => d.toLowerCase().includes(filtro));
-          mostrarDistritos(filtrados);
-        });
-        
-        // Mostrar lista en el popup
-        function mostrarDistritos(lista) {
-          listaDistritos.innerHTML = "";
-          lista.forEach(d => {
-            const div = document.createElement("div");
-            // Clases de Tailwind para el item de la lista
-            div.className = "p-2 cursor-pointer border-b border-gray-100 hover:bg-gray-100 transition list-item";
-            div.textContent = d;
-            div.addEventListener("click", () => {
-              campoDistrito.value = d;
-              overlay.style.display = "none";
-            });
-            listaDistritos.appendChild(div);
-          });
+    sidebarToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (sidebar.classList.contains('-translate-x-full')) {
+            openSidebar();
+        } else {
+            closeSidebar();
         }
-        
-        // Cargar JSON de distritos
-        fetch("https://raw.githubusercontent.com/complicidad/form/main/lstDistritos.json")
-          .then(res => res.json())
-          .then(data => {
-            distritos = data.map(item => typeof item === "string" ? item : item.Distrito || item.nombre || "");
-            mostrarDistritos(distritos);
-          })
-          .catch(err => {
-            console.error("Error cargando distritos:", err);
-          });
-        
-        // --- Lógica del modal de Agencias (Vanilla JS) ---
-        const campoAgencia = document.getElementById("agencia");
-        const overlayAgencia = document.getElementById("modalAgencia");
-        const buscadorAgencia = document.getElementById("buscadorAgencia");
-        const listaAgencias = document.getElementById("listaAgencias");
-        let agencias = [];
-        
-        // Abrir popup al hacer click en el campo
-        campoAgencia.addEventListener("click", () => {
-          overlayAgencia.style.display = "flex";
-          buscadorAgencia.value = "";
-          mostrarAgencias(agencias);
-          buscadorAgencia.focus();
-        });
-        
-        // Cerrar popup si clic fuera de la caja
-        overlayAgencia.addEventListener("click", (e) => {
-          if (e.target === overlayAgencia) {
-            overlayAgencia.style.display = "none";
-          }
-        });
-        
-        // Buscar agencias
-        buscadorAgencia.addEventListener("input", () => {
-          const filtro = buscadorAgencia.value.toLowerCase();
-          const filtrados = agencias.filter(a => a.toLowerCase().includes(filtro));
-          mostrarAgencias(filtrados);
-        });
-        
-        // Mostrar lista en el popup
-        function mostrarAgencias(lista) {
-          listaAgencias.innerHTML = "";
-          lista.forEach(a => {
-            const [titulo, ...resto] = a.split("\n"); // Separar en partes
-            const div = document.createElement("div");
-            // Clases de Tailwind para el item de la lista
-            div.className = "p-2 cursor-pointer border-b border-gray-100 hover:bg-gray-100 transition list-item";
-            // Armamos el HTML con la primera línea en negrita
-            div.innerHTML = `<span class="font-semibold">${titulo}</span>${resto.length ? "<br><span class='text-sm text-gray-600'>" + resto.join("<br>") + "</span>" : ""}`;
-            div.addEventListener("click", () => {
-              campoAgencia.value = titulo; // Mantener el valor original con \n
-              overlayAgencia.style.display = "none";
-            });
-            listaAgencias.appendChild(div);
-          });
+    });
+
+    sidebarOverlay.addEventListener('click', closeSidebar);
+
+
+    // --- LÓGICA PARA DROPDOWN DE PLANTILLAS ---
+    const plantillasBtn = document.getElementById('plantillasDropdownBtn');
+    const plantillasMenu = document.getElementById('plantillasDropdownMenu');
+
+    plantillasBtn.addEventListener('click', () => {
+        plantillasMenu.classList.toggle('hidden');
+    });
+
+    window.addEventListener('click', (e) => {
+        if (!plantillasBtn.contains(e.target) && !plantillasMenu.contains(e.target)) {
+            plantillasMenu.classList.add('hidden');
         }
-        
-        // Cargar JSON de agencias
-        fetch("https://raw.githubusercontent.com/complicidad/form/main/lstShalom.json")
-          .then(res => res.json())
-          .then(data => {
-            agencias = data.map(item => typeof item === "string" ? item : item.Shalom || item.nombre || "");
-            mostrarAgencias(agencias);
-          })
-          .catch(err => {
-            console.error("Error cargando agencias:", err);
-          });
+    });
 
+    // --- LÓGICA PARA EL NUEVO MENÚ VERTICAL ---   
+    const navLinks = document.querySelectorAll('.nav-link');
+    const sections = document.querySelectorAll('main > section');
+    const headerTitle = document.getElementById('headerTitle'); // <--- AÑADE ESTA LÍNEA
+    const activeClasses = ['bg-sidebar-active-bg', 'text-white'];
+    const inactiveClasses = ['text-gray-300', 'hover:bg-sidebar-hover', 'hover:text-white'];
 
-            // --- INICIALIZACIÓN DE FIREBASE ---
+    navLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const targetId = link.getAttribute('href').substring(1);
 
-            // 1. Pega tu objeto de configuración de Firebase aquí
-            const firebaseConfig = {
-            apiKey: "AIzaSyBrajHuHwjIASJA7Ar9ViprWw8ZUmXH6wc",
-            authDomain: "complicidad-envios.firebaseapp.com",
-            projectId: "complicidad-envios",
-            storageBucket: "complicidad-envios.firebasestorage.app",
-            messagingSenderId: "418888054311",
-            appId: "1:418888054311:web:2a08b637b7b96b2b6b4002"
-            };
+            // Actualizar el título del header  <--- AÑADE ESTE BLOQUE
+            const newTitle = link.querySelector('span').textContent;
+            headerTitle.textContent = newTitle;
 
-            // 2. Inicializar Firebase y los servicios
-            const app = firebase.initializeApp(firebaseConfig);
-            const auth = firebase.auth();
-            const db = firebase.firestore();
+            // --- INICIO DEL BLOQUE A AÑADIR ---
+            // Añade o quita una clase para controlar el scroll con CSS
+            if (targetId === 'cuenta') {
+                document.body.classList.add('scroll-enabled');
+            } else {
+                document.body.classList.remove('scroll-enabled');
+            }
+            // --- FIN DEL BLOQUE A AÑADIR ---
 
-            // 3. Iniciar sesión anónimamente para cumplir las reglas de seguridad
-            auth.signInAnonymously().catch((error) => {
-            console.error("Error al iniciar sesión anónimamente:", error);
-            // Opcional: Mostrar un error al usuario si la autenticación falla
-            // mostrarMensajeTelefono("Error de conexión. Recarga la página.", "error");
+            navLinks.forEach(l => {
+                l.classList.remove(...activeClasses);
+                l.classList.add(...inactiveClasses);
             });
+            link.classList.add(...activeClasses);
+            link.classList.remove(...inactiveClasses);
 
-            // --- FIN DE FIREBASE ---
+            sections.forEach(sec => sec.classList.remove('active'));
+            const targetSection = document.getElementById(targetId);
+            if (targetSection) {
+                targetSection.classList.add('active');
+            }
+            
+            // Cierra el menú al hacer clic (ahora en todos los dispositivos)
+            closeSidebar();        
+        });
+    });
+    document.querySelector('.nav-link.active')?.classList.remove(...inactiveClasses);
+    document.querySelector('.nav-link.active')?.classList.add(...activeClasses);
 
-        // --- INICIALIZACIÓN DE APP CHECK (NUEVO) ---
+    // ===================================================================================
+    // --- INICIO DE LA LÓGICA DEL PANEL (CON DATOS SIMULADOS) ---
+    // ===================================================================================
+    
+    // --- ELEMENTOS DEL DOM ---
+    const btnLimpiarFiltros = document.getElementById('btnLimpiarFiltros');
+    const templateLinks = document.querySelectorAll('#plantillasDropdownMenu a');
+    const btnEtiquetas = document.getElementById('btnEtiquetas');
+    const tbodyEnvios = document.getElementById('tbodyEnvios');
+    const mobileCardContainer = document.getElementById('mobileCardContainer');
+    const filtroCliente = document.getElementById('filtroCliente');
+    const filtroFecha = document.getElementById('filtroFecha');
+    const filtroTipo = document.getElementById('filtroTipo');
+    const filtroDuplicados = document.getElementById('filtroDuplicados');
+    const btnAplicarFiltros = document.getElementById('btnAplicarFiltros');
+    const tableContainer = document.getElementById('tableContainer').querySelector('.overflow-auto'); // Apunta al contenedor con scroll
+    const mobileContainerParent = document.getElementById('mobileCardContainer').parentElement;
+    const emptyStateContainer = document.getElementById('emptyStateContainer');
+    const batchActionsContainer = document.getElementById('batchActionsContainer');
+    const checkTodos = document.getElementById('checkTodos');
+    const thCheckTodos = document.getElementById('thCheckTodos');
+    const selCount = document.getElementById('selCount');
+    const accionLote = document.getElementById('accionLote');
+    const fechaReprog = document.getElementById('fechaReprog');
+    const btnAplicarLote = document.getElementById('btnAplicarLote');
+    const goToAccountBtn = document.getElementById('goToAccountBtn');
+    
+    let todosLosEnvios = []; // Variable global para almacenar todos los envíos.
+
+    async function fetchDataFromSheet() {
+        showToast('Cargando envíos...');
         try {
-          const appCheck = firebase.appCheck(app);
-          appCheck.activate(
-            '6LcZafsrAAAAAHnnL-2pH8Ji7iBvJpbXG1jclFcb', // <-- ¡Pega tu "Clave del sitio" aquí!
-            true // true = isTokenAutoRefreshEnabled
-          );
-          console.log("Firebase App Check activado.");
-        } catch (err) {
-          console.error("Error al activar App Check:", err);
+            const response = await fetch(SCRIPT_URL);
+            if (!response.ok) {
+                throw new Error('Error al cargar los datos.');
+            }
+            const data = await response.json();
+            // Procesa los datos: si el estado está vacío, lo establece como 'PENDIENTE'.
+            // Luego, filtra los envíos para excluir los que están marcados como "ELIMINADO".
+            todosLosEnvios = data.map(envio => ({
+                ...envio,
+                estado: envio.estado || 'PENDIENTE',
+                detalle: envio.detalle || '', // Asegura que existan
+                cobrar: envio.cobrar || ''    // Asegura que existan
+            })).filter(envio => envio.estado !== 'ELIMINADO');
+            
+            aplicarFiltros();
+            showToast('Envíos cargados.');
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            showToast('Error: No se pudieron cargar los envíos.');
+            // En caso de error, muestra la tabla vacía.
+            todosLosEnvios = [];
+            aplicarFiltros();
+        }
+    }
+    
+    // --- LÓGICA DE LA TABLA Y FILTROS ---
+
+    function aplicarFiltros() {
+        const hoy = new Date().toISOString().split('T')[0];
+        const clienteFilter = filtroCliente.value.toLowerCase();
+        const tipoFilter = filtroTipo.value;
+        const mostrarSoloDuplicados = filtroDuplicados.checked;
+
+        // --- Lógica para detectar duplicados en TODA la base de datos ---
+        const seen = {};
+        const duplicates = new Set();
+        todosLosEnvios.forEach(envio => {
+            const key = `${envio.cliente}-${envio.fechaEnvio ? envio.fechaEnvio.substring(0, 10) : 'sin-fecha'}`;
+            if (seen[key]) {
+                duplicates.add(key);
+            } else {
+                seen[key] = true;
+            }
+        });
+
+        const enviosFiltrados = todosLosEnvios.filter(envio => {
+            const clienteMatch = !clienteFilter || String(envio.cliente).toLowerCase().includes(clienteFilter);
+            const fechaMatch = filtroFecha.value
+                ? (envio.fechaEnvio && envio.fechaEnvio.substring(0, 10) === filtroFecha.value) 
+                : (envio.fechaEnvio && envio.fechaEnvio.substring(0, 10) >= hoy);
+            const tipoMatch = !tipoFilter || envio.tipo === tipoFilter;
+            
+            if (mostrarSoloDuplicados) {
+                const key = `${envio.cliente}-${envio.fechaEnvio ? envio.fechaEnvio.substring(0, 10) : 'sin-fecha'}`;
+                const esDuplicado = duplicates.has(key);
+                return esDuplicado && clienteMatch && fechaMatch && tipoMatch;
+            }
+
+            return clienteMatch && fechaMatch && tipoMatch;
+        });
+          
+        // Ordena los envíos filtrados antes de mostrarlos
+        enviosFiltrados.sort((a, b) => {
+            const fechaA = a.fechaEnvio || '';
+            const fechaB = b.fechaEnvio || '';
+            const clienteA = String(a.cliente || '');
+            const clienteB = String(b.cliente || '');
+
+            const comparacionFecha = fechaB.localeCompare(fechaA);
+            if (comparacionFecha !== 0) {
+                return comparacionFecha;
+            }
+            return clienteB.localeCompare(clienteA);
+        });        
+        
+        renderizarTabla(enviosFiltrados, duplicates);
+    }
+
+    function renderizarTabla(envios, duplicates) {
+        tbodyEnvios.innerHTML = '';
+        mobileCardContainer.innerHTML = '';
+
+        const visibleCountEl = document.getElementById('visibleCount');
+        if(visibleCountEl) {
+            visibleCountEl.textContent = `Mostrando ${envios.length} de ${todosLosEnvios.length} envíos`;
         }
 
-        // --- FIN DE APP CHECK ---
+        const hasEnvios = envios.length > 0;
+        
+        tableContainer.parentElement.classList.toggle('hidden', !hasEnvios);
+        emptyStateContainer.classList.toggle('hidden', hasEnvios);
+        batchActionsContainer.classList.toggle('hidden', !hasEnvios);
 
-        // --- Lógica principal del formulario (jQuery) ---
-        $(document).ready(function () {
+        if (hasEnvios) {
+            envios.forEach(envio => {
+                const getEstadoClass = (estado) => {
+                    switch (estado) {
+                        case 'PENDIENTE': return 'bg-yellow-100 text-badge-pending';
+                        case 'ENVIADO': return 'bg-orange-100 text-badge-sent';
+                        case 'ENTREGADO': return 'bg-green-100 text-badge-delivered';
+                        case 'REPROGRAMADO': return 'bg-purple-100 text-badge-rescheduled';
+                        default: return 'bg-gray-100 text-gray-800';
+                    }
+                };
 
-            let telefonosRegistrados = [];
-            let clientesRegistrados = [];
-            
-            // UX: Referencias a campos de teléfono para la nueva lógica
-            const $telefonoUsado = $("#telefonoUsado");
-            const $telefonoDelivery = $("#telefonoDelivery");
-            const $telefonoShalom = $("#telefonoShalom");
-            const $usarMismoTelefonoDelivery = $("#usarMismoTelefonoDelivery");
-            const $usarMismoTelefonoShalom = $("#usarMismoTelefonoShalom");
-            const $telefonoDisplayDelivery = $("#telefonoDisplayDelivery");
-            const $telefonoDisplayShalom = $("#telefonoDisplayShalom");
-            
+                const key = `${envio.cliente}-${envio.fechaEnvio ? envio.fechaEnvio.substring(0, 10) : 'sin-fecha'}`;
+                const isDuplicate = duplicates.has(key);
+                const duplicateClass = isDuplicate ? 'bg-yellow-200/50' : '';
 
-            function obtenerFechasEnvio() {
-                const ahora = new Date();
-                const opciones = [];
-                const diasPermitidos = [2, 5]; // martes = 2, viernes = 5
-                const horaCorte = 10; // 10:00 a.m.
-                const limite = new Date();
-                limite.setDate(ahora.getDate() + 14);
-
-                let fecha = new Date();
-                fecha.setHours(0, 0, 0, 0);
-
-                while (fecha <= limite) {
-                    const diaSemana = fecha.getDay();
-
-                    if (diasPermitidos.includes(diaSemana)) {
-                        const fechaCorte = new Date(fecha);
-                        fechaCorte.setDate(fecha.getDate() - 1);
-                        fechaCorte.setHours(horaCorte, 0, 0, 0);
-
-                        if (ahora < fechaCorte) {
-                            opciones.push(new Date(fecha));
+                // --- Renderizar para tabla (Desktop) ---
+                const tr = document.createElement('tr');
+                tr.className = `border-b border-gray-100 hover:bg-orange-50/50 transition-colors duration-200 ${duplicateClass}`; // Añadido cursor-pointer
+                tr.dataset.id = envio.id;
+                tr.innerHTML = `
+                    <td class="p-3 text-center"><input type="checkbox" class="rowCheck rounded border-gray-300 text-accent focus:ring-accent" data-id="${envio.id}"></td>
+                    <td class="p-3 text-sm text-gray-700">${envio.fechaReg ? envio.fechaReg.substring(0, 10) : ''}</td>
+                    <td class="p-3 text-sm text-gray-700">${envio.cliente}</td>
+                    <td class="p-3 text-sm text-gray-700">${envio.tipo}</td>
+                    <td class="p-3 text-sm text-gray-700 col-responsive-hide">
+                        <span class="font-bold text-gray-900">${envio.nombre || 'N/A'}</span>
+                        <span class="block text-sm text-gray-500">${envio.telefono || 'N/A'}</span>
+                        ${
+                            // El DNI se agrupa aquí según la solicitud
+                            (envio.dni)
+                            ? `<span class="block text-sm text-gray-500 mt-1 pt-1 border-t border-gray-100">${envio.dni}</span>`
+                            : ''
                         }
-                    }
-                    fecha.setDate(fecha.getDate() + 1);
-                }
-                return opciones;
-            }
-
-            function formatearFecha(fecha) {
-                return fecha.toLocaleDateString("es-ES", {
-                    weekday: "long",
-                    day: "2-digit",
-                    month: "long",
-                    year: "numeric",
-                });
-            }
-
-            // Carga las fechas en el select #fecha
-            const $selectFecha = $("#fecha");
-
-            // --- AÑADIR ESTE BLOQUE - INICIO ---
-            // 1. Añadir la opción placeholder
-            $selectFecha.append(
-                $("<option>")
-                    .val("") // Valor vacío para la validación 'required'
-                    .text("Elige una fecha de envío...")
-                    .prop("disabled", true) // No se puede seleccionar
-                    .prop("selected", true) // Es la opción por defecto
-            );
-            // --- AÑADIR ESTE BLOQUE - FIN ---
-
-            const fechas = obtenerFechasEnvio();
-            fechas.forEach((f) => {
-                const option = $("<option>")
-                    .val(f.toISOString().split("T")[0])
-                    .text(formatearFecha(f));
-                $selectFecha.append(option);
-            });
-
-            function limpiarCampos(idContenedor) {
-                const selector = `#${idContenedor} input, #${idContenedor} select`;
-                document.querySelectorAll(selector).forEach((campo) => {
-                    if (campo.tagName === "SELECT") {
-                        $(campo).val(null).trigger("change");
-                    } else {
-                        campo.value = "";
-                    }
-                    $(campo).removeClass("is-invalid"); // Limpia el estado de error
-                    
-                    // UX: Asegurar que los campos de teléfono estén habilitados/no readonly al limpiar
-                    if(campo.id === 'telefonoDelivery' || campo.id === 'telefonoShalom') {
-                        $(campo).prop('readonly', false).removeClass('bg-gray-100');
-                    }
-                });
-                
-                // UX: Desmarcar los checkboxes al limpiar
-                $usarMismoTelefonoDelivery.prop('checked', false);
-                $usarMismoTelefonoShalom.prop('checked', false);
-            }
-            
-            // FUNCIÓN ACTUALIZADA PARA USAR EL TOAST CON ESTILO GRADIENTE
-            function mostrarMensajeTelefono(mensaje, tipo = "success") {
-                const $toast = $("#toast");
-                
-                // Limpiar clases de gradiente y visibilidad
-                $toast.removeClass("bg-gradient-to-r from-brand-accent to-brand-accent-alt from-red-500 to-red-600 opacity-100 translate-y-0");
-                
-                // 1. Aplicar clases de color según el tipo (Terracota para éxito, Rojo para error)
-                if (tipo === "success") {
-                    $toast.addClass("bg-gradient-to-r from-brand-accent to-brand-accent-alt shadow-brand-accent/25");
-                } else {
-                    $toast.addClass("bg-gradient-to-r from-red-500 to-red-600 shadow-red-500/25");
-                }
-
-                // 2. Setear el texto
-                $toast.text(mensaje);
-                
-                // 3. Mostrar el toast (aplica la transición)
-                // Se hace en el siguiente tick del ciclo de eventos para asegurar la transición
-                setTimeout(() => {
-                    $toast.addClass("opacity-100 translate-y-0");
-                }, 50);
-
-                // 4. Set timeout para ocultar el toast después de 5 segundos
-                clearTimeout($toast.data('timer'));
-                const timer = setTimeout(() => {
-                    $toast.removeClass("opacity-100 translate-y-0").addClass("opacity-0 translate-y-2");
-                    // Limpia las clases de color después de la animación de salida
-                    setTimeout(() => {
-                        $toast.removeClass("from-brand-accent to-brand-accent-alt from-red-500 to-red-600 shadow-brand-accent/25 shadow-red-500/25");
-                    }, 300); // 300ms es la duración de la transición
-                }, 5000); 
-
-                $toast.data('timer', timer);
-            }
-
-            // UX: Funciones y eventos para reutilizar el número de teléfono principal
-            function updateTelefonoDisplay() {
-                const val = $telefonoUsado.val() || 'N/A';
-                $telefonoDisplayDelivery.text(val);
-                $telefonoDisplayShalom.text(val);
-            }
-            
-            // Inicializar la visualización y actualizar en cada input del teléfono principal
-            updateTelefonoDisplay();
-            $telefonoUsado.on('input', function() {
-                updateTelefonoDisplay();
-                // Si el checkbox está marcado, también actualiza el campo de destino
-                if ($usarMismoTelefonoDelivery.is(':checked')) {
-                    $telefonoDelivery.val($(this).val());
-                }
-                if ($usarMismoTelefonoShalom.is(':checked')) {
-                    $telefonoShalom.val($(this).val());
-                }
-            });
-
-
-            // Toggle logic for Delivery phone number
-            $usarMismoTelefonoDelivery.on('change', function() {
-                const checked = $(this).is(':checked');
-                if (checked) {
-                    $telefonoDelivery.val($telefonoUsado.val());
-                    $telefonoDelivery.prop('readonly', true).removeClass('cursor-pointer').addClass('bg-gray-100');
-                    $telefonoDelivery.removeClass('is-invalid'); // Limpia estado de error
-                } else {
-                    $telefonoDelivery.val('');
-                    $telefonoDelivery.prop('readonly', false).removeClass('bg-gray-100').focus();
-                }
-            });
-
-            // Toggle logic for Shalom phone number
-            $usarMismoTelefonoShalom.on('change', function() {
-                const checked = $(this).is(':checked');
-                if (checked) {
-                    $telefonoShalom.val($telefonoUsado.val());
-                    $telefonoShalom.prop('readonly', true).removeClass('cursor-pointer').addClass('bg-gray-100');
-                    $telefonoShalom.removeClass('is-invalid'); // Limpia estado de error
-                } else {
-                    $telefonoShalom.val('');
-                    $telefonoShalom.prop('readonly', false).removeClass('bg-gray-100').focus();
-                }
-            });
-
-            // Muestra/oculta bloques de campos según la opción seleccionada
-            $("#tipoAccion").on("change", function () {
-                limpiarCampos("camposDelivery");
-                limpiarCampos("camposShalom");
-                limpiarCampos("camposUsados");
-
-                // Oculta todos los bloques y deshabilita inputs/selects dentro
-                $("#camposDelivery, #camposShalom, #camposUsados")
-                    .attr("hidden", true)
-                    .find("input, select")
-                    .prop("disabled", true);
-                
-                // UX: Asegurar que los checkboxes estén desmarcados
-                $usarMismoTelefonoDelivery.prop('checked', false);
-                $usarMismoTelefonoShalom.prop('checked', false);
-
-
-                const valor = $(this).val();
-
-                // Mostrar y habilitar bloque correspondiente
-                if (valor === "delivery") {
-                    $("#camposDelivery").attr("hidden", false).find("input, select").prop("disabled", false);
-                } else if (valor === "shalom") {
-                    $("#camposShalom").attr("hidden", false).find("input, select").prop("disabled", false);
-                } else if (valor === "recoger") {
-                    // Recoger en almacén no requiere campos extra ni fecha de envío
-                } else if (valor === "usado") {
-                    $("#camposUsados").attr("hidden", false).find("input, select").prop("disabled", false);
-                }
-
-                // Mover y mostrar campo fecha en el bloque correspondiente
-                const $contenedorFecha = $("#contenedorFecha");
-                $contenedorFecha.hide();
-
-                if (["delivery", "shalom", "usado"].includes(valor)) {
-                    if (valor === "delivery") {
-                        $("#camposDelivery").append($contenedorFecha);
-                    } else if (valor === "shalom") {
-                        $("#camposShalom").append($contenedorFecha);
-                    } else {
-                        $("#camposUsados").append($contenedorFecha);
-                    }
-                    $contenedorFecha.show();
-                    $("#fecha").prop("disabled", false);
-                } else {
-                    $("#fecha").prop("disabled", true);
-                }
-
-                // --- AÑADIR ESTE BLOQUE - INICIO ---
-                // UX: Mover el foco y el scroll al primer campo de la sección
-                
-                // La variable 'valor' ya existe en esta función, así que la reusamos.
-                let targetId = null; 
-                
-                if (valor === "delivery") {
-                    targetId = "nombreDelivery"; // ID del primer input en Delivery
-                } else if (valor === "shalom") {
-                    targetId = "nombreShalom"; // ID del primer input en Shalom
-                } else if (valor === "usado") {
-                    targetId = "fecha"; // ID del primer (y único) input en Usado
-                }
-
-                if (targetId) {
-                    // Se usa un pequeño retardo (100ms) para dar tiempo al navegador
-                    // a renderizar la sección antes de mover el foco.
-                    setTimeout(() => {
-                        const targetElement = document.getElementById(targetId);
-                        if (targetElement) {
-                            targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            // Opcional: Si focus() no es suficiente, puedes forzar un scroll más suave
-                            // targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    </td>
+                    <td class="p-3 text-sm text-gray-700 col-responsive-hide">
+                        ${
+                            // --- INICIO: Lógica de Destino Dinámico (sin DNI) ---
+                            (() => {
+                                if (envio.tipo === 'DELIVERY' || envio.tipo === 'DINSIDES') {
+                                    return `
+                                        <span class="font-semibold text-gray-800">${envio.distrito || 'N/A'}</span>
+                                        <span class="block text-xs text-gray-500">${envio.direccion || 'N/A'}</span>
+                                        <span class="block text-xs text-gray-500 italic">${envio.referencia || 'N/A'}</span>
+                                    `;
+                                } else { // Shalom, Olva, etc.
+                                    return `
+                                        <span class="font-semibold text-gray-800">${envio.agencia || 'N/A'}</span>
+                                    `;
+                                }
+                            })()
+                            // --- FIN: Lógica de Destino Dinámico ---
                         }
-                    }, 100); 
-                }
-                // --- AÑADIR ESTE BLOQUE - FIN ---
+                    </td>
+                    <td class="p-3 text-sm text-gray-700">${envio.fechaEnvio ? envio.fechaEnvio.substring(0, 10) : ''}</td>
+                    <td class="p-3 text-sm">
+                        <!-- Contenedor para edición inline -->
+                        <div class="inline-edit-container">
+                            <select class="inline-edit-estado select border border-gray-200 bg-white focus:outline-none focus:border-accent focus:ring-1 focus:ring-orange-100" data-original-estado="${envio.estado}">
+                                <option value="PENDIENTE" ${envio.estado === 'PENDIENTE' ? 'selected' : ''}>Pendiente</option>
+                                <option value="ENVIADO" ${envio.estado === 'ENVIADO' ? 'selected' : ''}>Enviado</option>
+                                <option value="ENTREGADO" ${envio.estado === 'ENTREGADO' ? 'selected' : ''}>Entregado</option>
+                                <option value="REPROGRAMADO" ${envio.estado === 'REPROGRAMADO' ? 'selected' : ''}>Reprogramado</option>
+                                <option value="ELIMINAR" class="text-red-600 font-semibold">Eliminar...</option>
+                            </select>
+                            <input type="date" class="inline-edit-fecha input border border-gray-200 bg-white focus:outline-none focus:border-accent focus:ring-1 focus:ring-orange-100 oculto" value="${envio.fechaEnvio ? envio.fechaEnvio.substring(0, 10) : ''}" data-original-fecha="${envio.fechaEnvio ? envio.fechaEnvio.substring(0, 10) : ''}">
+                            <button class="inline-save-btn btn primary bg-accent text-white shadow-md shadow-accent/20 hover:shadow-lg hover:shadow-accent/30 hover:-translate-y-0.5 transition-all duration-200 inline-flex items-center justify-center gap-1 oculto">
+                                <i data-feather="save" class="w-3 h-3"></i>
+                            </button>
+                        </div>
+                    </td>                    
+                    <td class="p-3 text-center"><button class="text-accent hover:text-accent-alt" title="Notificar al cliente"><i data-feather="send" class="w-4 h-4"></i></button></td>
+                `;
+                tbodyEnvios.appendChild(tr);
+
+                // --- Renderizar para tarjetas (Móvil) ---
+                const card = document.createElement('div');
+                const cardBgClass = isDuplicate ? 'bg-yellow-200/50' : 'bg-white';
+                card.className = `${cardBgClass} rounded-xl shadow p-4 border border-gray-200 space-y-3`; // Añadido cursor-pointer
+                card.dataset.id = envio.id;
+                card.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div class="flex items-center gap-3">
+                            <input type="checkbox" class="rowCheck rounded border-gray-300 text-accent focus:ring-accent" data-id="${envio.id}">
+                            <div>
+                                <p class="font-bold text-gray-800">${envio.nombre}</p>
+                                ${
+                                    (() => {
+                                        if (envio.tipo === 'DELIVERY' || envio.tipo === 'DINSIDES') {
+                                            return `<p class="text-sm text-gray-500">${envio.distrito || 'N/A'}</p>`;
+                                        } else { // Shalom, Olva, etc.
+                                            return `<p class="text-sm text-gray-500">${envio.agencia || 'N/A'}</p>`;
+                                        }
+                                    })()
+                                }
+                            </div>
+                        </div>
+                        <!-- <span class="px-2 py-1 text-xs font-bold rounded-full ${getEstadoClass(envio.estado)}">${envio.estado}</span> --> <!-- Estado original oculto -->
+                    </div>
+                    <div class="text-sm text-gray-600 space-y-2 pl-8">
+                        <p><strong class="text-gray-500">Cliente:</strong> ${envio.cliente}</p>
+                        <p><strong class="text-gray-500">Courier:</strong> ${envio.tipo}</p>
+                        <p><strong class="text-gray-500">Fecha Envío:</strong> ${envio.fechaEnvio ? envio.fechaEnvio.substring(0, 10) : ''}</p>
+                        <!-- Info Dinsides para móvil eliminada de aquí -->
+                    </div>
+
+                    <!-- Contenedor para edición inline en móvil -->
+                    <div class="inline-edit-container">
+                        <label class="block text-xs text-gray-500 font-semibold mb-1">Estado:</label>
+                        <select class="inline-edit-estado select p-2 border border-gray-200 rounded-lg bg-white w-full text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-orange-100" data-original-estado="${envio.estado}">
+                            <option value="PENDIENTE" ${envio.estado === 'PENDIENTE' ? 'selected' : ''}>Pendiente</option>
+                            <option value="ENVIADO" ${envio.estado === 'ENVIADO' ? 'selected' : ''}>Enviado</option>
+                            <option value="ENTREGADO" ${envio.estado === 'ENTREGADO' ? 'selected' : ''}>Entregado</option>
+                            <option value="REPROGRAMADO" ${envio.estado === 'REPROGRAMADO' ? 'selected' : ''}>Reprogramado</option>
+                        </select>
+                        <input type="date" class="inline-edit-fecha input p-2 border border-gray-200 rounded-lg bg-white w-full text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-orange-100 oculto" value="${envio.fechaEnvio ? envio.fechaEnvio.substring(0, 10) : ''}" data-original-fecha="${envio.fechaEnvio ? envio.fechaEnvio.substring(0, 10) : ''}">
+                        <button class="inline-save-btn btn primary bg-accent text-white rounded-lg font-bold text-sm shadow-md shadow-accent/20 hover:shadow-lg hover:shadow-accent/30 hover:-translate-y-0.5 transition-all duration-200 inline-flex items-center justify-center gap-1 oculto py-2">
+                            <i data-feather="save" class="w-4 h-4"></i> Guardar Cambio
+                        </button>
+                    </div>
+
+                    <div class="flex justify-end pt-2">
+                        <button class="text-accent hover:text-accent-alt text-sm font-bold inline-flex items-center gap-1" title="Notificar al cliente">
+                            <i data-feather="send" class="w-4 h-4"></i> Notificar
+                        </button>
+                    </div>
+                `;
+                mobileCardContainer.appendChild(card);
             });
+            feather.replace();
+        }
+        contarSeleccionados();
+    }
 
-            // Envío del formulario con validación y lógica de Firestore
-            $("#formulario").on("submit", async function (e) {
-                e.preventDefault();
+    function obtenerIdsSeleccionados() {
+        if (window.innerWidth < 768) {
+            return [...mobileCardContainer.querySelectorAll('.rowCheck:checked')].map(chk => parseInt(chk.dataset.id));
+        } else {
+            return [...tbodyEnvios.querySelectorAll('.rowCheck:checked')].map(chk => parseInt(chk.dataset.id));
+        }
+    }
 
-                // Oculta el mensaje previo inmediatamente
-                $("#toast").removeClass("opacity-100 translate-y-0").addClass("opacity-0 translate-y-2");
+    // --- LÓGICA DE ACCIONES EN LOTE ---
+    function contarSeleccionados() {
+        const seleccionadosDesktop = tbodyEnvios.querySelectorAll('.rowCheck:checked').length;
+        const seleccionadosMobile = mobileCardContainer.querySelectorAll('.rowCheck:checked').length;
+        const seleccionados = Math.max(seleccionadosDesktop, seleccionadosMobile);
 
-                function mostrarMensaje(mensaje, tipo = "success") {
-                    mostrarMensajeTelefono(mensaje, tipo);
-                }
+        const totalVisibleRows = (window.innerWidth < 768) 
+            ? mobileCardContainer.children.length 
+            : tbodyEnvios.rows.length;
+        
+        selCount.textContent = `${seleccionados} seleccionados`;
+        
+        const allChecked = totalVisibleRows > 0 && seleccionados === totalVisibleRows;
+        checkTodos.checked = allChecked;
+        thCheckTodos.checked = allChecked;
 
-                const tipoAccion = $("#tipoAccion").val();
+        // En lugar de ocultar todo el contenedor, ahora controlamos las partes específicas
+        // que dependen de la selección.
+        const loteRightControls = batchActionsContainer.querySelector('.lote-right');
+        const hasSelections = seleccionados > 0;
 
-                // Función para aplicar clase de error (se mantiene igual)
-                function aplicarClaseError(id) {
-                    $(`#${id}`).addClass('is-invalid');
-                    $(`#${id}`).on('input change', function() {
-                        $(this).removeClass('is-invalid');
-                    });
-                }
+        // Muestra u oculta el contador de seleccionados y los controles de acción (dropdown, botón aplicar)
+        selCount.classList.toggle('hidden', !hasSelections);
+        if (loteRightControls) {
+            loteRightControls.classList.toggle('hidden', !hasSelections);
+        }
+    }
+    
+    function seleccionarTodos(checked) {
+        document.querySelectorAll('.rowCheck').forEach(chk => chk.checked = checked);
+        contarSeleccionados();
+    }
 
-                // Validaciones manuales para 'readonly' (se mantienen igual)
-                if (tipoAccion === "delivery") {
-                    if (!$("#distrito").val()) {
-                        mostrarMensaje("Por favor, selecciona un distrito de la lista", "error");
-                        aplicarClaseError("distrito");
-                        return;
-                    }
-                }
-                if (tipoAccion === "shalom") {
-                    if (!$("#agencia").val()) {
-                        mostrarMensaje("Por favor, selecciona una agencia de la lista", "error");
-                        aplicarClaseError("agencia");
-                        return;
-                    }
-                }
+    accionLote.addEventListener('change', () => {
+        const esReprog = accionLote.value === 'REPROGRAMADO';
+        fechaReprog.classList.toggle('oculto', !esReprog);
+    });    
 
-                // Validación nativa HTML5 (se mantiene igual)
-                if (!this.checkValidity()) {
-                    $(this).find(':invalid').each(function() {
-                        aplicarClaseError(this.id);
-                    });
-                    this.reportValidity();
-                    return;
-                }
+    btnAplicarLote.addEventListener('click', async () => {
+        const seleccionadosIds = obtenerIdsSeleccionados();
+        const accion = accionLote.value;
 
-                const spinnerOverlay = document.getElementById('spinner');
-                spinnerOverlay.classList.remove('hidden');
-                spinnerOverlay.classList.add('flex');
+        if (seleccionadosIds.length === 0 || !accion) {
+            showToast(!accion ? 'Por favor, selecciona una acción.' : 'No has seleccionado ningún envío.');
+            return;
+        }
 
-                // --- INICIO DE LA NUEVA LÓGica DE FIRESTORE ---
-                try {
-                    // 1. Preparar el documento base
-                    const docData = {
-                        fechaRegistro: new Date(), // Firestore usa objetos Date
-                        cliente: $("#telefonoUsado").val(),
-                        courier: tipoAccion.toUpperCase(),
-                        fechaEnvio: $("#fecha").val(),
-                        estado: "PENDIENTE",
-                    };
+        // Si la acción es eliminar, abre el modal de confirmación y detiene la ejecución aquí.
+        if (accion === 'ELIMINAR') {
+            abrirModalConfirmacion(seleccionadosIds);
+            return;
+        }
 
-                    // 2. Añadir datos específicos
-                    if (tipoAccion === "delivery") {
-                        docData.nombre = $("#nombreDelivery").val();
-                        docData.telefono = $("#telefonoDelivery").val();
-                        docData.distrito = $("#distrito").val();
-                        docData.direccion = $("#direccion").val();
-                        docData.referencia = $("#referencia").val();
+        let payload;
+        let action;
 
-                    } else if (tipoAccion === "shalom") {
-                        docData.nombre = $("#nombreShalom").val();
-                        docData.telefono = $("#telefonoShalom").val();
-                        docData.DNI = $("#DNI").val();
-                        docData.agencia = $("#agencia").val();
+        if (accion === 'REPROGRAMADO') {
+            if (!fechaReprog.value) {
+                showToast('Debes seleccionar una fecha para reprogramar.');
+                return;
+            }
+            action = 'batchUpdateStatus';
+            payload = { ids: seleccionadosIds, status: 'REPROGRAMADO', newDate: fechaReprog.value };
+        } else { // Para 'ENVIADO', 'ENTREGADO', 'PENDIENTE'
+            action = 'batchUpdateStatus';
+            payload = { ids: seleccionadosIds, status: accion };
+        }
 
-                    } else if (tipoAccion === "usado") {
-                        const telefonoIngresado = $("#telefonoUsado").val().replace(/\D/g, "");
-
-                        // 2a. (checkPhone) Verificar si el teléfono existe
-                        console.log(`Verificando teléfono: ${telefonoIngresado}`);
-                        const qCheck = db.collection("envios")
-                            .where("cliente", "==", telefonoIngresado)
-                            .limit(1);
-
-                        const checkSnapshot = await qCheck.get();
-
-                        if (checkSnapshot.empty) {
-                            mostrarMensaje("El número ingresado no está registrado.", "error");
-                            aplicarClaseError("telefonoUsado");
-                            $("#telefonoUsado").focus();
-                            spinnerOverlay.classList.remove('flex');
-                            spinnerOverlay.classList.add('hidden');
-                            return; // Detener
-                        }
-
-                        // 2b. (getLastRecord) Si existe, buscar el último registro
-                        console.log("Teléfono verificado. Buscando último registro...");
-                        const qRecord = db.collection("envios")
-                            .where("cliente", "==", telefonoIngresado)
-                            .orderBy("fechaRegistro", "desc") // 'desc' para el más reciente
-                            .limit(1);
-
-                        const recordSnapshot = await qRecord.get();
-
-                        if (!recordSnapshot.empty) {
-                            const ultimoRegistro = recordSnapshot.docs[0].data();
-                            console.log("Último registro encontrado:", ultimoRegistro);
-
-                            // 2c. Mapear y añadir los datos
-                            docData.courier = ultimoRegistro.courier || tipoAccion.toUpperCase(); // Copia el courier
-                            docData.nombre = ultimoRegistro.nombre || "";
-                            docData.telefono = ultimoRegistro.telefono || "";
-                            docData.distrito = ultimoRegistro.distrito || "";
-                            docData.direccion = ultimoRegistro.direccion || "";
-                            docData.referencia = ultimoRegistro.referencia || "";
-                            docData.DNI = ultimoRegistro.DNI || "";
-                            docData.agencia = ultimoRegistro.agencia || "";
-                        } else {
-                            console.warn("Teléfono válido, pero no se encontró último registro.");
-                        }
-                    }
-
-                    // 3. Guardar el documento en Firestore
-                    console.log("Guardando documento:", docData);
-                    await db.collection("envios").add(docData);
-
-                    // 4. Lógica de Éxito (se mantiene igual)
-                    $("#formulario").hide();
-                    $("#successMessage").removeClass('hidden').addClass('flex');
-                    $("#formulario")[0].reset();
-                    // ... (resto del código de reseteo) ...
-                    $("#camposDelivery, #camposShalom, #camposUsados")
-                        .attr("hidden", true)
-                        .find("input, select")
-                        .prop("disabled", true);
-                    $("#contenedorFecha").hide();
-                    $("#fecha").empty();
-
-                    // --- RE-AÑADIR PLACEHOLDER A FECHA ---
-                    $("#fecha").append(
-                        $("<option>")
-                            .val("") 
-                            .text("Elige una fecha de envío...")
-                            .prop("disabled", true)
-                            .prop("selected", true)
-                    );
-                    const nuevasFechas = obtenerFechasEnvio();
-                    nuevasFechas.forEach(f => {
-                        $("#fecha").append(
-                            $("<option>").val(f.toISOString().split("T")[0]).text(formatearFecha(f))
-                        );
-                    });
-                    $usarMismoTelefonoDelivery.prop('checked', false);
-                    $usarMismoTelefonoShalom.prop('checked', false);
-                    $telefonoDelivery.prop('readonly', false).removeClass('bg-gray-100');
-                    $telefonoShalom.prop('readonly', false).removeClass('bg-gray-100');
-
-                } catch (err) {
-                    // 5. Manejo de Errores
-                    console.error("Error al guardar en Firestore:", err);
-                    mostrarMensaje("Ocurrió un error al guardar tus datos", "error");
-                } finally {
-                    // 6. Ocultar el spinner
-                    spinnerOverlay.classList.remove('flex');
-                    spinnerOverlay.classList.add('hidden');
-                }
-                // --- FIN DE LA NUEVA LÓGica DE FIRESTORE ---
+        showToast('Aplicando cambios...');
+        try {
+            const response = await fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action, payload }),
             });
+            await response.json();
+            await fetchDataFromSheet(); // Recarga los datos
+            showToast('Acción en lote aplicada con éxito.');
+        } catch (error) {
+            console.error('Error batch updating:', error);
+            showToast('Error al aplicar la acción.');
+        } finally {
+            accionLote.value = '';
+            fechaReprog.classList.add('oculto');
+        }
+    });
+
+    checkTodos.addEventListener('change', (e) => seleccionarTodos(e.target.checked));
+    thCheckTodos.addEventListener('change', (e) => seleccionarTodos(e.target.checked));
+    
+    document.getElementById('envios').addEventListener('change', (e) => {
+        if(e.target.classList.contains('rowCheck')) {
+            const id = e.target.dataset.id;
+            const isChecked = e.target.checked;
+            document.querySelectorAll(`.rowCheck[data-id="${id}"]`).forEach(chk => {
+                if (chk !== e.target) chk.checked = isChecked;
+            });
+            contarSeleccionados();
+        }
+    });
+
+    // --- EVENT LISTENERS ---
+    btnEtiquetas.addEventListener('click', () => {
+        const seleccionadosIds = obtenerIdsSeleccionados();
+        if (seleccionadosIds.length === 0) {
+            showToast('Debes seleccionar al menos un envío para imprimir etiquetas.');
+            return;
+        }
+
+        const enviosSeleccionados = todosLosEnvios.filter(envio => seleccionadosIds.includes(envio.id));
+        const printContainer = document.getElementById('print-container');
+        
+        // --- NUEVA LÓGICA PARA ETIQUETAS INCREÍBLES ---
+        const businessName = localStorage.getItem('businessName') || 'Tu Emprendimiento';
+        const logoSrc = localStorage.getItem('businessLogo');
+
+        let labelsHtml = '';
+        enviosSeleccionados.forEach(envio => {
+            let destinationHtml = '';
+            let detailsHtml = ''; // Variable para los detalles extra
+
+            if (envio.tipo === 'DELIVERY') {
+                const direccionCompleta = [envio.direccion, envio.distrito].filter(Boolean).join(', ');
+                destinationHtml = `
+                    <div class="label-section">
+                        <div class="label-section-title">Destino:</div>
+                        <p class="label-destination-text">
+                            ${direccionCompleta}<br>
+                            <strong>Ref:</strong> ${envio.referencia || 'N/A'}
+                        </p>
+                    </div>
+                `;
+            } else if (envio.tipo === 'DINSIDES') {
+                // HTML de Destino para Dinsides
+                // --- INICIO DE LA MODIFICACIÓN ---
+                const monto = parseFloat(envio.cobrar);
+                const montoDisplay = !isNaN(monto) && monto > 0 ? `S/. ${monto.toFixed(2)}` : 'S/. 0.00';
+
+                destinationHtml = `
+                    <div class="label-section">
+                        <div class="label-section-title">Destino:</div>
+                        <p class="label-destination-text">
+                            <strong>Distrito:</strong> ${envio.distrito || 'N/A'}<br>
+                            <strong>Fecha Entrega:</strong> ${envio.fechaEnvio ? envio.fechaEnvio.substring(0, 10) : 'N/A'}<br>
+                            <!-- Campos movidos y sin estilo especial -->
+                            <strong>Detalle:</strong> ${envio.detalle || 'Ropa'}<br>
+                            <strong>Cobrar:</strong> ${montoDisplay}
+                        </p>
+                    </div>
+                `;
+                
+                // Limpiamos detailsHtml ya que no lo necesitamos
+                detailsHtml = '';
+                // --- FIN DE LA MODIFICACIÓN ---
+            } else { // Para otras agencias (Shalom, Olva)
+                destinationHtml = `
+                    <div class="label-section">
+                        <div class="label-section-title">Destino:</div>
+                        <p class="label-destination-text">
+                            <strong>DNI/CE:</strong> ${envio.dni || 'N/A'}<br>
+                            <strong>Agencia:</strong> ${envio.agencia || 'N/A'}
+                        </p>
+                    </div>
+                `;
+            }
+
+            labelsHtml += `
+                <div class="label-card">
+                    <div class="label-header">
+                        ${logoSrc ? `<img src="${logoSrc}" alt="Logo" class="label-logo">` : '<div></div>'}
+                        <div class="label-business-name">${businessName}</div>
+                    </div>
+                    <div class="label-body">
+                        <div class="label-section">
+                            <div class="label-section-title">Para:</div>
+                            <div class="label-recipient-name">${String(envio.nombre || '').toUpperCase()}</div>
+                            <div class="label-recipient-phone">${envio.telefono || 'Sin teléfono'}</div>
+                        </div>
+                        ${destinationHtml}
+                        ${detailsHtml} <!-- Se añaden los detalles extra aquí -->
+                    </div>
+                    <div class="label-footer">
+                        <div class="label-courier-info">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+                            <span>${envio.tipo || 'N/A'}</span>
+                        </div>
+                        <!-- <div class="label-qr-code">QR Code</div> -->
+                    </div>
+                </div>
+            `;
         });
-    </script>
+
+        printContainer.innerHTML = labelsHtml;
+        window.print();
+    });
+
+    templateLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault(); // Previene que el enlace intente navegar a otra página
+
+            const seleccionadosIds = obtenerIdsSeleccionados();
+            if (seleccionadosIds.length === 0) {
+                showToast('Debes seleccionar al menos un envío para descargar la plantilla.');
+                plantillasMenu.classList.add('hidden'); // Cierra el menú
+                return;
+            }
+
+            // Aquí iría la lógica futura para descargar el archivo
+            const templateName = e.target.textContent;
+            console.log(`Descargando ${templateName} para los envíos:`, seleccionadosIds);
+            showToast(`Descargando ${templateName}...`);
+            plantillasMenu.classList.add('hidden'); // Cierra el menú
+        });
+    });      
+    btnAplicarFiltros.addEventListener('click', aplicarFiltros);
+    filtroCliente.addEventListener('keyup', (e) => { if(e.key === 'Enter') aplicarFiltros() });
+
+    btnLimpiarFiltros.addEventListener('click', () => {
+        // 1. Resetea los valores de los campos de filtro
+        filtroCliente.value = '';
+        filtroFecha.value = '';
+        filtroTipo.value = '';
+        filtroDuplicados.checked = false; // También resetea el nuevo checkbox
+
+        // 2. Vuelve a renderizar la tabla con todos los datos
+        aplicarFiltros();
+
+        // 3. Muestra una notificación de confirmación
+        showToast('Filtros limpiados.');
+    });
+
+    // --- SINCRONIZACIÓN CON "MI CUENTA" ---
+    const businessNameInput = document.getElementById('businessName');
+    const headerBusinessName = document.getElementById('headerBusinessName');
+    const logoInput = document.getElementById('logoInput');
+    const logoPreview = document.getElementById('logoPreview');
+    const btnGuardarConfig = document.getElementById('btnGuardarConfig');
+    const sidebarTitle = document.getElementById('sidebarTitle');
+    const sidebarLogo = document.getElementById('sidebarLogo');
+    const headerLogo = document.getElementById('headerLogo');
+
+    function syncBusinessInfo() {
+        const name = localStorage.getItem('businessName') || 'Mi Tienda de Prueba';
+        businessNameInput.value = name;
+        headerBusinessName.textContent = name;
+        sidebarTitle.textContent = name;     
+
+        const logoSrc = localStorage.getItem('businessLogo');
+        if (logoSrc) {
+            sidebarLogo.src = logoSrc;
+            headerLogo.src = logoSrc;
+            logoPreview.src = logoSrc;
+            sidebarLogo.classList.remove('hidden');
+            headerLogo.classList.remove('hidden');
+            logoPreview.classList.remove('hidden');
+        } else {
+            sidebarLogo.classList.add('hidden');
+            headerLogo.classList.add('hidden');
+            logoPreview.classList.add('hidden');
+        }
+    }
+    
+    logoInput.addEventListener('change', function() {
+        if (this.files && this.files[0]) {
+            const reader = new FileReader();
+            reader.onload = e => {
+                localStorage.setItem('businessLogo', e.target.result);
+                syncBusinessInfo();
+            };
+            reader.readAsDataURL(this.files[0]);
+        }
+    });
+
+    btnGuardarConfig.addEventListener('click', () => {
+        localStorage.setItem('businessName', businessNameInput.value);
+        showToast('Cambios guardados con éxito.');
+        syncBusinessInfo(); // <-- ¡Verifica esta llamada!
+    });
+
+    goToAccountBtn.addEventListener('click', () => {
+        document.querySelector('a.nav-link[href="#cuenta"]').click();
+    });
+
+
+    // --- LÓGICA DE EDICIÓN INLINE (NUEVA) ---
+
+    // Función para manejar el guardado de cambios inline
+    async function saveInlineChanges(buttonElement) {
+        buttonElement.disabled = true; // Deshabilita el botón mientras guarda
+        showToast('Guardando...');
+
+        const row = buttonElement.closest('tr[data-id], div[data-id]'); // Funciona para tabla y tarjeta
+        const id = parseInt(row.dataset.id);
+        const estadoSelect = row.querySelector('.inline-edit-estado');
+        const fechaInput = row.querySelector('.inline-edit-fecha');
+
+        const nuevoEstado = estadoSelect.value;
+        let nuevaFecha = fechaInput.value;
+
+        // Buscar el envío original en nuestro array local 'todosLosEnvios'
+        const envioOriginal = todosLosEnvios.find(e => e.id === id);
+        if (!envioOriginal) {
+            showToast('Error: No se encontró el envío original.');
+            buttonElement.disabled = false; // Rehabilita si hay error
+            return;
+        }
+
+        // Crear el payload copiando el original y actualizando solo lo necesario
+        // Usamos una copia profunda simple para evitar problemas si hay objetos anidados (aunque aquí no los hay)
+        const payload = JSON.parse(JSON.stringify(envioOriginal)); 
+        payload.estado = nuevoEstado; // Actualiza el estado
+
+        // Solo actualizar fecha si el estado es REPROGRAMADO
+        if (nuevoEstado === 'REPROGRAMADO') {
+            if (!nuevaFecha) {
+                 showToast('Selecciona una fecha para reprogramar.');
+                 buttonElement.disabled = false; // Rehabilita si falta fecha
+                 return; // Detener si falta la fecha
+            }
+            payload.fechaEnvio = nuevaFecha; // Actualiza la fecha
+        } else {
+            // Si el estado NO es REPROGRAMADO, asegurar que la fecha en el payload
+            // sea la original, NO la que pudiera estar en el input (si se mostró y luego se ocultó)
+            payload.fechaEnvio = (envioOriginal.fechaEnvio) ? envioOriginal.fechaEnvio.substring(0, 10) : '';
+        }
+
+        // Eliminar campos que no existen en el Sheet o que no queremos enviar (si los hubiera)
+        // delete payload.algunCampoExtraLocal; 
+
+        try {
+            const response = await fetch(SCRIPT_URL, {
+                method: 'POST',
+                // Reutilizamos la acción 'updateShipment' que ya maneja todos los campos
+                body: JSON.stringify({ action: 'updateShipment', payload }), 
+            });
+            const result = await response.json(); // Espera y parsea la respuesta del script
+
+            if (result.status !== 'success') {
+                throw new Error(result.message || 'Error desconocido del script.');
+            }
+
+            // Éxito: Actualizar datos locales y UI
+            // Opción 1: Actualizar solo el array local y redibujar (más simple)
+            await fetchDataFromSheet(); // Recarga toda la tabla para asegurar consistencia
+
+            // Opción 2 (Más compleja, mejor UX si la tabla es enorme): 
+            // Actualizar el array local y solo la fila/tarjeta modificada
+            /*
+            const index = todosLosEnvios.findIndex(e => e.id === id);
+            if (index !== -1) {
+                // Actualizar el objeto en el array local con los datos guardados
+                todosLosEnvios[index] = { ...todosLosEnvios[index], estado: payload.estado, fechaEnvio: payload.fechaEnvio }; 
+            }
+            // Actualizar los atributos data-* en los inputs/selects de la fila/tarjeta editada
+            estadoSelect.dataset.originalEstado = payload.estado;
+            fechaInput.dataset.originalFecha = payload.fechaEnvio;
+            // Ocultar el botón guardar
+            buttonElement.classList.add('oculto');
+            buttonElement.disabled = false; // Rehabilita por si acaso
+            // Actualizar visualmente la celda/tarjeta (si es necesario más allá de los inputs)
+            // Por ejemplo, si tuvieras un badge de color aparte del select.
+            */
+
+            showToast('Envío actualizado.');
+            // No necesitamos re-habilitar el botón porque la tabla se redibuja completamente con fetchDataFromSheet()
+
+        } catch (error) {
+            console.error('Error updating shipment inline:', error);
+            showToast(`Error al guardar: ${error.message}`);
+            buttonElement.disabled = false; // Re-habilita en caso de error
+        }
+    }
+
+    // Listener delegado para cambios en Estado y Fecha inline
+    // Se asocia al contenedor principal de la sección de envíos para capturar eventos de tabla y tarjetas
+    document.getElementById('envios').addEventListener('change', (e) => {
+        // Si el cambio ocurrió en un select de estado
+        if (e.target.classList.contains('inline-edit-estado')) {
+            const selectEstado = e.target;
+            const container = selectEstado.closest('.inline-edit-container');
+            const fechaInput = container.querySelector('.inline-edit-fecha');
+            const saveBtn = container.querySelector('.inline-save-btn');
+            const originalEstado = selectEstado.dataset.originalEstado;
+            const nuevoEstado = selectEstado.value;
+
+            // Si el usuario selecciona "ELIMINAR"
+            if (nuevoEstado === 'ELIMINAR') {
+                const row = selectEstado.closest('tr[data-id], div[data-id]');
+                const id = parseInt(row.dataset.id);
+
+                // Abrir el modal de confirmación
+                abrirModalConfirmacion([id]);
+
+                // MUY IMPORTANTE: Restaurar el select a su valor original
+                // El modal se encargará del resto.
+                selectEstado.value = originalEstado;
+                return; // Detener la ejecución aquí
+            }
+
+            // Mostrar/ocultar input de fecha si es REPROGRAMADO
+            const esReprogramado = nuevoEstado === 'REPROGRAMADO';
+            fechaInput.classList.toggle('oculto', !esReprogramado);
+
+            // Determinar si hay cambios para mostrar el botón Guardar
+            const estadoCambiado = nuevoEstado !== originalEstado;
+            // Verificar si la fecha cambió SOLO si es relevante (estado es REPROGRAMADO)
+            // Usamos el valor actual del input de fecha para la comparación
+            const fechaCambiada = esReprogramado && (fechaInput.value !== fechaInput.dataset.originalFecha); 
+
+            saveBtn.classList.toggle('oculto', !(estadoCambiado || fechaCambiada));
+
+        } 
+        // Si el cambio ocurrió en un input de fecha
+        else if (e.target.classList.contains('inline-edit-fecha')) {
+            const fechaInput = e.target;
+            const container = fechaInput.closest('.inline-edit-container');
+            const saveBtn = container.querySelector('.inline-save-btn');
+            const selectEstado = container.querySelector('.inline-edit-estado'); // Necesitamos el estado actual también
+
+            // Mostrar botón Guardar si la fecha cambió O si el estado ya había cambiado
+            const fechaCambiada = fechaInput.value !== fechaInput.dataset.originalFecha;
+            const estadoCambiado = selectEstado.value !== selectEstado.dataset.originalEstado;
+
+             saveBtn.classList.toggle('oculto', !(fechaCambiada || estadoCambiado));
+        }
+    });
+
+    // Listener delegado para clics en el botón Guardar inline
+    document.getElementById('envios').addEventListener('click', (e) => {
+         // Asegurarse de que el clic fue en el botón o su ícono SVG/path interior
+         const button = e.target.closest('.inline-save-btn');
+         if (button) {
+             e.preventDefault(); // Evitar cualquier comportamiento por defecto del botón
+             saveInlineChanges(button);
+         }
+    });
+
+    // --- LÓGICA DEL MODAL DE CONFIRMACIÓN ---
+    const deleteModal = document.getElementById('deleteModal');
+    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+    const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+    const modalMessage = document.getElementById('modalMessage');
+    let idsParaEliminar = [];
+
+    function abrirModalConfirmacion(ids) {
+        idsParaEliminar = ids;
+        modalMessage.textContent = `¿Estás seguro de que quieres eliminar ${ids.length} envío(s) seleccionados? Esta acción no se puede deshacer.`;
+        deleteModal.classList.remove('hidden');
+    }
+
+    function cerrarModalConfirmacion() {
+        deleteModal.classList.add('hidden');
+        idsParaEliminar = [];
+    }
+
+    confirmDeleteBtn.addEventListener('click', async () => {
+        const eliminadosCount = idsParaEliminar.length;
+        if (eliminadosCount === 0) return;
+
+        showToast('Eliminando envíos...');
+        try {
+            const response = await fetch(SCRIPT_URL, {
+                method: 'POST',
+                // Cambiamos la acción para que actualice el estado a 'ELIMINADO' en lugar de borrar la fila
+                body: JSON.stringify({ action: 'batchUpdateStatus', payload: { ids: idsParaEliminar, status: 'ELIMINADO' } }),
+            });
+            await response.json();
+            cerrarModalConfirmacion();
+            await fetchDataFromSheet(); // Recarga los datos
+            showToast(`${eliminadosCount} envío(s) eliminados correctamente.`);
+        } catch (error) {
+            console.error('Error deleting shipments:', error);
+            showToast('Error al eliminar los envíos.');
+        } finally {
+            accionLote.value = '';
+        }
+    });
+
+    cancelDeleteBtn.addEventListener('click', cerrarModalConfirmacion);
+
+    // --- UTILIDADES ---
+    const toast = document.getElementById('toast');
+    let toastTimeout;
+    function showToast(msg){
+        clearTimeout(toastTimeout);
+        toast.textContent = msg;
+        toast.classList.remove('opacity-0', 'translate-y-2');
+        toast.classList.add('opacity-100', 'translate-y-0');
+        toastTimeout = setTimeout(() => {
+            toast.classList.remove('opacity-100', 'translate-y-0');
+            toast.classList.add('opacity-0', 'translate-y-2');
+        }, 2500);
+    }
+
+    // --- INICIALIZACIÓN ---
+    syncBusinessInfo();
+    fetchDataFromSheet();
+});
+</script>
 </body>
 </html>
-
 
