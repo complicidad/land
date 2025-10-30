@@ -39,6 +39,55 @@
             }
         }
     </script>
+    
+    <!-- ======================= INICIO: SDK de Firebase ======================= -->
+    <!-- Se añaden las librerías de Firebase necesarias -->
+    <script type="module">
+      // Import the functions you need from the SDKs you need
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+import { 
+        getAuth, 
+        signInAnonymously, 
+        signInWithCustomToken,
+        // --- FUNCIONES AÑADIDAS ---
+        signInWithEmailAndPassword,
+        signOut,
+        onAuthStateChanged
+        // --- FIN DE FUNCIONES AÑADIDAS ---
+      } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+      import { 
+        getFirestore, 
+        doc, 
+        getDoc, 
+        addDoc, 
+        setDoc, 
+        updateDoc, 
+        deleteDoc, 
+        onSnapshot, 
+        collection, 
+        query, 
+        where, 
+        writeBatch,
+        setLogLevel
+      } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+// Hacemos las funciones de Firebase accesibles globalmente para el script principal
+      window.firebase = {
+        initializeApp,
+        getAuth,
+        signInAnonymously,
+        signInWithCustomToken,
+        // --- FUNCIONES AÑADIDAS ---
+        signInWithEmailAndPassword,
+        signOut,
+        onAuthStateChanged,
+        // --- FIN DE FUNCIONES AÑADIDAS ---
+        getFirestore,
+        doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, writeBatch, setLogLevel
+      };
+    </script>
+    <!-- ======================= FIN: SDK de Firebase ======================= -->
+
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         html { scroll-behavior: smooth; }
@@ -295,7 +344,17 @@
             padding: 0.5rem 1rem !important; /* Padding normal en móvil */
             font-size: 0.875rem !important; /* Tamaño normal en móvil */
          }
+/* --- INICIO: CSS PARA LOGIN --- */
+/* Oculta el panel principal por defecto */
+#root-container {
+    display: none;
+}
 
+/* Muestra la pantalla de login por defecto */
+#loginScreen {
+    display: flex;
+}
+/* --- FIN: CSS PARA LOGIN --- */
     </style>
 </head>
 <body class="font-sans bg-bg-soft text-gray-900 antialiased">
@@ -657,10 +716,148 @@
     <!-- Contenedor oculto para las etiquetas de impresión -->
     <div id="print-container" class="print-container"></div>
 
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyhlKeKpyhBTtQTzYEdITXUErRjH9kmLACnaEAlmmXMDp1fVHJeVJx4N7Lw3dZgYShjfA/exec"; // <--- AÑADE ESTA LÍNEA
+<script type="module">
+document.addEventListener('DOMContentLoaded', async () => {
+    // const SCRIPT_URL = "https.google.com/macros/s/AKfycbyhlKeKpyhBTtQTzYEdITXUErRjH9kmLACnaEAlmmXMDp1fVHJeVJx4N7Lw3dZgYShjfA/exec"; // <--- Eliminamos la URL de Google Script
     feather.replace();
+
+    // ======================= INICIO: Lógica de Firebase =======================
+    // Variables globales para Firebase
+    let app, db, auth, userId, enviosCollectionRef;
+    
+    // Funciones del SDK de Firebase (expuestas desde el script de importación)
+const {
+    initializeApp, getAuth, signInAnonymously, signInWithCustomToken,
+    // --- FUNCIONES AÑADIDAS ---
+    signInWithEmailAndPassword,
+    signOut,
+    onAuthStateChanged,
+    // --- FIN DE FUNCIONES AÑADIDAS ---
+    getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, 
+    onSnapshot, collection, query, where, writeBatch, setLogLevel
+} = window.firebase;
+
+// Función para inicializar Firebase (SIN AUTENTICACIÓN)
+async function initFirebase() {
+    try {
+        // 1. Obtener configuración y App ID
+        if (typeof __app_id === 'undefined') {
+            console.error("App ID is missing.");
+            showToast("Error: Faltan variables de configuración.");
+            return false;
+        }
+
+        // Configuración de Firebase proporcionada por el usuario
+        const firebaseConfig = {
+            apiKey: "AIzaSyCzJ36uZ6Bh6DdZK3VBv5HMu2xcU4GqCMQ",
+            authDomain: "form-bedc2.firebaseapp.com",
+            projectId: "form-bedc2",
+            storageBucket: "form-bedc2.firebasestorage.app",
+            messagingSenderId: "942482653487",
+            appId: "1:942482653487:web:4193c16f078992659521da"
+        };
+
+        const appId = __app_id; // Mantenemos el __app_id
+
+        // 2. Inicializar Firebase
+        app = initializeApp(firebaseConfig);
+        db = getFirestore(app);
+        auth = getAuth(app);
+        setLogLevel('debug'); // Habilitar logs de Firestore
+
+        console.log("Firebase initialized.");
+        return true; // Devuelve true si la inicialización fue exitosa
+
+    } catch (error) {
+        console.error("Error al inicializar Firebase:", error);
+        showToast("Error crítico al conectar con la base de datos.");
+        return false;
+    }
+}
+
+// --- INICIO: NUEVA LÓGICA DE AUTENTICACIÓN ---
+
+// Elementos del DOM para el Login
+const loginScreen = document.getElementById('loginScreen');
+const rootContainerEl = document.getElementById('root-container');
+const loginForm = document.getElementById('loginForm');
+const loginEmail = document.getElementById('loginEmail');
+const loginPassword = document.getElementById('loginPassword');
+const loginError = document.getElementById('loginError');
+const loginButton = document.getElementById('loginButton');
+
+// Función para manejar el inicio de sesión
+async function handleLogin(e) {
+    e.preventDefault();
+    loginButton.disabled = true;
+    loginButton.textContent = 'Ingresando...';
+    loginError.classList.add('hidden');
+
+    try {
+        const userCredential = await signInWithEmailAndPassword(auth, loginEmail.value, loginPassword.value);
+        // El onAuthStateChanged se encargará del resto
+        console.log("Inicio de sesión exitoso:", userCredential.user.uid);
+    } catch (error) {
+        console.error("Error de inicio de sesión:", error.code, error.message);
+        loginError.textContent = 'Error: Correo o contraseña incorrectos.';
+        loginError.classList.remove('hidden');
+        loginButton.disabled = false;
+        loginButton.textContent = 'Ingresar';
+    }
+}
+
+// Función para manejar el cierre de sesión
+async function handleLogout() {
+    try {
+        await signOut(auth);
+        // El onAuthStateChanged se encargará del resto
+        console.log("Sesión cerrada.");
+    } catch (error) {
+        console.error("Error al cerrar sesión:", error);
+    }
+}
+
+// "Escucha" los cambios de estado de autenticación
+function setupAuthListener() {
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            // --- USUARIO HA INICIADO SESIÓN ---
+            console.log("Usuario autenticado:", user.uid);
+            userId = user.uid; // Establece el userId global
+
+            // Define la ruta de la colección (privada del usuario)
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+            enviosCollectionRef = collection(db, 'envios');
+
+            // Muestra el panel y oculta el login
+            rootContainerEl.style.display = 'flex';
+            loginScreen.style.display = 'none';
+
+            // Inicia la carga de datos
+            setupEnviosListener();
+
+            // Actualiza los datos del negocio (esto ya lo hacías)
+            syncBusinessInfo();
+
+        } else {
+            // --- USUARIO HA CERRADO SESIÓN ---
+            console.log("No hay usuario autenticado.");
+            userId = null;
+            enviosCollectionRef = null;
+            todosLosEnvios = []; // Limpia los datos
+
+            // Oculta el panel y muestra el login
+            rootContainerEl.style.display = 'none';
+            loginScreen.style.display = 'flex';
+
+            // Resetea el formulario de login
+            loginButton.disabled = false;
+            loginButton.textContent = 'Ingresar';
+            loginForm.reset();
+        }
+    });
+}
+// --- FIN: NUEVA LÓGICA DE AUTENTICACIÓN ---
 
     // --- LÓGICA PARA EL MENÚ COLAPSABLE ---
     const rootContainer = document.getElementById('root-container'); // <--- AÑADE ESTA LÍNEA
@@ -778,33 +975,40 @@ document.addEventListener('DOMContentLoaded', () => {
     
     let todosLosEnvios = []; // Variable global para almacenar todos los envíos.
 
-    async function fetchDataFromSheet() {
-        showToast('Cargando envíos...');
-        try {
-            const response = await fetch(SCRIPT_URL);
-            if (!response.ok) {
-                throw new Error('Error al cargar los datos.');
-            }
-            const data = await response.json();
-            // Procesa los datos: si el estado está vacío, lo establece como 'PENDIENTE'.
-            // Luego, filtra los envíos para excluir los que están marcados como "ELIMINADO".
-            todosLosEnvios = data.map(envio => ({
-                ...envio,
-                estado: envio.estado || 'PENDIENTE',
-                detalle: envio.detalle || '', // Asegura que existan
-                cobrar: envio.cobrar || ''    // Asegura que existan
-            })).filter(envio => envio.estado !== 'ELIMINADO');
+    // ======================= REEMPLAZO: DE GOOGLE SCRIPT A FIRESTORE =======================
+    // Esta función reemplaza a fetchDataFromSheet y usa onSnapshot para tiempo real
+    function setupEnviosListener() {
+        if (!enviosCollectionRef) {
+            showToast("Error: La conexión a la base de datos no está lista.");
+            return;
+        }
+
+        showToast('Conectando a Firestore...');
+        
+        // Creamos una consulta que filtra los eliminados (lógica movida de la función anterior)
+        const q = query(enviosCollectionRef, where("estado", "!=", "ELIMINADO"));
+
+        onSnapshot(q, (snapshot) => {
+            // Mapeamos los datos y añadimos el ID de Firestore
+            todosLosEnvios = snapshot.docs.map(doc => ({
+                id: doc.id, // ID del documento de Firestore (es un string)
+                ...doc.data(),
+                estado: doc.data().estado || 'PENDIENTE',
+                detalle: doc.data().detalle || '', // Asegura que existan
+                cobrar: doc.data().cobrar || ''    // Asegura que existan
+            }));
             
-            aplicarFiltros();
-            showToast('Envíos cargados.');
-        } catch (error) {
-            console.error('Error fetching data:', error);
-            showToast('Error: No se pudieron cargar los envíos.');
-            // En caso de error, muestra la tabla vacía.
+            aplicarFiltros(); // Redibuja la tabla con los nuevos datos
+            showToast('Envíos sincronizados.');
+
+        }, (error) => {
+            console.error("Error al escuchar los envíos:", error);
+            showToast("Error: No se pudieron cargar los envíos.");
             todosLosEnvios = [];
             aplicarFiltros();
-        }
+        });
     }
+    // ======================= FIN DEL REEMPLAZO =======================
     
     // --- LÓGICA DE LA TABLA Y FILTROS ---
 
@@ -830,7 +1034,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const clienteMatch = !clienteFilter || String(envio.cliente).toLowerCase().includes(clienteFilter);
             const fechaMatch = filtroFecha.value
                 ? (envio.fechaEnvio && envio.fechaEnvio.substring(0, 10) === filtroFecha.value) 
-                : (envio.fechaEnvio && envio.fechaEnvio.substring(0, 10) >= hoy);
+                : true; // <--- CAMBIO: Mostrar todos si no hay filtro de fecha
             const tipoMatch = !tipoFilter || envio.tipo === tipoFilter;
             
             if (mostrarSoloDuplicados) {
@@ -893,7 +1097,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // --- Renderizar para tabla (Desktop) ---
                 const tr = document.createElement('tr');
                 tr.className = `border-b border-gray-100 hover:bg-orange-50/50 transition-colors duration-200 ${duplicateClass}`; // Añadido cursor-pointer
-                tr.dataset.id = envio.id;
+                tr.dataset.id = envio.id; // ID de Firestore (string)
                 tr.innerHTML = `
                     <td class="p-3 text-center"><input type="checkbox" class="rowCheck rounded border-gray-300 text-accent focus:ring-accent" data-id="${envio.id}"></td>
                     <td class="p-3 text-sm text-gray-700">${envio.fechaReg ? envio.fechaReg.substring(0, 10) : ''}</td>
@@ -953,7 +1157,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const card = document.createElement('div');
                 const cardBgClass = isDuplicate ? 'bg-yellow-200/50' : 'bg-white';
                 card.className = `${cardBgClass} rounded-xl shadow p-4 border border-gray-200 space-y-3`; // Añadido cursor-pointer
-                card.dataset.id = envio.id;
+                card.dataset.id = envio.id; // ID de Firestore (string)
                 card.innerHTML = `
                     <div class="flex justify-between items-start">
                         <div class="flex items-center gap-3">
@@ -1009,10 +1213,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function obtenerIdsSeleccionados() {
+        // CORRECCIÓN: Se elimina parseInt. Los IDs ahora son strings.
         if (window.innerWidth < 768) {
-            return [...mobileCardContainer.querySelectorAll('.rowCheck:checked')].map(chk => parseInt(chk.dataset.id));
+            return [...mobileCardContainer.querySelectorAll('.rowCheck:checked')].map(chk => chk.dataset.id);
         } else {
-            return [...tbodyEnvios.querySelectorAll('.rowCheck:checked')].map(chk => parseInt(chk.dataset.id));
+            return [...tbodyEnvios.querySelectorAll('.rowCheck:checked')].map(chk => chk.dataset.id);
         }
     }
 
@@ -1055,7 +1260,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });    
 
     btnAplicarLote.addEventListener('click', async () => {
-        const seleccionadosIds = obtenerIdsSeleccionados();
+        const seleccionadosIds = obtenerIdsSeleccionados(); // IDs son strings
         const accion = accionLote.value;
 
         if (seleccionadosIds.length === 0 || !accion) {
@@ -1069,30 +1274,31 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        let payload;
-        let action;
-
+        // ======================= REEMPLAZO: DE GOOGLE SCRIPT A FIRESTORE =======================
+        let updates = {};
         if (accion === 'REPROGRAMADO') {
             if (!fechaReprog.value) {
                 showToast('Debes seleccionar una fecha para reprogramar.');
                 return;
             }
-            action = 'batchUpdateStatus';
-            payload = { ids: seleccionadosIds, status: 'REPROGRAMADO', newDate: fechaReprog.value };
+            updates = { estado: 'REPROGRAMADO', fechaEnvio: fechaReprog.value };
         } else { // Para 'ENVIADO', 'ENTREGADO', 'PENDIENTE'
-            action = 'batchUpdateStatus';
-            payload = { ids: seleccionadosIds, status: accion };
+            updates = { estado: accion };
         }
 
         showToast('Aplicando cambios...');
         try {
-            const response = await fetch(SCRIPT_URL, {
-                method: 'POST',
-                body: JSON.stringify({ action, payload }),
+            // Usar WriteBatch para actualizar múltiples documentos
+            const batch = writeBatch(db);
+            seleccionadosIds.forEach(id => {
+                const docRef = doc(enviosCollectionRef, id); // Usa la referencia a la colección
+                batch.update(docRef, updates);
             });
-            await response.json();
-            await fetchDataFromSheet(); // Recarga los datos
+            await batch.commit();
+            
+            // onSnapshot se encargará de recargar la tabla automáticamente
             showToast('Acción en lote aplicada con éxito.');
+
         } catch (error) {
             console.error('Error batch updating:', error);
             showToast('Error al aplicar la acción.');
@@ -1100,6 +1306,7 @@ document.addEventListener('DOMContentLoaded', () => {
             accionLote.value = '';
             fechaReprog.classList.add('oculto');
         }
+        // ======================= FIN DEL REEMPLAZO =======================
     });
 
     checkTodos.addEventListener('change', (e) => seleccionarTodos(e.target.checked));
@@ -1275,6 +1482,22 @@ document.addEventListener('DOMContentLoaded', () => {
             headerLogo.classList.add('hidden');
             logoPreview.classList.add('hidden');
         }
+
+// --- INICIO: LÍNEAS A AÑADIR ---
+// Sincroniza también la pantalla de login
+const loginLogo = document.getElementById('loginLogo');
+const loginTitle = document.getElementById('loginTitle');
+const loginBusinessName = document.getElementById('loginBusinessName');
+
+loginBusinessName.textContent = name;
+if (logoSrc) {
+    loginLogo.src = logoSrc;
+    loginLogo.classList.remove('hidden');
+} else {
+    loginLogo.classList.add('hidden');
+}
+// --- FIN: LÍNEAS A AÑADIR ---
+
     }
     
     logoInput.addEventListener('change', function() {
@@ -1307,7 +1530,7 @@ document.addEventListener('DOMContentLoaded', () => {
         showToast('Guardando...');
 
         const row = buttonElement.closest('tr[data-id], div[data-id]'); // Funciona para tabla y tarjeta
-        const id = parseInt(row.dataset.id);
+        const id = row.dataset.id; // CORRECCIÓN: ID es un string
         const estadoSelect = row.querySelector('.inline-edit-estado');
         const fechaInput = row.querySelector('.inline-edit-fecha');
 
@@ -1323,7 +1546,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Crear el payload copiando el original y actualizando solo lo necesario
-        // Usamos una copia profunda simple para evitar problemas si hay objetos anidados (aunque aquí no los hay)
         const payload = JSON.parse(JSON.stringify(envioOriginal)); 
         payload.estado = nuevoEstado; // Actualiza el estado
 
@@ -1336,60 +1558,29 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             payload.fechaEnvio = nuevaFecha; // Actualiza la fecha
         } else {
-            // Si el estado NO es REPROGRAMADO, asegurar que la fecha en el payload
-            // sea la original, NO la que pudiera estar en el input (si se mostró y luego se ocultó)
             payload.fechaEnvio = (envioOriginal.fechaEnvio) ? envioOriginal.fechaEnvio.substring(0, 10) : '';
         }
-
-        // Eliminar campos que no existen en el Sheet o que no queremos enviar (si los hubiera)
-        // delete payload.algunCampoExtraLocal; 
-
+        
+        // ======================= REEMPLAZO: DE GOOGLE SCRIPT A FIRESTORE =======================
         try {
-            const response = await fetch(SCRIPT_URL, {
-                method: 'POST',
-                // Reutilizamos la acción 'updateShipment' que ya maneja todos los campos
-                body: JSON.stringify({ action: 'updateShipment', payload }), 
-            });
-            const result = await response.json(); // Espera y parsea la respuesta del script
+            const docRef = doc(enviosCollectionRef, id); // Referencia al documento
+            delete payload.id; // Elimina el ID del objeto, ya que es el nombre del documento
+            
+            await setDoc(docRef, payload); // setDoc sobrescribe el documento completo
 
-            if (result.status !== 'success') {
-                throw new Error(result.message || 'Error desconocido del script.');
-            }
-
-            // Éxito: Actualizar datos locales y UI
-            // Opción 1: Actualizar solo el array local y redibujar (más simple)
-            await fetchDataFromSheet(); // Recarga toda la tabla para asegurar consistencia
-
-            // Opción 2 (Más compleja, mejor UX si la tabla es enorme): 
-            // Actualizar el array local y solo la fila/tarjeta modificada
-            /*
-            const index = todosLosEnvios.findIndex(e => e.id === id);
-            if (index !== -1) {
-                // Actualizar el objeto en el array local con los datos guardados
-                todosLosEnvios[index] = { ...todosLosEnvios[index], estado: payload.estado, fechaEnvio: payload.fechaEnvio }; 
-            }
-            // Actualizar los atributos data-* en los inputs/selects de la fila/tarjeta editada
-            estadoSelect.dataset.originalEstado = payload.estado;
-            fechaInput.dataset.originalFecha = payload.fechaEnvio;
-            // Ocultar el botón guardar
-            buttonElement.classList.add('oculto');
-            buttonElement.disabled = false; // Rehabilita por si acaso
-            // Actualizar visualmente la celda/tarjeta (si es necesario más allá de los inputs)
-            // Por ejemplo, si tuvieras un badge de color aparte del select.
-            */
-
+            // onSnapshot se encargará de actualizar la UI automáticamente.
             showToast('Envío actualizado.');
-            // No necesitamos re-habilitar el botón porque la tabla se redibuja completamente con fetchDataFromSheet()
+            // No es necesario deshabilitar el botón, onSnapshot redibuja la fila
 
         } catch (error) {
             console.error('Error updating shipment inline:', error);
             showToast(`Error al guardar: ${error.message}`);
             buttonElement.disabled = false; // Re-habilita en caso de error
         }
+        // ======================= FIN DEL REEMPLAZO =======================
     }
 
     // Listener delegado para cambios en Estado y Fecha inline
-    // Se asocia al contenedor principal de la sección de envíos para capturar eventos de tabla y tarjetas
     document.getElementById('envios').addEventListener('change', (e) => {
         // Si el cambio ocurrió en un select de estado
         if (e.target.classList.contains('inline-edit-estado')) {
@@ -1403,13 +1594,12 @@ document.addEventListener('DOMContentLoaded', () => {
             // Si el usuario selecciona "ELIMINAR"
             if (nuevoEstado === 'ELIMINAR') {
                 const row = selectEstado.closest('tr[data-id], div[data-id]');
-                const id = parseInt(row.dataset.id);
+                const id = row.dataset.id; // CORRECCIÓN: ID es un string
 
                 // Abrir el modal de confirmación
                 abrirModalConfirmacion([id]);
 
                 // MUY IMPORTANTE: Restaurar el select a su valor original
-                // El modal se encargará del resto.
                 selectEstado.value = originalEstado;
                 return; // Detener la ejecución aquí
             }
@@ -1420,8 +1610,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Determinar si hay cambios para mostrar el botón Guardar
             const estadoCambiado = nuevoEstado !== originalEstado;
-            // Verificar si la fecha cambió SOLO si es relevante (estado es REPROGRAMADO)
-            // Usamos el valor actual del input de fecha para la comparación
             const fechaCambiada = esReprogramado && (fechaInput.value !== fechaInput.dataset.originalFecha); 
 
             saveBtn.classList.toggle('oculto', !(estadoCambiado || fechaCambiada));
@@ -1457,7 +1645,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
     const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
     const modalMessage = document.getElementById('modalMessage');
-    let idsParaEliminar = [];
+    let idsParaEliminar = []; // Ahora contendrá strings
 
     function abrirModalConfirmacion(ids) {
         idsParaEliminar = ids;
@@ -1475,22 +1663,28 @@ document.addEventListener('DOMContentLoaded', () => {
         if (eliminadosCount === 0) return;
 
         showToast('Eliminando envíos...');
+        
+        // ======================= REEMPLAZO: DE GOOGLE SCRIPT A FIRESTORE =======================
         try {
-            const response = await fetch(SCRIPT_URL, {
-                method: 'POST',
-                // Cambiamos la acción para que actualice el estado a 'ELIMINADO' en lugar de borrar la fila
-                body: JSON.stringify({ action: 'batchUpdateStatus', payload: { ids: idsParaEliminar, status: 'ELIMINADO' } }),
+            const batch = writeBatch(db);
+            idsParaEliminar.forEach(id => {
+                const docRef = doc(enviosCollectionRef, id);
+                // Marcamos como ELIMINADO en lugar de borrar
+                batch.update(docRef, { estado: 'ELIMINADO' }); 
             });
-            await response.json();
+            await batch.commit();
+            
             cerrarModalConfirmacion();
-            await fetchDataFromSheet(); // Recarga los datos
+            // onSnapshot actualizará la UI automáticamente
             showToast(`${eliminadosCount} envío(s) eliminados correctamente.`);
+
         } catch (error) {
             console.error('Error deleting shipments:', error);
             showToast('Error al eliminar los envíos.');
         } finally {
             accionLote.value = '';
         }
+        // ======================= FIN DEL REEMPLAZO =======================
     });
 
     cancelDeleteBtn.addEventListener('click', cerrarModalConfirmacion);
@@ -1509,11 +1703,62 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 2500);
     }
 
-    // --- INICIALIZACIÓN ---
-    syncBusinessInfo();
-    fetchDataFromSheet();
+// --- INICIALIZACIÓN ---
+
+// Conecta el formulario de login y el botón de cerrar sesión
+loginForm.addEventListener('submit', handleLogin);
+// Busca el botón en el sidebar y conéctalo
+document.querySelector('a[href="#"]').addEventListener('click', (e) => {
+    e.preventDefault();
+    handleLogout();
+});
+
+// Carga la info del localStorage (esto sincroniza el logo en la pantalla de login)
+syncBusinessInfo(); 
+
+// Inicia Firebase y, si tiene éxito, empieza a escuchar el estado de auth
+const firebaseReady = await initFirebase();
+if (firebaseReady) {
+    setupAuthListener(); // Esta función reemplaza a setupEnviosListener
+} else {
+    showToast("Error fatal: No se pudo conectar a Firebase.");
+    loginError.textContent = "Error: No se pudo conectar a la base de datos.";
+    loginError.classList.remove('hidden');
+}
 });
 </script>
+<!-- ======================= INICIO: PANTALLA DE LOGIN ======================= -->
+<div id="loginScreen" class="fixed inset-0 bg-gray-100 z-[100] flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-2xl p-6 md:p-8 w-full max-w-md">
+        <!-- Logo y Título -->
+        <div class="flex flex-col items-center mb-6">
+            <img id="loginLogo" src="" alt="Logo" class="h-16 w-16 rounded-md object-cover bg-white p-1 hidden mb-3">
+            <h2 id="loginTitle" class="text-2xl font-bold text-gray-900 text-center">Iniciar Sesión</h2>
+            <p id="loginBusinessName" class="text-sm text-gray-500 mt-1">[Nombre del emprendimiento]</p>
+        </div>
+        
+        <!-- Formulario -->
+        <form id="loginForm" class="space-y-4">
+            <div>
+                <label for="loginEmail" class="block text-sm font-semibold text-gray-700 mb-1.5">Correo Electrónico</label>
+                <input type="email" id="loginEmail" required class="input p-3 border border-gray-300 rounded-xl bg-white w-full text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100" placeholder="tu@correo.com">
+            </div>
+            <div>
+                <label for="loginPassword" class="block text-sm font-semibold text-gray-700 mb-1.5">Contraseña</label>
+                <input type="password" id="loginPassword" required class="input p-3 border border-gray-300 rounded-xl bg-white w-full text-sm focus:outline-none focus:border-accent focus:ring-3 focus:ring-orange-100" placeholder="••••••••">
+            </div>
+            
+            <!-- Mensaje de Error -->
+            <p id="loginError" class="text-sm text-red-600 text-center hidden"></p>
+            
+            <button type="submit" id="loginButton" class="btn primary w-full bg-gradient-to-r from-accent to-accent-alt text-white py-3 px-4 rounded-xl font-bold text-base shadow-md shadow-accent/20 hover:shadow-lg hover:shadow-accent/30 hover:-translate-y-0.5 transition-all duration-200 inline-flex items-center justify-center gap-2">
+                Ingresar
+            </button>
+        </form>
+    </div>
+</div>
+<!-- ======================= FIN: PANTALLA DE LOGIN ======================= -->
 </body>
 </html>
+
 
