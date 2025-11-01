@@ -195,6 +195,14 @@
                                 <select id="sale-product-select" class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-brand-bg shadow-sm sm:text-sm">
                                     <option value="">Seleccione un producto...</option>
                                 </select>
+
+                                <!-- ELIMINADO: Campos para nuevo producto -->
+                                <!-- 
+                                <div id="new-product-fields" ...>
+                                    ...
+                                </div>
+                                -->
+
                                 <div class="grid grid-cols-2 gap-2">
                                     <input type="number" id="sale-item-qty" placeholder="Cantidad" min="1" value="1" class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-brand-bg shadow-sm sm:text-sm">
                                     <input type="number" id="sale-item-price" placeholder="Precio de Venta (c/u)" min="0" step="0.01" class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-brand-bg shadow-sm sm:text-sm">
@@ -227,22 +235,25 @@
                     </form>
                 </div>
                 
-                <!-- Columna 2: Historial de Ventas -->
+                <!-- Columna 2: Historial de Ventas (MODIFICADO) -->
                 <div class="lg:col-span-2 bg-brand-card dark:bg-gray-800 p-6 rounded-lg shadow-lg">
-                    <h2 class="text-xl font-semibold mb-4 text-brand-text dark:text-brand-bg">Historial de Ventas</h2>
+                    <h2 class="text-xl font-semibold mb-4 text-brand-text dark:text-brand-bg">Historial de Items Vendidos</h2>
                     <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                            <!-- CABECERA DE TABLA MODIFICADA -->
                             <thead class="bg-gray-50 dark:bg-gray-700">
                                 <tr>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-brand-muted dark:text-gray-400 uppercase tracking-wider">Fecha</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-brand-muted dark:text-gray-400 uppercase tracking-wider">Cliente</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-brand-muted dark:text-gray-400 uppercase tracking-wider">Total</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-brand-muted dark:text-gray-400 uppercase tracking-wider">Producto</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-brand-muted dark:text-gray-400 uppercase tracking-wider">Cant.</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-brand-muted dark:text-gray-400 uppercase tracking-wider">Total Item</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-brand-muted dark:text-gray-400 uppercase tracking-wider">Estado</th>
                                     <th class="px-6 py-3 text-right text-xs font-medium text-brand-muted dark:text-gray-400 uppercase tracking-wider">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody id="sales-list" class="bg-brand-card dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                <!-- Ventas se cargarán aquí -->
+                                <!-- Items vendidos se cargarán aquí -->
                             </tbody>
                         </table>
                     </div>
@@ -255,14 +266,28 @@
              <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <!-- Columna 1: Formulario de Productos -->
                 <div class="lg:col-span-1 bg-brand-card dark:bg-gray-800 p-6 rounded-lg shadow-lg">
-                    <h2 class="text-xl font-semibold mb-4 text-brand-text dark:text-brand-bg">Agregar Producto al Inventario</h2>
+                    <h2 class="text-xl font-semibold mb-4 text-brand-text dark:text-brand-bg">Agregar/Actualizar Inventario</h2>
                     <form id="add-product-form" class="space-y-4">
+                        
+                        <!-- CAMBIO: De Input a Select -->
                         <div>
-                            <label for="product-name" class="block text-sm font-medium text-brand-muted dark:text-gray-400">Nombre del Producto</label>
-                            <input type="text" id="product-name" required class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-brand-bg shadow-sm focus:border-brand-accent focus:ring-brand-accent sm:text-sm">
+                            <label for="product-select-inventory" class="block text-sm font-medium text-brand-muted dark:text-gray-400">Producto</label>
+                            <select id="product-select-inventory" required class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-brand-bg shadow-sm focus:border-brand-accent focus:ring-brand-accent sm:text-sm">
+                                <option value="">Seleccione un producto...</option>
+                                <option value="--NEW-PRODUCT--" class="font-bold text-brand-accent dark:text-brand-accent-alt">** + Agregar Nuevo Producto **</option>
+                                <!-- Se llenará con JS -->
+                            </select>
                         </div>
+                        
+                        <!-- NUEVO: Campo para el nombre del nuevo producto (oculto) -->
+                        <div id="new-product-name-field" class="space-y-1" hidden>
+                            <label for="product-name-new" class="block text-sm font-medium text-brand-muted dark:text-gray-400">Nombre del Nuevo Producto</label>
+                            <input type="text" id="product-name-new" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-brand-bg shadow-sm focus:border-brand-accent focus:ring-brand-accent sm:text-sm">
+                        </div>
+                        
                         <div>
-                            <label for="product-stock" class="block text-sm font-medium text-brand-muted dark:text-gray-400">Stock (Cantidad Inicial)</label>
+                            <!-- CAMBIO DE ETIQUETA -->
+                            <label for="product-stock" class="block text-sm font-medium text-brand-muted dark:text-gray-400">Stock (Cantidad a Agregar)</label>
                             <input type="number" id="product-stock" min="0" value="1" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-brand-bg shadow-sm focus:border-brand-accent focus:ring-brand-accent sm:text-sm">
                         </div>
                         <div>
@@ -383,6 +408,7 @@
         
         // Colecciones de Firestore
         let clientsCollection, salesCollection, productsCollection, shipmentsCollection;
+        let saleItemsCollection; // <-- NUEVO
 
         // Estado temporal
         let currentSaleItems = [];
@@ -417,11 +443,12 @@
                     salesCollection = collection(db, `artifacts/${appId}/users/${userId}/sales`);
                     productsCollection = collection(db, `artifacts/${appId}/users/${userId}/products`);
                     shipmentsCollection = collection(db, `artifacts/${appId}/users/${userId}/shipments`); // NUEVA
+                    saleItemsCollection = collection(db, `artifacts/${appId}/users/${userId}/saleItems`); // <-- NUEVO
 
                     isAuthReady = true;
                     // Cargar datos iniciales
                     loadClients();
-                    loadSales();
+                    loadSales(); // MODIFICADO: Ahora carga items
                     loadProducts();
 
                 } else {
@@ -496,12 +523,6 @@
 
         // --- MANEJO DE MODAL (Agregar Cliente) ---
         // ESTA SECCIÓN HA SIDO ELIMINADA
-        // const addClientModal = document.getElementById('add-client-modal');
-        // const openClientModalBtn = document.getElementById('open-add-client-modal');
-        // const closeClientModalBtn = document.getElementById('close-add-client-modal');
-        // const clientForm = document.getElementById('add-client-form');
-        // openClientModalBtn.addEventListener('click', () => addClientModal.removeAttribute('hidden'));
-        // closeClientModalBtn.addEventListener('click', () => addClientModal.setAttribute('hidden', true));
 
         // --- Formateador de moneda (ej. S/ para Soles) ---
         const currencyFormatter = new Intl.NumberFormat('es-PE', {
@@ -520,7 +541,6 @@
         const clientDetailSummaryBtn = document.getElementById('client-detail-summary-btn');
 
         // ELIMINADO: El 'clientForm' (del modal) ya no se usa para agregar clientes
-        // clientForm.addEventListener('submit', async (e) => { ... });
 
         function loadClients() {
             if (!isAuthReady) return;
@@ -606,35 +626,37 @@
         function loadPendingSales(clientId) {
             if (pendingSalesListener) pendingSalesListener(); // Desvincular listener anterior
             
-            const q = query(salesCollection, where("clientId", "==", clientId), where("enviado", "==", false));
+            // MODIFICADO: Consultar 'saleItemsCollection' en lugar de 'salesCollection'
+            const q = query(saleItemsCollection, where("clientId", "==", clientId), where("enviado", "==", false));
             
             pendingSalesListener = onSnapshot(q, (snapshot) => {
                 pendingSalesList.innerHTML = '';
                 if (snapshot.empty) {
-                    pendingSalesList.innerHTML = '<p class="text-sm text-brand-muted dark:text-gray-500">Este cliente no tiene ventas pendientes de envío.</p>';
+                    pendingSalesList.innerHTML = '<p class="text-sm text-brand-muted dark:text-gray-500">Este cliente no tiene items pendientes de envío.</p>';
                     return;
                 }
                 
                 snapshot.forEach(doc => {
-                    const sale = doc.data();
-                    let itemsHtml = sale.items.map(item => `
-                        <li class="text-xs text-brand-muted dark:text-gray-400 ml-4">${item.qty} x ${item.desc} ${item.color || ''} ${item.talla || ''} (${currencyFormatter.format(item.price)} c/u)</li>
-                    `).join('');
+                    const item = doc.data();
+                    const itemId = doc.id;
                     
+                    // MODIFICADO: Mostrar item individual en lugar de venta agrupada
                     const div = document.createElement('div');
                     div.className = 'border-b pb-3 dark:border-gray-700';
                     div.innerHTML = `
                         <div class="flex items-center">
-                            <input id="sale-${doc.id}" data-sale-id="${doc.id}" type="checkbox" class="h-4 w-4 text-brand-accent border-gray-300 dark:border-gray-600 rounded focus:ring-brand-accent">
-                            <label for="sale-${doc.id}" class="ml-3 block text-sm font-medium text-brand-text dark:text-brand-bg">
-                                Venta del ${sale.date} - Total: ${currencyFormatter.format(sale.total)}
+                            <input id="item-${itemId}" data-item-id="${itemId}" type="checkbox" class="h-4 w-4 text-brand-accent border-gray-300 dark:border-gray-600 rounded focus:ring-brand-accent">
+                            <label for="item-${itemId}" class="ml-3 block text-sm font-medium text-brand-text dark:text-brand-bg">
+                                ${item.qty} x ${item.desc} ${item.color ? `(${item.color})` : ''} ${item.talla ? `[${item.talla}]` : ''}
                             </label>
                         </div>
-                        <ul class="mt-1 list-disc list-inside">${itemsHtml}</ul>
+                        <p class="ml-7 text-xs text-brand-muted dark:text-gray-400">
+                            (De la venta del ${item.date} - Total Item: ${currencyFormatter.format(item.total)})
+                        </p>
                     `;
                     pendingSalesList.appendChild(div);
                 });
-            }, (error) => console.error("Error al cargar ventas pendientes:", error));
+            }, (error) => console.error("Error al cargar items pendientes:", error));
         }
 
         // Cargar historial de envíos para el cliente seleccionado
@@ -651,22 +673,62 @@
                     return;
                 }
                 
+                // Capturar los detalles del cliente desde el panel
+                const clientNameForButton = clientDetailName.textContent;
+                const clientPhoneForButton = clientDetailPhone.textContent;
+
                 snapshot.forEach(doc => {
                     const shipment = doc.data();
-                    let salesHtml = shipment.sales.map(sale => `
-                        <li class="text-xs text-brand-muted dark:text-gray-400 ml-4">Venta ID: ...${sale.ventaId.slice(-6)} (${sale.itemsDescription})</li>
+                    // Preparar datos para el botón
+                    const itemsJson = JSON.stringify(shipment.items); 
+                    
+                    // MODIFICADO: Mapear 'items' en lugar de 'sales'
+                    let itemsHtml = shipment.items.map(item => `
+                        <li class="text-xs text-brand-muted dark:text-gray-400 ml-4">${item.description} (ID: ...${item.itemId.slice(-6)})</li>
                     `).join('');
                     
                     const div = document.createElement('div');
                     div.className = 'border-b pb-2 dark:border-gray-700';
+                    // MODIFICADO: Añadir botón de WhatsApp con data-attributes
                     div.innerHTML = `
-                        <p class="font-medium text-brand-text dark:text-brand-bg">Envío del ${shipment.fechaEnvio}</p>
-                        <ul class="mt-1 list-disc list-inside">${salesHtml}</ul>
+                        <div class="flex justify-between items-center">
+                            <p class="font-medium text-brand-text dark:text-brand-bg">Envío del ${shipment.fechaEnvio}</p>
+                            <button 
+                              class="btn-whatsapp-shipment text-xs text-green-600 dark:text-green-400 hover:text-green-800 font-medium"
+                              data-shipment-date="${shipment.fechaEnvio}"
+                              data-client-name="${clientNameForButton}"
+                              data-client-phone="${clientPhoneForButton}"
+                              data-items="${encodeURIComponent(itemsJson)}"
+                            >
+                              Resumen Wpp
+                            </button>
+                        </div>
+                        <ul class="mt-1 list-disc list-inside">${itemsHtml}</ul>
                     `;
                     shipmentHistoryList.appendChild(div);
                 });
+
             }, (error) => console.error("Error al cargar historial de envíos:", error));
         }
+
+        // --- AÑADE ESTE NUEVO BLOQUE ---
+        shipmentHistoryList.addEventListener('click', (e) => {
+            if (e.target.classList.contains('btn-whatsapp-shipment')) {
+                const button = e.target;
+                try {
+                    const clientName = button.getAttribute('data-client-name');
+                    const clientPhone = button.getAttribute('data-client-phone');
+                    const shipmentDate = button.getAttribute('data-shipment-date');
+                    const items = JSON.parse(decodeURIComponent(button.getAttribute('data-items')));
+                    
+                    generateShipmentWhatsAppSummary(clientName, clientPhone, shipmentDate, items);
+                } catch (error) {
+                    console.error("Error al parsear datos del envío:", error);
+                    showModal("Error", "No se pudieron cargar los datos para el resumen.");
+                }
+            }
+        });
+        // --- FIN DEL NUEVO BLOQUE ---
 
         // Botón de Crear Envío
         const createShipmentBtn = document.getElementById('create-shipment-btn');
@@ -679,51 +741,66 @@
                 return;
             }
             
-            const selectedSalesCheckboxes = pendingSalesList.querySelectorAll('input[type="checkbox"]:checked');
-            if (selectedSalesCheckboxes.length === 0) {
-                showModal("Sin ventas", "Seleccione al menos una venta para incluir en el envío.");
+            // MODIFICADO: Seleccionar items individuales
+            const selectedItemsCheckboxes = pendingSalesList.querySelectorAll('input[type="checkbox"]:checked');
+            if (selectedItemsCheckboxes.length === 0) {
+                showModal("Sin items", "Seleccione al menos un item para incluir en el envío.");
                 return;
             }
             
-            showModal("Procesando Envío", "Creando envío y actualizando ventas...", false);
+            showModal("Procesando Envío", "Creando envío y actualizando items...", false);
             
             try {
-                const salesToShip = []; // Para guardar en el doc de envío
-                const saleIdsToUpdate = []; // Para actualizar las ventas
-                
-                // Recolectar info de las ventas seleccionadas
-                for (const checkbox of selectedSalesCheckboxes) {
-                    const saleId = checkbox.getAttribute('data-sale-id');
-                    const saleRef = doc(salesCollection, saleId);
-                    const saleDoc = await getDoc(saleRef);
-                    if (saleDoc.exists()) {
-                        const saleData = saleDoc.data();
-                        salesToShip.push({
-                            ventaId: saleId,
-                            total: saleData.total,
-                            itemsDescription: saleData.items.map(i => `${i.qty} x ${i.desc}`).join(', ')
+                // MODIFICADO: Listas para items y ventas padres
+                const itemsToShip = []; // Para guardar en el doc de envío
+                const itemRefsToUpdate = []; // Para actualizar los items
+                const parentSaleIds = new Set(); // Para verificar si la venta padre se completó
+
+                // Recolectar info de los items seleccionados
+                for (const checkbox of selectedItemsCheckboxes) {
+                    const itemId = checkbox.getAttribute('data-item-id');
+                    const itemRef = doc(saleItemsCollection, itemId);
+                    const itemDoc = await getDoc(itemRef);
+                    if (itemDoc.exists()) {
+                        const itemData = itemDoc.data();
+                        itemsToShip.push({
+                            itemId: itemId,
+                            description: `${itemData.qty} x ${itemData.desc} ${itemData.color || ''} ${itemData.talla || ''}`,
+                            total: itemData.total
                         });
-                        saleIdsToUpdate.push(saleRef);
+                        itemRefsToUpdate.push(itemRef);
+                        parentSaleIds.add(itemData.saleId); // Guardar el ID de la venta padre
                     }
                 }
                 
-                // 1. Crear el documento de Envío
+                // 1. Crear el documento de Envío (con 'items' en lugar de 'sales')
                 await addDoc(shipmentsCollection, {
                     clientId: selectedClientId,
                     clienteName: clientDetailName.textContent,
                     fechaEnvio: fechaEnvio,
-                    sales: salesToShip, // Array de objetos
+                    items: itemsToShip, // Array de objetos de items
                     createdAt: new Date().toISOString()
                 });
                 
-                // 2. Actualizar todas las ventas a "enviado: true"
-                for (const saleRef of saleIdsToUpdate) {
-                    await updateDoc(saleRef, { enviado: true });
+                // 2. Actualizar todos los items a "enviado: true"
+                for (const itemRef of itemRefsToUpdate) {
+                    await updateDoc(itemRef, { enviado: true });
+                }
+
+                // 3. (NUEVO) Verificar y actualizar las ventas padre
+                for (const saleId of parentSaleIds) {
+                    const q = query(saleItemsCollection, where("saleId", "==", saleId), where("enviado", "==", false));
+                    const remainingItemsSnap = await getDocs(q);
+                    
+                    // Si no quedan items pendientes, marcar la VENTA padre como enviada
+                    if (remainingItemsSnap.empty) {
+                        await updateDoc(doc(salesCollection, saleId), { enviado: true });
+                    }
                 }
                 
                 document.getElementById('shipment-date').value = '';
                 hideModal();
-                showModal("Éxito", "El envío se ha registrado y las ventas se han actualizado.");
+                showModal("Éxito", "El envío se ha registrado y los items se han actualizado.");
                 
             } catch (error) {
                 console.error("Error al crear envío:", error);
@@ -750,6 +827,12 @@
         const saleProductSelect = document.getElementById('sale-product-select');
         // NUEVO: Referencia a los campos de nuevo cliente
         const newClientFields = document.getElementById('new-client-fields');
+        // ELIMINADO: Referencia a los campos de nuevo producto
+        // const newProductFields = document.getElementById('new-product-fields');
+
+        // NUEVO: Referencia a los campos del formulario de productos
+        const productSelectInventory = document.getElementById('product-select-inventory');
+        const newProductNameField = document.getElementById('new-product-name-field');
 
         // NUEVO: Listener para mostrar/ocultar los campos de nuevo cliente
         saleClientSelect.addEventListener('change', () => {
@@ -759,6 +842,27 @@
                 newClientFields.setAttribute('hidden', true);
             }
         });
+
+        // ELIMINADO: Listener para mostrar/ocultar los campos de nuevo producto
+        /*
+        saleProductSelect.addEventListener('change', () => {
+            if (saleProductSelect.value === '--NEW-PRODUCT--') {
+                newProductFields.removeAttribute('hidden');
+            } else {
+                newProductFields.setAttribute('hidden', true);
+            }
+        });
+        */
+
+        // NUEVO: Listener para el selector de productos en el inventario
+        productSelectInventory.addEventListener('change', () => {
+            if (productSelectInventory.value === '--NEW-PRODUCT--') {
+                newProductNameField.removeAttribute('hidden');
+            } else {
+                newProductNameField.setAttribute('hidden', true);
+            }
+        });
+
 
         function updateSaleTotal() {
             currentSaleTotal = currentSaleItems.reduce((acc, item) => acc + item.total, 0);
@@ -787,28 +891,43 @@
             }
         });
 
-        addSaleItemBtn.addEventListener('click', () => {
+        addSaleItemBtn.addEventListener('click', async () => {
             const qty = parseInt(document.getElementById('sale-item-qty').value, 10);
             const price = parseFloat(document.getElementById('sale-item-price').value);
             const color = document.getElementById('sale-item-color').value;
             const talla = document.getElementById('sale-item-talla').value;
             const selectedOption = saleProductSelect.options[saleProductSelect.selectedIndex];
 
-            if (!selectedOption.value || qty <= 0 || !price || price <= 0) {
+            let productId, productName, productCost, productStock;
+
+            // --- Lógica para manejar producto nuevo vs. existente ---
+            // ELIMINADO: Bloque "if (selectedOption.value === '--NEW-PRODUCT--')"
+            
+            if (selectedOption.value) {
+                // --- PRODUCTO EXISTENTE ---
+                productId = selectedOption.value;
+                const product = productsCache[productId];
+                if (!product) {
+                     showModal("Error", "No se encontró el producto en cache.");
+                     return;
+                }
+                if (qty > product.stock) {
+                    showModal("Stock insuficiente", `Solo quedan ${product.stock} unidades de ${product.name}.`);
+                    return;
+                }
+                productName = product.name;
+                productCost = product.cost;
+                productStock = product.stock;
+
+            } else {
+                // No se seleccionó nada
                 showModal("Datos incompletos", "Seleccione un producto, cantidad y un precio de venta válido.");
                 return;
             }
 
-            const productId = selectedOption.value;
-            // Usar el cache de productos
-            const product = productsCache[productId];
-            if (!product) {
-                 showModal("Error", "No se encontró el producto en cache.");
-                 return;
-            }
-
-            if (qty > product.stock) {
-                showModal("Stock insuficiente", `Solo quedan ${product.stock} unidades de ${product.name}.`);
+            // --- Lógica común para agregar el item ---
+            if (qty <= 0 || !price || price <= 0) {
+                showModal("Datos incompletos", "La cantidad y el precio de venta deben ser mayores a 0.");
                 return;
             }
             
@@ -820,12 +939,12 @@
 
             currentSaleItems.push({
                 productId,
-                desc: product.name,
+                desc: productName,
                 qty,
                 price, // Precio de venta (del input)
-                costo: product.cost, // Costo (del producto)
+                costo: productCost, // Costo (del producto)
                 total: qty * price,
-                totalCosto: qty * product.cost,
+                totalCosto: qty * productCost,
                 color: color || '',
                 talla: talla || ''
             });
@@ -837,6 +956,11 @@
             document.getElementById('sale-item-price').value = '';
             document.getElementById('sale-item-color').value = '';
             document.getElementById('sale-item-talla').value = '';
+            // ELIMINADO: Limpiar y ocultar campos de nuevo producto
+            // newProductFields.setAttribute('hidden', true);
+            // document.getElementById('new-product-name').value = '';
+            // document.getElementById('new-product-stock').value = '1';
+            // document.getElementById('new-product-cost').value = '';
         });
 
         saleForm.addEventListener('submit', async (e) => {
@@ -910,7 +1034,7 @@
 
             try {
                 // 1. Guardar la venta (AHORA CON EL ID CORRECTO)
-                await addDoc(salesCollection, {
+                const newSaleRef = await addDoc(salesCollection, { // <-- Capturar la referencia
                     clientId: finalClientId, // Usar el ID final (nuevo o existente)
                     clientName,
                     clientPhone,
@@ -921,7 +1045,30 @@
                     enviado: false // NUEVO
                 });
 
-                // 2. Actualizar el stock
+                // --- NUEVO: 2. Generar registro único por producto ---
+                for (const item of currentSaleItems) {
+                    await addDoc(saleItemsCollection, {
+                        saleId: newSaleRef.id, // Vínculo a la venta principal
+                        clientId: finalClientId,
+                        clientName: clientName,
+                        date: date,
+                        enviado: false, // Estado inicial
+                        
+                        // Datos del item
+                        productId: item.productId,
+                        desc: item.desc,
+                        qty: item.qty,
+                        price: item.price,
+                        costo: item.costo,
+                        total: item.total,
+                        totalCosto: item.totalCosto,
+                        color: item.color,
+                        talla: item.talla
+                    });
+                }
+                // --- FIN NUEVO ---
+
+                // 3. Actualizar el stock (Antes era el 2)
                 for (const item of currentSaleItems) {
                     const productRef = doc(productsCollection, item.productId);
                     const product = productsCache[item.productId];
@@ -948,70 +1095,168 @@
             }
         });
 
+        // --- LÓGICA DE VENTAS MODIFICADA ---
         function loadSales() {
             if (!isAuthReady) return;
 
-            onSnapshot(salesCollection, (snapshot) => {
+            // MODIFICADO: Escuchar 'saleItemsCollection' en lugar de 'salesCollection'
+            onSnapshot(saleItemsCollection, (snapshot) => {
                 salesList.innerHTML = '';
                 snapshot.forEach(doc => {
-                    const sale = doc.data();
+                    const item = doc.data(); // Ahora 'item' es un item de venta individual
                     const tr = document.createElement('tr');
                     
                     // Definir estado
-                    let estadoHtml = sale.enviado 
+                    let estadoHtml = item.enviado 
                         ? '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 dark:bg-green-700 text-green-800 dark:text-green-200">Enviado</span>'
                         : '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 dark:bg-yellow-700 text-yellow-800 dark:text-yellow-200">Pendiente</span>';
                     
+                    // Construir descripción del producto (con color y talla si existen)
+                    let productDesc = item.desc;
+                    if (item.color) productDesc += ` (${item.color})`;
+                    if (item.talla) productDesc += ` [${item.talla}]`;
+
+                    // MODIFICADO: Generar fila de tabla con datos del item
                     tr.innerHTML = `
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-brand-muted dark:text-gray-400">${sale.date}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-brand-text dark:text-brand-bg">${sale.clientName}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-brand-muted dark:text-gray-400">${currencyFormatter.format(sale.total)}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-brand-muted dark:text-gray-400">${item.date}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-brand-text dark:text-brand-bg">${item.clientName}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-brand-muted dark:text-gray-400">${productDesc}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-brand-muted dark:text-gray-400">${item.qty}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-brand-muted dark:text-gray-400">${currencyFormatter.format(item.total)}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-brand-muted dark:text-gray-400">${estadoHtml}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <button data-id="${doc.id}" class="btn-delete-sale text-red-600 hover:text-red-900">Eliminar</button>
+                            <!-- MODIFICADO: El botón ahora usa 'data-sale-id' y elimina la VENTA COMPLETA -->
+                            <button data-sale-id="${item.saleId}" class="btn-delete-sale text-red-600 hover:text-red-900">Eliminar Venta</button>
                         </td>
                     `;
                     salesList.appendChild(tr);
                 });
-            }, (error) => console.error("Error al cargar ventas:", error));
+            }, (error) => console.error("Error al cargar items de ventas:", error));
         }
         
         salesList.addEventListener('click', async (e) => {
             if (e.target.classList.contains('btn-delete-sale')) {
-                const id = e.target.getAttribute('data-id');
+                // MODIFICADO: Obtener 'data-sale-id' en lugar de 'data-id'
+                const saleId = e.target.getAttribute('data-sale-id');
+                
                 // TODO: Agregar lógica para restaurar stock si se borra una venta
-                if (confirm("¿Estás seguro de que deseas eliminar esta venta? (El stock NO se restaurará automáticamente).")) {
+                if (confirm("¿Estás seguro de que deseas eliminar la VENTA COMPLETA asociada a este item? (El stock NO se restaurará automáticamente). Esta acción eliminará todos los items de esa venta.")) {
                     try {
-                        await deleteDoc(doc(salesCollection, id));
+                        // 1. Eliminar la venta principal
+                        await deleteDoc(doc(salesCollection, saleId)); // Usar saleId
+                        
+                        // --- 2. Eliminar los items de venta asociados (lógica existente es correcta) ---
+                        const qItems = query(saleItemsCollection, where("saleId", "==", saleId)); // Usar saleId
+                        const itemsSnapshot = await getDocs(qItems);
+                        for (const itemDoc of itemsSnapshot.docs) {
+                            await deleteDoc(itemDoc.ref);
+                        }
+                        // --- FIN ---
+                        
                     } catch (error) {
                         showModal("Error", "No se pudo eliminar la venta.");
                     }
                 }
             }
         });
+        // --- FIN DE MODIFICACIÓN DE LÓGICA DE VENTAS ---
+
 
         // --- LÓGICA DE PRODUCTOS (MODIFICADA) ---
         const productForm = document.getElementById('add-product-form');
         const productsList = document.getElementById('products-list');
 
+        // NUEVO: Función extraída para crear o actualizar productos (reutilizable)
+        async function createOrUpdateProduct(name, stockToAdd, newCost) {
+            if (stockToAdd < 0 || newCost <= 0 || !name) {
+                throw new Error("Datos de producto inválidos. Se requiere nombre, stock positivo y costo positivo.");
+            }
+            
+            // 1. Buscar si el producto ya existe (por nombre exacto)
+            const q = query(productsCollection, where("name", "==", name));
+            const querySnapshot = await getDocs(q);
+
+            let productId;
+
+            if (querySnapshot.empty) {
+                // --- PRODUCTO NUEVO ---
+                const newDocRef = await addDoc(productsCollection, { 
+                    name: name, 
+                    stock: stockToAdd, 
+                    cost: newCost 
+                });
+                productId = newDocRef.id;
+
+            } else {
+                // --- PRODUCTO EXISTENTE ---
+                const productDoc = querySnapshot.docs[0];
+                const productRef = productDoc.ref;
+                productId = productDoc.id;
+                const productData = productDoc.data();
+
+                const oldStock = productData.stock || 0;
+                const oldCost = productData.cost || 0;
+
+                // Calcular nuevo stock total
+                const newTotalStock = oldStock + stockToAdd;
+
+                // Calcular nuevo costo promedio ponderado
+                let newAverageCost = newCost; // Por defecto, el nuevo costo
+                if (newTotalStock > 0) { // Evitar división por cero
+                    const oldTotalValue = oldStock * oldCost;
+                    const newTotalValue = stockToAdd * newCost;
+                    newAverageCost = (oldTotalValue + newTotalValue) / newTotalStock;
+                }
+
+                // Actualizar el documento
+                await updateDoc(productRef, {
+                    stock: newTotalStock,
+                    cost: newAverageCost
+                });
+            }
+            return productId; // Devuelve el ID del producto creado o actualizado
+        }
+
         productForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             if (!isAuthReady) return;
 
-            const name = document.getElementById('product-name').value;
-            const stock = parseInt(document.getElementById('product-stock').value, 10);
-            const cost = parseFloat(document.getElementById('product-cost').value); // Obligatorio
+            // --- Lógica de Submit Modificada ---
+            const selectedProductId = productSelectInventory.value;
+            const stockToAdd = parseInt(document.getElementById('product-stock').value, 10);
+            const newCost = parseFloat(document.getElementById('product-cost').value);
+            
+            let name;
 
-            if (stock < 0 || cost <= 0) {
-                showModal("Datos inválidos", "El stock no puede ser negativo y el costo debe ser mayor a 0.");
+            if (selectedProductId === '--NEW-PRODUCT--') {
+                name = document.getElementById('product-name-new').value.trim();
+                if (!name) {
+                    showModal("Datos incompletos", "Debe ingresar un nombre para el nuevo producto.");
+                    return;
+                }
+            } else if (selectedProductId) {
+                name = productSelectInventory.options[productSelectInventory.selectedIndex].text;
+            } else {
+                showModal("Datos incompletos", "Seleccione un producto o cree uno nuevo.");
                 return;
             }
+            // --- Fin Lógica de Submit Modificada ---
+
+
+            showModal("Actualizando Inventario", "Guardando producto...", false);
 
             try {
-                await addDoc(productsCollection, { name, stock, cost });
+                await createOrUpdateProduct(name, stockToAdd, newCost);
+                
+                hideModal();
+                showModal("Éxito", `Inventario de "${name}" actualizado.`);
                 productForm.reset();
+                newProductNameField.setAttribute('hidden', true); // Ocultar el campo de nuevo nombre
+
             } catch (error) {
-                showModal("Error", "No se pudo guardar el producto.");
+                console.error("Error al guardar/actualizar producto:", error);
+                hideModal();
+                showModal("Error", "No se pudo actualizar el inventario. " + error.message);
             }
         });
 
@@ -1021,6 +1266,13 @@
             onSnapshot(productsCollection, (snapshot) => {
                 productsList.innerHTML = '';
                 saleProductSelect.innerHTML = '<option value="">Seleccione un producto...</option>';
+                // NUEVO: Limpiar y re-poblar el select del inventario
+                productSelectInventory.innerHTML = '<option value="">Seleccione un producto...</option>';
+                productSelectInventory.innerHTML += '<option value="--NEW-PRODUCT--" class="font-bold text-brand-accent dark:text-brand-accent-alt">** + Agregar Nuevo Producto **</option>';
+
+                // ELIMINADO: Opción de crear nuevo producto
+                // saleProductSelect.innerHTML += '<option value="--NEW-PRODUCT--" ... </option>';
+                
                 productsCache = {};
 
                 snapshot.forEach(doc => {
@@ -1052,6 +1304,12 @@
                         option.disabled = true;
                     }
                     saleProductSelect.appendChild(option);
+                    
+                    // NUEVO: Llenar el select en el panel de Productos (Inventario)
+                    const optionInventory = document.createElement('option');
+                    optionInventory.value = productId;
+                    optionInventory.textContent = product.name;
+                    productSelectInventory.appendChild(optionInventory);
                 });
             }, (error) => console.error("Error al cargar productos:", error));
         }
@@ -1113,6 +1371,37 @@
             }
         }
         
+        // --- AÑADE ESTA NUEVA FUNCIÓN ---
+        function generateShipmentWhatsAppSummary(clientName, clientPhone, shipmentDate, items) {
+            if (!clientName || !clientPhone || !items) {
+                showModal("Error", "Faltan datos del cliente o del envío.");
+                return;
+            }
+
+            let message = `¡Hola ${clientName}! 👋\n\nTe enviamos el detalle de tu *envío del ${shipmentDate}*:\n\n`;
+            
+            let totalEnvio = 0;
+            items.forEach(item => {
+                // 'item.description' ya viene formateado ("10 x gorra...")
+                message += `  - ${item.description}\n`; 
+                totalEnvio += item.total || 0; // Sumar el total del item
+            });
+
+            message += `\n*Total de este envío: ${currencyFormatter.format(totalEnvio)}*\n\n`;
+            message += "¡Muchas gracias! 😊";
+
+            const encodedMessage = encodeURIComponent(message);
+            
+            // Validar teléfono (simple)
+            if (clientPhone.length < 8) {
+                showModal("Error", `El número de teléfono "${clientPhone}" no parece válido.`);
+                return;
+            }
+            const whatsappUrl = `https://wa.me/${clientPhone}?text=${encodedMessage}`;
+            window.open(whatsappUrl, '_blank');
+        }
+        // --- FIN DE LA NUEVA FUNCIÓN ---
+
         // --- INICIALIZAR FECHAS ---
         document.getElementById('sale-date').valueAsDate = new Date();
         document.getElementById('shipment-date').valueAsDate = new Date();
@@ -1120,4 +1409,3 @@
     </script>
 </body>
 </html>
-
