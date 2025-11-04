@@ -997,7 +997,12 @@
                 div.className = 'client-item p-3 rounded-lg border border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700';
                 div.setAttribute('data-id', clientId);
                 div.setAttribute('data-phone', client.phone);
-                div.innerHTML = `<p class="font-medium text-brand-text dark:text-brand-bg">${client.phone}</p>`;
+                div.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <p class="font-medium text-brand-text dark:text-brand-bg">${client.phone}</p>
+                        <button data-id="${clientId}" data-phone="${client.phone}" class="btn-delete-client text-red-500 hover:text-red-700 text-sm font-bold p-1 leading-none rounded-full hover:bg-red-100 dark:hover:bg-gray-700">X</button>
+                    </div>
+                `;
                 div.addEventListener('click', () => handleClientSelect(clientId, client.phone));
                 clientsListSelectable.appendChild(div);
             });
@@ -1038,6 +1043,69 @@
             loadShipmentHistory(clientId);
 
         }
+
+// --- NUEVA FUNCIÓN: LÓGICA PARA ELIMINAR CLIENTE ---
+    async function handleDeleteClient(clientId, clientPhone) {
+        if (!isAuthReady) return;
+
+        // Paso 1: Verificar si el cliente tiene ventas.
+        showModal("Verificando...", `Revisando historial de ${clientPhone}...`, false);
+        try {
+            const q = query(saleItemsCollection, where("clientId", "==", clientId));
+            const querySnapshot = await getDocs(q);
+
+            if (!querySnapshot.empty) {
+                // NO SE PUEDE ELIMINAR
+                hideModal();
+                showModal("No se puede eliminar", `El cliente ${clientPhone} tiene (${querySnapshot.size}) ventas asociadas. No se puede eliminar para mantener la integridad de los datos.`);
+                return;
+            }
+
+            // Paso 2: Si no tiene ventas, pedir confirmación.
+            hideModal();
+            // Usamos el 'confirm' nativo que ya usas para eliminar ventas/productos
+            if (confirm(`¿Estás seguro de que deseas eliminar al cliente ${clientPhone}? Esta acción no se puede deshacer.`)) {
+
+                // Paso 3: Eliminar.
+                await deleteDoc(doc(clientsCollection, clientId));
+
+                // Si el cliente eliminado era el que estaba seleccionado, limpiar el panel
+                if (selectedClientId === clientId) {
+                    clientDetailPanel.setAttribute('hidden', true);
+                    selectedClientId = null;
+                    selectedClientName = null;
+                    selectedClientPhone = null;
+                }
+
+                showModal("Éxito", `Cliente ${clientPhone} eliminado.`);
+                // El listener onSnapshot de loadClients() actualizará la lista.
+            }
+
+        } catch (error) {
+            console.error("Error al verificar/eliminar cliente:", error);
+            hideModal();
+            showModal("Error", "Ocurrió un error al intentar eliminar el cliente.");
+        }
+    }
+    // --- FIN DE LA NUEVA FUNCIÓN ---
+
+
+// --- NUEVO: LISTENER PARA ELIMINAR CLIENTES (EN LA LISTA) ---
+    clientsListSelectable.addEventListener('click', async (e) => {
+        // Buscar si el clic fue en un botón de eliminar
+        if (e.target.classList.contains('btn-delete-client')) {
+            const button = e.target;
+            const clientId = button.getAttribute('data-id');
+            const clientPhone = button.getAttribute('data-phone');
+
+            // Detener la acción de 'handleClientSelect'
+            // para que no se seleccione el cliente al borrarlo
+            e.stopPropagation(); 
+
+            await handleDeleteClient(clientId, clientPhone);
+        }
+    });
+
 
             // --- NUEVO: LISTENER PARA EL BUSCADOR DE LA LISTA DE CLIENTES ---
             clientListSearchInput.addEventListener('input', (e) => {
