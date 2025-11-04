@@ -14,7 +14,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
     
-    <!-- Feather Icons for Dark Mode Toggle (though not strictly used in this panel, good practice) -->
+    <!-- Feather Icons for Dark Mode Toggle -->
     <script src="https://unpkg.com/feather-icons"></script>
 
     <style>
@@ -25,7 +25,7 @@
         [hidden] { display: none; }
         select:disabled { background-color: #f3f4f6; cursor: not-allowed; }
         
-        /* Estilo para cliente seleccionado, usando los nuevos colores de marca */
+        /* Estilo para cliente seleccionado */
         .client-item.selected {
             background-color: #f7e0d6; /* Ligero brand-accent */
             border-left-width: 4px;
@@ -46,6 +46,45 @@
             -moz-appearance: textfield;
         }
         
+        /* --- NUEVO: Estilos para el Autocompletado --- */
+        .autocomplete-results {
+            position: absolute;
+            width: 100%; /* El 100% de su contenedor padre */
+            border: 1px solid #e5e7eb; /* gray-200 */
+            border-top: none;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 10;
+            background-color: #ffffff;
+            border-radius: 0 0 0.375rem 0.375rem; /* rounded-b-md */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .dark .autocomplete-results {
+            background-color: #1f2937; /* gray-800 */
+            border-color: #4b5563; /* gray-600 */
+        }
+        .autocomplete-item {
+            padding: 0.75rem 1rem; /* p-3 px-4 */
+            cursor: pointer;
+        }
+        .autocomplete-item:hover, .autocomplete-item.selected {
+            background-color: #f3f4f6; /* gray-100 */
+        }
+        .dark .autocomplete-item:hover, .dark .autocomplete-item.selected {
+            background-color: #374151; /* gray-700 */
+        }
+        .autocomplete-item strong {
+            color: #D96B4F; /* brand-accent */
+        }
+        .autocomplete-item .new-item {
+            font-weight: 600;
+            color: #D96B4F; /* brand-accent */
+        }
+        .dark .autocomplete-item .new-item {
+            color: #FF8B6A; /* brand-accent-alt */
+        }
+        /* --- FIN NUEVO: Estilos Autocompletado --- */
+
     </style>
 
     <script>
@@ -72,20 +111,57 @@
 </head>
 <body class="bg-brand-bg font-quicksand antialiased text-brand-text dark:bg-gray-900 dark:text-brand-bg">
 
-    <!-- Contenedor principal -->
-    <div class="container mx-auto max-w-7xl p-4 sm:p-6 lg:p-8">
+    <!-- NUEVO: Contenedor de Autenticación -->
+    <div id="auth-container" class="flex items-center justify-center min-h-screen p-4">
+        <div class="w-full max-w-md">
+            <!-- Vista de Login -->
+            <div id="login-view">
+                <form id="login-form" class="bg-brand-card dark:bg-gray-800 shadow-xl rounded-lg p-8 space-y-6">
+                    <h2 class="text-2xl font-bold text-center text-brand-text dark:text-brand-bg">Iniciar Sesión</h2>
+                    <p class="text-center text-sm text-brand-muted dark:text-gray-400">Ingresa a tu panel de gestión.</p>
+                    <div>
+                        <label for="login-email" class="block text-sm font-medium text-brand-muted dark:text-gray-400">Correo</label>
+                        <input type="email" id="login-email" required class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-brand-bg shadow-sm focus:border-brand-accent focus:ring-brand-accent sm:text-sm">
+                    </div>
+                    <div>
+                        <label for="login-password" class="block text-sm font-medium text-brand-muted dark:text-gray-400">Contraseña</label>
+                        <input type="password" id="login-password" required class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-brand-bg shadow-sm focus:border-brand-accent focus:ring-brand-accent sm:text-sm">
+                    </div>
+                    <button type="submit" class="w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-brand-accent hover:bg-brand-accent-alt focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-accent">
+                        Ingresar
+                    </button>
+                    <p class="text-sm text-center">
+                        <a href="#" id="forgot-password-link" class="font-medium text-brand-accent hover:text-brand-accent-alt">¿Olvidaste tu contraseña?</a>
+                    </p>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Contenedor principal de la APP (Ahora oculto por defecto) -->
+    <div id="main-app" class="container mx-auto max-w-7xl p-4 sm:p-6 lg:p-8 hidden">
 
         <!-- Encabezado -->
         <header class="mb-6">
             <h1 class="text-3xl font-bold text-brand-text dark:text-brand-bg">Panel de Gestión Latam5S</h1>
-            <p class="text-sm text-brand-muted dark:text-gray-400">Tu ID de usuario: <span id="userIdDisplay" class="font-medium text-brand-text dark:text-brand-bg">Cargando...</span></p>
+            <!-- MODIFICADO: Muestra el email del usuario -->
+            <p class="text-sm text-brand-muted dark:text-gray-400">Usuario: <span id="userIdDisplay" class="font-medium text-brand-text dark:text-brand-bg">Cargando...</span></p>
             
-            <!-- Botón de Modo Oscuro -->
-            <button id="darkModeToggle" class="mt-2 text-sm text-brand-muted dark:text-gray-400 hover:text-brand-accent dark:hover:text-brand-accent-alt transition duration-150">
-                <i data-feather="moon" class="w-5 h-5 inline-block align-middle dark:hidden"></i>
-                <i data-feather="sun" class="w-5 h-5 inline-block align-middle hidden dark:inline-block"></i>
-                Cambiar Tema
-            </button>
+            <div class="flex space-x-4">
+                <!-- Botón de Modo Oscuro -->
+                <button id="darkModeToggle" class="mt-2 text-sm text-brand-muted dark:text-gray-400 hover:text-brand-accent dark:hover:text-brand-accent-alt transition duration-150">
+                    <i data-feather="moon" class="w-5 h-5 inline-block align-middle dark:hidden"></i>
+                    <i data-feather="sun" class="w-5 h-5 inline-block align-middle hidden dark:inline-block"></i>
+                    Cambiar Tema
+                </button>
+
+                <!-- NUEVO: Botón de Cerrar Sesión -->
+                <button id="logoutButton" class="mt-2 text-sm text-brand-muted dark:text-gray-400 hover:text-brand-accent dark:hover:text-brand-accent-alt transition duration-150">
+                    <i data-feather="log-out" class="w-5 h-5 inline-block align-middle"></i>
+                    Cerrar Sesión
+                </button>
+            </div>
         </header>
 
         <!-- Pestañas de Navegación -->
@@ -120,6 +196,10 @@
                 <!-- Columna 1: Lista de Clientes Seleccionable -->
                 <div class="lg:col-span-1 bg-brand-card dark:bg-gray-800 p-6 rounded-lg shadow-lg">
                     <h2 class="text-xl font-semibold mb-4 text-brand-text dark:text-brand-bg">Lista de Clientes</h2>
+                    <!-- NUEVO: Buscador de Clientes -->
+                    <div class="mb-4">
+                        <input type="text" id="client-list-search" placeholder="Buscar por teléfono..." class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-brand-bg shadow-sm focus:border-brand-accent focus:ring-brand-accent sm:text-sm">
+                    </div>
                     <div id="clients-list-selectable" class="space-y-2">
                         <!-- Clientes se cargarán aquí -->
                         <p class="text-brand-muted dark:text-gray-400 text-sm">Cargando clientes...</p>
@@ -168,38 +248,33 @@
                     <h2 class="text-xl font-semibold mb-4 text-brand-text dark:text-brand-bg">Registrar Nueva Venta</h2>
                     <form id="add-sale-form" class="space-y-4">
                         <div>
-                            <label for="sale-client" class="block text-sm font-medium text-brand-muted dark:text-gray-400">Cliente</label>
-                            <select id="sale-client" required class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-brand-bg shadow-sm focus:border-brand-accent focus:ring-brand-accent sm:text-sm">
-                                <option value="">Seleccione un cliente...</option>
-                                <!-- Se llenará con JS -->
-                            </select>
-                        </div>
-                        
-                        <!-- NUEVO: Campos para nuevo cliente (ocultos por defecto) -->
-                        <div id="new-client-fields" class="space-y-2 border-t border-gray-200 dark:border-gray-700 pt-3 mt-3" hidden>
-                            <label class="block text-sm font-semibold text-brand-text dark:text-brand-bg">Datos del Nuevo Cliente</label>
-                            <input type="text" id="new-client-name" placeholder="Nombre del Nuevo Cliente" class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-brand-bg shadow-sm sm:text-sm focus:border-brand-accent focus:ring-brand-accent">
-                            <input type="tel" id="new-client-phone" placeholder="Teléfono (WhatsApp)" class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-brand-bg shadow-sm sm:text-sm focus:border-brand-accent focus:ring-brand-accent">
-                        </div>
+                            <!-- MODIFICADO: Buscador de Clientes con Autocompletado -->
+                            <div class="relative">
+                                <label for="client-search" class="block text-sm font-medium text-brand-muted dark:text-gray-400">Buscar o Registrar Cliente</label>                                <input type="text" id="client-search" placeholder="Escribir teléfono..." class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-brand-bg shadow-sm focus:border-brand-accent focus:ring-brand-accent sm:text-sm">
+                                <input type="hidden" id="sale-client-id">
+                                <!-- Contenedor de autocompletado -->
+                                <div id="client-search-results" class="autocomplete-results hidden"></div>
+                                <p class="text-xs text-brand-muted dark:text-gray-400 mt-1">Escriba un teléfono. Si no existe, se registrará al guardar.</p>
+                            </div>
+                        </div>    
                         
                         <!-- Sección de items modificada -->
                         <div class="border border-gray-200 dark:border-gray-600 rounded-md p-4 space-y-3">
                             <h3 class="text-md font-semibold text-brand-text dark:text-brand-bg">Items de la Venta</h3>
                             <div class="space-y-2">
-                                <select id="sale-product-select" class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-brand-bg shadow-sm sm:text-sm">
-                                    <option value="">Seleccione un producto...</option>
-                                </select>
-
-                                <!-- ELIMINADO: Campos para nuevo producto -->
-                                <!-- 
-                                <div id="new-product-fields" ...>
-                                    ...
+                                <!-- MODIFICADO: Buscador de Productos (Venta) con Autocompletado -->
+                                <div class="relative">
+                                    <label for="sale-product-search" class="block text-sm font-medium text-brand-muted dark:text-gray-400">Buscar Producto</label>
+                                    <input type="text" id="sale-product-search" placeholder="Escribir nombre del producto..." class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-brand-bg shadow-sm focus:border-brand-accent focus:ring-brand-accent sm:text-sm">
+                                    <input type="hidden" id="sale-product-id">
+                                    <!-- Contenedor de autocompletado -->
+                                    <div id="sale-product-search-results" class="autocomplete-results hidden"></div>
                                 </div>
-                                -->
 
                                 <div class="grid grid-cols-2 gap-2">
                                     <input type="number" id="sale-item-qty" placeholder="Cantidad" min="1" value="1" class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-brand-bg shadow-sm sm:text-sm">
-                                    <input type="number" id="sale-item-price" placeholder="Precio Total" min="0" step="0.01" class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-brand-bg shadow-sm sm:text-sm">
+                                    <!-- MODIFICADO: Placeholder -->
+                                    <input type="number" id="sale-item-price" placeholder="Precio Total (por este lote)" min="0" step="0.01" class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-brand-bg shadow-sm sm:text-sm">
                                 </div>
                                 <div class="grid grid-cols-2 gap-2">
                                     <input type="text" id="sale-item-color" placeholder="Color (Opcional)" class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-brand-bg shadow-sm sm:text-sm">
@@ -258,6 +333,7 @@
                                     <th class="px-6 py-3 text-left text-xs font-medium text-brand-muted dark:text-gray-400 uppercase tracking-wider">Producto</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-brand-muted dark:text-gray-400 uppercase tracking-wider">Cant.</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-brand-muted dark:text-gray-400 uppercase tracking-wider">Total Item</th>
+                                    <!-- NUEVA COLUMNA -->
                                     <th class="px-6 py-3 text-left text-xs font-medium text-brand-muted dark:text-gray-400 uppercase tracking-wider">Medio de Pago</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-brand-muted dark:text-gray-400 uppercase tracking-wider">Estado</th>
                                     <th class="px-6 py-3 text-right text-xs font-medium text-brand-muted dark:text-gray-400 uppercase tracking-wider">Acciones</th>
@@ -280,20 +356,14 @@
                     <h2 class="text-xl font-semibold mb-4 text-brand-text dark:text-brand-bg">Agregar/Actualizar Inventario</h2>
                     <form id="add-product-form" class="space-y-4">
                         
-                        <!-- CAMBIO: De Input a Select -->
-                        <div>
-                            <label for="product-select-inventory" class="block text-sm font-medium text-brand-muted dark:text-gray-400">Producto</label>
-                            <select id="product-select-inventory" required class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-brand-bg shadow-sm focus:border-brand-accent focus:ring-brand-accent sm:text-sm">
-                                <option value="">Seleccione un producto...</option>
-                                <option value="--NEW-PRODUCT--" class="font-bold text-brand-accent dark:text-brand-accent-alt">** + Agregar Nuevo Producto **</option>
-                                <!-- Se llenará con JS -->
-                            </select>
-                        </div>
-                        
-                        <!-- NUEVO: Campo para el nombre del nuevo producto (oculto) -->
-                        <div id="new-product-name-field" class="space-y-1" hidden>
-                            <label for="product-name-new" class="block text-sm font-medium text-brand-muted dark:text-gray-400">Nombre del Nuevo Producto</label>
-                            <input type="text" id="product-name-new" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-brand-bg shadow-sm focus:border-brand-accent focus:ring-brand-accent sm:text-sm">
+                        <!-- MODIFICADO: Buscador de Productos (Inventario) con Autocompletado -->
+                        <div class="relative">
+                            <label for="product-search-inventory" class="block text-sm font-medium text-brand-muted dark:text-gray-400">Buscar o Crear Producto</label>
+                            <input type="text" id="product-search-inventory" placeholder="Escribir nombre..." class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-brand-bg shadow-sm focus:border-brand-accent focus:ring-brand-accent sm:text-sm">
+                            <input type="hidden" id="product-inventory-id">
+                            <!-- Contenedor de autocompletado -->
+                            <div id="product-search-inventory-results" class="autocomplete-results hidden"></div>
+                            <p class="text-xs text-brand-muted dark:text-gray-400 mt-1">Seleccione un producto para sumar stock, o escriba un nombre nuevo y guarde.</p>
                         </div>
                         
                         <div>
@@ -303,8 +373,9 @@
                         </div>
                         <div>
                             <!-- MODIFICADO: Costo (ObligatorGatorio) -->
-                            <label for="product-cost" class="block text-sm font-medium text-brand-muted dark:text-gray-400">Costo Total</label>
-                            <input type="number" id="product-cost" required min="0" step="0.01" placeholder="Costo total" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-brand-bg shadow-sm focus:border-brand-accent focus:ring-brand-accent sm:text-sm">
+                            <label for="product-cost" class="block text-sm font-medium text-brand-muted dark:text-gray-400">Costo Total (por este lote)</label>
+
+                            <input type="number" id="product-cost" required min="0" step="0.01" placeholder="Costo total del lote" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-brand-bg shadow-sm focus:border-brand-accent focus:ring-brand-accent sm:text-sm">
                         </div>
                         
                         <!-- NUEVO CAMPO DE FECHA -->
@@ -372,10 +443,14 @@
     <script type="module">
         // Importar funciones de Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        // MODIFICADO: Importar funciones de autenticación
         import { 
             getAuth, 
-            signInAnonymously, 
-            signInWithCustomToken, 
+            // ELIMINADO: signInAnonymously
+            signInWithEmailAndPassword,
+            sendPasswordResetEmail, // <-- AÑADIDO
+            // ELIMINADO: createUserWithEmailAndPassword
+            signOut,
             onAuthStateChanged 
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { 
@@ -441,11 +516,74 @@
         // Listeners de OnSnapshot (para poder desvincularlos al cambiar de cliente)
         let pendingSalesListener = null;
         let shipmentHistoryListener = null;
+        
+        // --- MODIFICADO: Cache para los buscadores ---
+        let allClientsCache = []; // { id, name, phone, normalizedText }
+        let allProductsCache = []; // { id, name, stock, costo }
 
+        // --- NUEVO: IDs DE ELEMENTOS DEL DOM (MOVIMOS TODO AQUÍ) ---
+        
+        // Elementos de Autenticación
+        const authContainer = document.getElementById('auth-container');
+        const loginView = document.getElementById('login-view');
+        const loginForm = document.getElementById('login-form');
+        const forgotPasswordLink = document.getElementById('forgot-password-link');
+        const mainApp = document.getElementById('main-app');
+        const logoutButton = document.getElementById('logoutButton');
+        
+        // Elementos de Pestañas y Modal
+        const tabs = document.querySelectorAll('.tab-btn');
+        const panels = document.querySelectorAll('.tab-panel');
+        const modal = document.getElementById('modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalMessage = document.getElementById('modal-message');
+        const modalCloseBtn = document.getElementById('modal-close-btn');
 
-        // --- CONFIGURACIÓN DE FIREBASE ---
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        // Elementos Pestaña Clientes
+        const clientsListSelectable = document.getElementById('clients-list-selectable');
+        const clientListSearchInput = document.getElementById('client-list-search');
+        const clientDetailPanel = document.getElementById('client-detail-panel');
+        const pendingSalesList = document.getElementById('pending-sales-list');
+        const shipmentHistoryList = document.getElementById('shipment-history-list');
+        const createShipmentBtn = document.getElementById('create-shipment-btn');
+
+        // Elementos Pestaña Ventas
+        const saleForm = document.getElementById('add-sale-form');
+        const salesList = document.getElementById('sales-list');
+        const addSaleItemBtn = document.getElementById('add-sale-item-btn');
+        const currentSaleItemsList = document.getElementById('current-sale-items');
+        const currentSaleTotalEl = document.getElementById('current-sale-total');
+        const newClientFields = document.getElementById('new-client-fields');
+
+        // Elementos Pestaña Productos
+        const productForm = document.getElementById('add-product-form');
+        const productsList = document.getElementById('products-list');
+
+        // Elementos de Buscadores (Autocompletado)
+        const clientSearchInput = document.getElementById('client-search');
+        const clientSearchHiddenId = document.getElementById('sale-client-id');
+        const clientSearchResults = document.getElementById('client-search-results');
+        
+        const saleProductSearchInput = document.getElementById('sale-product-search');
+        const saleProductHiddenId = document.getElementById('sale-product-id');
+        const saleProductSearchResults = document.getElementById('sale-product-search-results');
+        
+        const productInventorySearchInput = document.getElementById('product-search-inventory');
+        const productInventoryHiddenId = document.getElementById('product-inventory-id');
+        const productInventorySearchResults = document.getElementById('product-search-inventory-results');
+        
+        // --- FIN DE IDs DE ELEMENTOS ---
+
+        // Configuración de tu proyecto
+        const appId = 'mi-app-ventas'; // O cualquier nombre que quieras
+        const firebaseConfig = {
+            apiKey: "AIzaSyBe_H0VfS-8K-n3Ihu-Io2q4SYDZAwbKoQ",
+            authDomain: "compliventas-fc79c.firebaseapp.com",
+            projectId: "compliventas-fc79c",
+            storageBucket: "compliventas-fc79c.firebasestorage.app",
+            messagingSenderId: "734491005717",
+            appId: "1:734491005717:web:85f0be05bc345cfd6bcf1c"
+        };
 
         // --- INICIALIZACIÓN ---
         try {
@@ -454,36 +592,64 @@
             auth = getAuth(app);
             setLogLevel('Debug');
 
-            // Autenticación
+            // --- LÓGICA DE AUTENTICACIÓN (MUY MODIFICADA) ---
             onAuthStateChanged(auth, async (user) => {
                 if (user) {
+                    // --- USUARIO HA INICIADO SESIÓN ---
                     userId = user.uid;
-                    document.getElementById('userIdDisplay').textContent = userId;
+                    document.getElementById('userIdDisplay').textContent = user.email; // Mostrar email
                     
-                    // Definir rutas de las colecciones
+                    // Ocultar auth, mostrar app
+                    authContainer.classList.add('hidden');
+                    mainApp.classList.remove('hidden');
+                    
+                    // Vuelve a renderizar los íconos de Feather para el botón de logout
+                    if (typeof feather !== 'undefined') {
+                        feather.replace();
+                    }
+                    
+                    // --- CORRECCIÓN: INICIALIZAR FECHAS AQUÍ ---
+                    // Ahora que 'main-app' está visible, podemos encontrar los elementos
+                    try {
+                        document.getElementById('sale-date').valueAsDate = new Date();
+                        document.getElementById('shipment-date').valueAsDate = new Date();
+                        document.getElementById('product-purchase-date').valueAsDate = new Date();
+                    } catch(e) {
+                        console.warn("Error al inicializar fechas (ignorar si es la primera carga):", e.message);
+                    }
+                    // --- FIN DE LA CORRECCIÓN ---
+
+                    // Definir rutas de las colecciones (dependientes del userId)
                     clientsCollection = collection(db, `artifacts/${appId}/users/${userId}/clients`);
                     salesCollection = collection(db, `artifacts/${appId}/users/${userId}/sales`);
                     productsCollection = collection(db, `artifacts/${appId}/users/${userId}/products`);
-                    shipmentsCollection = collection(db, `artifacts/${appId}/users/${userId}/shipments`); // NUEVA
-                    saleItemsCollection = collection(db, `artifacts/${appId}/users/${userId}/saleItems`); // <-- NUEVO
+                    shipmentsCollection = collection(db, `artifacts/${appId}/users/${userId}/shipments`);
+                    saleItemsCollection = collection(db, `artifacts/${appId}/users/${userId}/saleItems`);
 
                     isAuthReady = true;
                     // Cargar datos iniciales
                     loadClients();
-                    loadSales(); // MODIFICADO: Ahora carga items
+                    loadSales();
                     loadProducts();
 
+
                 } else {
-                    try {
-                        if (typeof __initial_auth_token !== 'undefined') {
-                            await signInWithCustomToken(auth, __initial_auth_token);
-                        } else {
-                            await signInAnonymously(auth);
-                        }
-                    } catch (authError) {
-                        console.error("Error de autenticación:", authError);
-                        showModal("Error de Autenticación", "No se pudo iniciar sesión. Por favor, recargue la página.");
-                    }
+                    // --- USUARIO NO HA INICIADO SESIÓN ---
+                    userId = null;
+                    isAuthReady = false;
+                    
+                    // Mostrar auth, ocultar app
+                    authContainer.classList.remove('hidden');
+                    mainApp.classList.add('hidden');
+                    
+                    // Limpiar datos (si es necesario, aunque los listeners se cortarán)
+                    if(clientsListSelectable) clientsListSelectable.innerHTML = '';
+                    if(salesList) salesList.innerHTML = '';
+                    if(productsList) productsList.innerHTML = '';
+                    
+                    // Desvincular listeners si existen
+                    if (pendingSalesListener) pendingSalesListener();
+                    if (shipmentHistoryListener) shipmentHistoryListener();
                 }
             });
 
@@ -491,10 +657,68 @@
             console.error("Error al inicializar Firebase:", e);
             showModal("Error de Conexión", "No se pudo conectar a Firebase. Verifique la configuración.");
         }
+        
+        // --- NUEVOS LISTENERS DE AUTENTICACIÓN ---
+        
+        // Formulario de Login
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            showModal("Iniciando Sesión", "Por favor, espere...", false);
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                // onAuthStateChanged se encargará de ocultar el modal y mostrar la app
+                hideModal();
+            } catch (error) {
+                console.error("Error de login:", error.code);
+                hideModal();
+                showModal("Error de Login", "Correo o contraseña incorrectos. Por favor, inténtelo de nuevo.");
+            }
+        });
+
+        // Botón de Cerrar Sesión
+        logoutButton.addEventListener('click', async () => {
+            try {
+                await signOut(auth);
+                // onAuthStateChanged se encargará de mostrar el login
+            } catch (error) {
+                console.error("Error al cerrar sesión:", error);
+                showModal("Error", "No se pudo cerrar sesión.");
+            }
+        });
+        
+        // --- NUEVO: LISTENER PARA RESTABLECER CONTRASEÑA ---
+        forgotPasswordLink.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            if (!email) {
+                showModal("Correo Requerido", "Por favor, ingrese su correo en el campo 'Correo' para poder restablecer la contraseña.");
+                return;
+            }
+            
+            showModal("Procesando", "Enviando correo de restablecimiento...", false);
+            try {
+                await sendPasswordResetEmail(auth, email);
+                hideModal();
+                showModal("Correo Enviado", "Si su correo está registrado, recibirá un enlace para crear una nueva contraseña. Revise su bandeja de entrada (y spam).");
+            } catch (error) {
+                console.error("Error al enviar correo de restablecimiento:", error);
+                hideModal();
+                if (error.code === 'auth/invalid-email') {
+                    showModal("Error", "El formato del correo no es válido.");
+                } else {
+                    showModal("Error", "No se pudo enviar el correo de restablecimiento. Intente de nuevo más tarde.");
+                }
+            }
+        });
+
+        // --- FIN DE LÓGICA DE AUTENTICACIÓN ---
+
 
         // --- MANEJO DE PESTAÑAS ---
-        const tabs = document.querySelectorAll('.tab-btn');
-        const panels = document.querySelectorAll('.tab-panel');
+        // ELIMINADO: const tabs = document.querySelectorAll('.tab-btn');
+        // ELIMINADO: const panels = document.querySelectorAll('.tab-panel');
 
         // Función para resetear clases de tabs
         function resetTabStyles() {
@@ -521,14 +745,15 @@
         });
         
         // Inicializar la primera pestaña como activa
-        document.querySelector('.tab-btn[data-tab="clients"]').click();
+        // (Ahora se hace cuando el usuario inicia sesión)
+        
 
 
         // --- MANEJO DE MODAL (Mensajes) ---
-        const modal = document.getElementById('modal');
-        const modalTitle = document.getElementById('modal-title');
-        const modalMessage = document.getElementById('modal-message');
-        const modalCloseBtn = document.getElementById('modal-close-btn');
+        // ELIMINADO: const modal = document.getElementById('modal');
+        // ELIMINADO: const modalTitle = document.getElementById('modal-title');
+        // ELIMINADO: const modalMessage = document.getElementById('modal-message');
+        // ELIMINADO: const modalCloseBtn = document.getElementById('modal-close-btn');
 
         modalCloseBtn.addEventListener('click', () => modal.setAttribute('hidden', true));
 
@@ -563,75 +788,234 @@
         }
         // --- FIN DE LA NUEVA FUNCIÓN ---
 
-        // --- LÓGICA DE CLIENTES y ENVÍOS (MUY MODIFICADO) ---
-        const clientsListSelectable = document.getElementById('clients-list-selectable');
-        const saleClientSelect = document.getElementById('sale-client');
-        const clientDetailPanel = document.getElementById('client-detail-panel');
-        // const clientDetailName = document.getElementById('client-detail-name'); // Eliminado
-        // const clientDetailPhone = document.getElementById('client-detail-phone'); // Eliminado
-        // const clientDetailSummaryBtn = document.getElementById('client-detail-summary-btn'); // Eliminado
+        // --- NUEVA FUNCIÓN PROPER CASE ---
+        function toProperCase(str) {
+            if (!str) return '';
+            // Convierte todo a minúsculas, luego pone en mayúscula la primera letra de cada palabra
+            return str.toLowerCase().replace(/\b\w/g, char => char.toUpperCase());
+        }
+        // --- FIN DE LA NUEVA FUNCIÓN ---
 
-        // ELIMINADO: El 'clientForm' (del modal) ya no se usa para agregar clientes
+    // --- NUEVO: LÓGICA DE AUTOCOMPLETADO ---
+
+    let activeAutocomplete = null; // Para manejar el clic fuera
+
+    // Función genérica para mostrar resultados
+    function showAutocompleteResults(container, results) {
+        container.innerHTML = '';
+        if (results.length === 0) {
+            container.classList.add('hidden');
+            return;
+        }
+
+        results.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'autocomplete-item';
+            div.innerHTML = item.html; // Usar HTML pre-formateado
+            div.onclick = () => item.onClick();
+            container.appendChild(div);
+        });
+        container.classList.remove('hidden');
+        activeAutocomplete = container;
+    }
+
+    // Función genérica para ocultar todos los autocompletados
+    function hideAllAutocomplete() {
+        if (clientSearchResults) clientSearchResults.classList.add('hidden');
+        if (saleProductSearchResults) saleProductSearchResults.classList.add('hidden');
+        if (productInventorySearchResults) productInventorySearchResults.classList.add('hidden');
+        activeAutocomplete = null;
+    }
+
+    // Clic fuera para cerrar autocompletados
+    document.addEventListener('click', (e) => {
+        if (activeAutocomplete) {
+            // Si el clic NO es dentro del contenedor de autocompletado activo
+            // Y NO es en el input asociado
+            if (!activeAutocomplete.contains(e.target) && 
+                e.target !== clientSearchInput &&
+                e.target !== saleProductSearchInput &&
+                e.target !== productInventorySearchInput) {
+                hideAllAutocomplete();
+            }
+        }
+    });
+
+    // --- LÓGICA DEL BUSCADOR DE CLIENTES (VENTAS) ---
+    clientSearchInput.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase();
+        if (query.length === 0) {
+            hideAllAutocomplete();
+            clientSearchHiddenId.value = ''; // Limpiar ID si se borra
+            newClientFields.setAttribute('hidden', true); // Ocultar
+            return;
+        }
+
+        const results = allClientsCache.filter(client => 
+            client.phone.includes(query) // <-- Solo busca en el teléfono
+        );
+
+        const resultItems = results.map(client => ({
+            html: `<strong>${client.phone}</strong>`, // <-- Solo muestra el teléfono
+            onClick: () => selectClient(client.id, client.phone) // <-- Solo pasa el teléfono
+        }));
+
+        showAutocompleteResults(clientSearchResults, resultItems);
+    });
+
+        function selectClient(id, phone = '') {
+            clientSearchInput.value = phone; // Rellenar buscador con el teléfono
+            clientSearchHiddenId.value = id; // Guardar ID
+            hideAllAutocomplete();
+        }
+
+    // --- LÓGICA DEL BUSCADOR DE PRODUCTOS (VENTAS) ---
+    saleProductSearchInput.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase();
+        if (query.length === 0) {
+            hideAllAutocomplete();
+            saleProductHiddenId.value = ''; // Limpiar
+            return;
+        }
+
+        const results = allProductsCache.filter(prod => 
+            prod.name.toLowerCase().includes(query)
+        );
+
+        const resultItems = results.map(prod => ({
+            html: `<strong>${prod.name}</strong> (Stock: ${prod.stock > 0 ? prod.stock : 'SIN STOCK'})`,
+            onClick: () => selectSaleProduct(prod.id, prod.name, prod.stock)
+        }));
+
+        showAutocompleteResults(saleProductSearchResults, resultItems);
+    });
+
+    function selectSaleProduct(id, name, stock) {
+        if (stock <= 0) {
+            showModal("Sin Stock", `El producto "${name}" no tiene stock disponible.`);
+            saleProductSearchInput.value = '';
+            saleProductHiddenId.value = '';
+            hideAllAutocomplete();
+            return;
+        }
+        saleProductSearchInput.value = name;
+        saleProductHiddenId.value = id;
+        hideAllAutocomplete();
+    }
+
+    // --- LÓGICA DEL BUSCADOR DE PRODUCTOS (INVENTARIO) ---
+    productInventorySearchInput.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase();
+        // Limpiar ID oculto cada vez que se teclea
+        // Se seteará solo si se hace clic en una sugerencia
+        productInventoryHiddenId.value = ''; 
+
+        if (query.length === 0) {
+            hideAllAutocomplete();
+            return;
+        }
+
+        const results = allProductsCache.filter(prod => 
+            prod.name.toLowerCase().includes(query)
+        );
+
+        const resultItems = results.map(prod => ({
+            html: `<strong>${prod.name}</strong>`,
+            onClick: () => selectInventoryProduct(prod.id, prod.name)
+        }));
+
+        showAutocompleteResults(productInventorySearchResults, resultItems);
+    });
+
+    function selectInventoryProduct(id, name) {
+        productInventorySearchInput.value = name; // Rellenar
+        productInventoryHiddenId.value = id; // Guardar ID
+        hideAllAutocomplete();
+    }
 
         function loadClients() {
-            if (!isAuthReady) return;
+            if (!isAuthReady) return; // Salir si la autenticación no está lista
+
+            // Activar la primera pestaña por defecto al cargar datos
+            document.querySelector('.tab-btn[data-tab="clients"]').click();
 
             onSnapshot(clientsCollection, (snapshot) => {
-                clientsListSelectable.innerHTML = '';
-                saleClientSelect.innerHTML = '<option value="">Seleccione un cliente...</option>';
-                // NUEVO: Añadir la opción de crear nuevo cliente
-                saleClientSelect.innerHTML += '<option value="--NEW--" class="font-bold text-brand-accent dark:text-brand-accent-alt">** + Agregar Nuevo Cliente **</option>';
-                
+                // clientsListSelectable.innerHTML = ''; // <-- ELIMINADO (renderClientList lo hace)
+                allClientsCache = []; // Limpiar cache
+
                 if (snapshot.empty) {
-                    clientsListSelectable.innerHTML = '<p class="text-brand-muted dark:text-gray-500 text-sm">No hay clientes. ¡Agrega uno!</p>';
-                    // No hay 'return' aquí para que la opción de "Nuevo Cliente" siempre aparezca
+                    // clientsListSelectable.innerHTML = ... // <-- ELIMINADO
                 }
-                
+
                 snapshot.forEach(doc => {
                     const client = doc.data();
                     const clientId = doc.id;
 
-                    // Añadir a la lista seleccionable (Panel Clientes)
-                    const div = document.createElement('div');
-                    div.className = 'client-item p-3 rounded-lg border border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700';
-                    div.setAttribute('data-id', clientId);
-                    div.setAttribute('data-name', client.name);
-                    div.setAttribute('data-phone', client.phone);
-                    div.innerHTML = `
-                        <p class="font-medium text-brand-text dark:text-brand-bg">${client.name}</p>
-                        <p class="text-sm text-brand-muted dark:text-gray-400">${client.phone}</p>
-                    `;
-                    div.addEventListener('click', () => handleClientSelect(clientId, client.name, client.phone));
-                    clientsListSelectable.appendChild(div);
+                    // ELIMINADO: Todo el bloque que creaba el 'div'
 
-                    // Añadir al select (Panel Ventas)
-                    const option = document.createElement('option');
-                    option.value = clientId;
-                    option.textContent = `${client.name} (${client.phone})`;
-                    option.setAttribute('data-phone', client.phone);
-                    option.setAttribute('data-name', client.name);
-                    saleClientSelect.appendChild(option);
+                    // Añadir al cache (Panel Ventas)
+                    allClientsCache.push({
+                        id: clientId,
+                        phone: client.phone,
+                        normalizedText: client.phone.toLowerCase() // Modificado para consistencia
+                    });
                 });
-                
-                // Si había un cliente seleccionado, re-seleccionar para mantener el estado
-                if (selectedClientId) {
-                    const clientElement = document.querySelector(`.client-item[data-id="${selectedClientId}"]`);
-                    if (clientElement) {
-                        clientElement.click(); // Esto llama a handleClientSelect
-                    } else {
-                        selectedClientId = null; // Si el cliente fue borrado
-                        clientDetailPanel.setAttribute('hidden', true);
-                    }
-                }
+
+                // --- MODIFICADO: Llamar a la nueva función de renderizado ---
+                // Pasa el valor actual del buscador para que la lista se mantenga filtrada
+                renderClientList(clientListSearchInput.value);
+
+                // ELIMINADO: Bloque 'if (selectedClientId) { ... }' (movido a renderClientList)
+
             }, (error) => {
                 console.error("Error al cargar clientes:", error);
             });
         }
         
+        // --- NUEVA FUNCIÓN PARA RENDERIZAR LA LISTA DE CLIENTES ---
+        function renderClientList(filter = '') {
+            const lowerFilter = filter.toLowerCase();
+            clientsListSelectable.innerHTML = ''; // Limpiar la lista
+
+            // Filtrar el caché
+            const filteredClients = allClientsCache.filter(client => 
+                client.phone.includes(lowerFilter)
+            );
+
+            if (filteredClients.length === 0) {
+                if (filter) {
+                    clientsListSelectable.innerHTML = '<p class="text-brand-muted dark:text-gray-500 text-sm">No se encontraron clientes.</p>';
+                } else {
+                    clientsListSelectable.innerHTML = '<p class="text-brand-muted dark:text-gray-500 text-sm">No hay clientes. ¡Agrega uno!</p>';
+                }
+                return;
+            }
+
+            filteredClients.forEach(client => {
+                const clientId = client.id;
+                const div = document.createElement('div');
+                div.className = 'client-item p-3 rounded-lg border border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700';
+                div.setAttribute('data-id', clientId);
+                div.setAttribute('data-phone', client.phone);
+                div.innerHTML = `<p class="font-medium text-brand-text dark:text-brand-bg">${client.phone}</p>`;
+                div.addEventListener('click', () => handleClientSelect(clientId, client.phone));
+                clientsListSelectable.appendChild(div);
+            });
+
+            // Re-seleccionar si el cliente activo sigue en la lista
+            if (selectedClientId) {
+                const clientElement = document.querySelector(`.client-item[data-id="${selectedClientId}"]`);
+                if (clientElement) {
+                    clientElement.classList.add('selected');
+                }
+            }
+        }
+        // --- FIN DE LA NUEVA FUNCIÓN ---
+
         // Manejador al seleccionar un cliente de la lista
-        function handleClientSelect(clientId, name, phone) {
+        function handleClientSelect(clientId, phone) { // <-- 'name' eliminado
             selectedClientId = clientId; // Guardar ID globalmente
-            selectedClientName = name; // Guardar globalmente
+            selectedClientName = phone; // <-- Usar 'phone' como nombre
             selectedClientPhone = phone; // Guardar globalmente
             
             // Resaltar cliente seleccionado
@@ -652,10 +1036,15 @@
             // Cargar datos de ventas y envíos
             loadPendingSales(clientId);
             loadShipmentHistory(clientId);
+
+            // --- NUEVO: LISTENER PARA EL BUSCADOR DE LA LISTA DE CLIENTES ---
+            clientListSearchInput.addEventListener('input', (e) => {
+                renderClientList(e.targt.value);
+            });
         }
         
         // Cargar ventas pendientes para el cliente seleccionado
-        const pendingSalesList = document.getElementById('pending-sales-list');
+        // const pendingSalesList = document.getElementById('pending-sales-list'); // MOVIDO ARRIBA
         function loadPendingSales(clientId) {
             if (pendingSalesListener) pendingSalesListener(); // Desvincular listener anterior
             
@@ -693,7 +1082,7 @@
         }
 
         // Cargar historial de envíos para el cliente seleccionado
-        const shipmentHistoryList = document.getElementById('shipment-history-list');
+        // const shipmentHistoryList = document.getElementById('shipment-history-list'); // MOVIDO ARRIBA
         function loadShipmentHistory(clientId) {
             if (shipmentHistoryListener) shipmentHistoryListener(); // Desvincular listener
             
@@ -764,7 +1153,7 @@
         // --- FIN DEL NUEVO BLOQUE ---
 
         // Botón de Crear Envío
-        const createShipmentBtn = document.getElementById('create-shipment-btn');
+        // const createShipmentBtn = document.getElementById('create-shipment-btn'); // MOVIDO ARRIBA
         createShipmentBtn.addEventListener('click', async () => {
             if (!selectedClientId) return;
             
@@ -846,30 +1235,18 @@
         // clientDetailSummaryBtn.addEventListener('click', (e) => { ... });
 
 
-        // --- LÓGICA DE VENTAS (MODIFICADA) ---
-        const saleForm = document.getElementById('add-sale-form');
-        const salesList = document.getElementById('sales-list');
-        const addSaleItemBtn = document.getElementById('add-sale-item-btn');
-        const currentSaleItemsList = document.getElementById('current-sale-items');
-        const currentSaleTotalEl = document.getElementById('current-sale-total');
-        const saleProductSelect = document.getElementById('sale-product-select');
+
+
         // NUEVO: Referencia a los campos de nuevo cliente
-        const newClientFields = document.getElementById('new-client-fields');
+        // const newClientFields = document.getElementById('new-client-fields'); // MOVIDO ARRIBA
         // ELIMINADO: Referencia a los campos de nuevo producto
         // const newProductFields = document.getElementById('new-product-fields');
 
         // NUEVO: Referencia a los campos del formulario de productos
-        const productSelectInventory = document.getElementById('product-select-inventory');
-        const newProductNameField = document.getElementById('new-product-name-field');
+        // const productSelectInventory = document.getElementById('product-select-inventory'); // <-- ELIMINADO
+        // const newProductNameField = document.getElementById('new-product-name-field'); // <-- ELIMINADO
 
-        // NUEVO: Listener para mostrar/ocultar los campos de nuevo cliente
-        saleClientSelect.addEventListener('change', () => {
-            if (saleClientSelect.value === '--NEW--') {
-                newClientFields.removeAttribute('hidden');
-            } else {
-                newClientFields.setAttribute('hidden', true);
-            }
-        });
+
 
         // ELIMINADO: Listener para mostrar/ocultar los campos de nuevo producto
         /*
@@ -882,15 +1259,11 @@
         });
         */
 
-        // NUEVO: Listener para el selector de productos en el inventario
-        productSelectInventory.addEventListener('change', () => {
-            if (productSelectInventory.value === '--NEW-PRODUCT--') {
-                newProductNameField.removeAttribute('hidden');
-            } else {
-                newProductNameField.setAttribute('hidden', true);
-            }
-        });
-
+        // const saleForm = document.getElementById('add-sale-form'); // MOVIDO ARRIBA
+        // const salesList = document.getElementById('sales-list'); // MOVIDO ARRIBA
+        // const addSaleItemBtn = document.getElementById('add-sale-item-btn'); // MOVIDO ARRIBA
+        // const currentSaleItemsList = document.getElementById('current-sale-items'); // MOVIDO ARRIBA
+        // const currentSaleTotalEl = document.getElementById('current-sale-total'); // MOVIDO ARRIBA
 
         function updateSaleTotal() {
             currentSaleTotal = currentSaleItems.reduce((acc, item) => acc + item.total, 0);
@@ -929,35 +1302,31 @@
                  showModal("Datos incompletos", "La cantidad debe ser mayor a 0.");
                  return;
             }
-            if (!totalPrice || totalPrice <= 0) {
-                 showModal("Datos incompletos", "Debe ingresar un precio total válido mayor a 0.");
+            if (totalPrice === null || totalPrice < 0) { // Permitir 0
+                 showModal("Datos incompletos", "Debe ingresar un precio total válido.");
                  return;
             }
 
             // Calculamos el precio unitario para guardarlo
-            const unitPrice = totalPrice / qty;
+            const unitPrice = (totalPrice === 0) ? 0 : (totalPrice / qty); // Permitir precio 0
             const color = document.getElementById('sale-item-color').value;
             const talla = document.getElementById('sale-item-talla').value;
-            const selectedOption = saleProductSelect.options[saleProductSelect.selectedIndex];
+            // const productId = saleProductHiddenId.value; // YA NO SE USA
+            // const productName = saleProductSearchInput.value; // YA NO SE USA
 
-            let productId, productName, productCost, productStock;
+            let productCost, productStock;
+            let productId, productName; // <-- MOVIDAS AQUÍ
 
             // --- Lógica para manejar producto nuevo vs. existente ---
             // ELIMINADO: Bloque "if (selectedOption.value === '--NEW-PRODUCT--')"
             
-            if (selectedOption.value) {
+            // MODIFICADO: Leer desde los inputs ocultos
+            productId = saleProductHiddenId.value;
+            productName = saleProductSearchInput.value;
+
+            if (productId && productName) {
                 // --- PRODUCTO EXISTENTE ---
-                productId = selectedOption.value;
                 const product = productsCache[productId];
-                if (!product) {
-                     showModal("Error", "No se encontró el producto en cache.");
-                     return;
-                }
-                if (qty > product.stock) {
-                    showModal("Stock insuficiente", `Solo quedan ${product.stock} unidades de ${product.name}.`);
-                    return;
-                }
-                productName = product.name;
                 productCost = product.cost;
                 productStock = product.stock;
 
@@ -966,6 +1335,9 @@
                 showModal("Datos incompletos", "Seleccione un producto, cantidad y un precio de venta válido.");
                 return;
             }
+            
+            // ELIMINADO: Validación duplicada
+            // if (qty <= 0 || !price || price <= 0) { ... }
             
             const existingItem = currentSaleItems.find(item => item.productId === productId && item.color === color && item.talla === talla);
             if(existingItem) {
@@ -985,86 +1357,81 @@
                 talla: talla || ''
             });
             renderCurrentSaleItems();
-            
+
             // Limpiar inputs
-            saleProductSelect.selectedIndex = 0;
+            saleProductSearchInput.value = '';
+            saleProductHiddenId.value = '';
             document.getElementById('sale-item-qty').value = '1';
             document.getElementById('sale-item-price').value = '';
             document.getElementById('sale-item-color').value = '';
             document.getElementById('sale-item-talla').value = '';
-            // ELIMINADO: Limpiar y ocultar campos de nuevo producto
-            // newProductFields.setAttribute('hidden', true);
-            // document.getElementById('new-product-name').value = '';
-            // document.getElementById('new-product-stock').value = '1';
-            // document.getElementById('new-product-cost').value = '';
+
         });
 
         saleForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            if (!isAuthReady) return;
+        e.preventDefault();
+        if (!isAuthReady) return;
 
-            const selectedOption = saleClientSelect.options[saleClientSelect.selectedIndex];
-            const clientId = selectedOption.value;
-            const date = document.getElementById('sale-date').value;
-            const medioDePago = document.getElementById('sale-payment-method').value;
+        // --- CORRECCIÓN: Leer fecha y medio de pago aquí ---
+        const date = document.getElementById('sale-date').value;
+        const medioDePago = document.getElementById('sale-payment-method').value;
+        // --- FIN DE LA CORRECCIÓN ---
 
-            // NUEVO: Lógica para manejar cliente nuevo vs. existente
-            let finalClientId, clientName, clientPhone;
+        // --- NUEVA LÓGICA: BUSCAR O CREAR CLIENTE ---
+        let finalClientId, clientName, clientPhone;
 
-            if (clientId === '--NEW--') {
-                // --- CREAR NUEVO CLIENTE ---
-                clientName = document.getElementById('new-client-name').value;
-                clientPhone = document.getElementById('new-client-phone').value;
-                
-                if (!clientName || !clientPhone) {
-                    showModal("Datos incompletos", "Debe ingresar el nombre y teléfono del nuevo cliente.");
-                    return;
-                }
-                
-                showModal("Validando Teléfono", "Verificando si el cliente ya existe...", false);
+        const phoneQuery = clientSearchInput.value.trim();
+        const selectedClientId = clientSearchHiddenId.value;
 
-                try {
-                    // 1. Consultar si el teléfono ya existe
-                    const q = query(clientsCollection, where("phone", "==", clientPhone));
-                    const querySnapshot = await getDocs(q);
+        if (!phoneQuery) {
+            showModal("Venta incompleta", "Debe ingresar un teléfono de cliente.");
+            return;
+        }
 
-                    if (!querySnapshot.empty) {
-                        // 2. Si existe, mostrar error y detener
-                        hideModal();
-                        const existingClient = querySnapshot.docs[0].data();
-                        showModal("Error: Cliente Duplicado", `El número ${clientPhone} ya está registrado a nombre de: ${existingClient.name}. Por favor, selecciónelo de la lista.`);
-                        return; // Detener la ejecución
-                    }
+        // Primero, verificar si el usuario seleccionó un cliente Y no cambió el texto
+        const clientData = allClientsCache.find(c => c.id === selectedClientId);
+        if (clientData && clientData.phone === phoneQuery) {
+            // SCENARIO 1: Cliente seleccionado de la lista
+            finalClientId = clientData.id;
+            clientName = clientData.phone;
+            clientPhone = clientData.phone;
+        } else {
+            // SCENARIO 2: Texto tipeado (nuevo o existente no seleccionado)
+            // Buscar en Firestore por el teléfono tipeado
+            showModal("Validando Cliente", "Buscando o registrando cliente...", false);
+            try {
+                const q = query(clientsCollection, where("phone", "==", phoneQuery));
+                const querySnapshot = await getDocs(q);
 
-                    // 3. Si no existe, crear el cliente
-                    showModal("Creando Cliente", "Guardando nuevo cliente...", false);
+                if (!querySnapshot.empty) {
+                    // El cliente YA EXISTE
+                    const existingClientDoc = querySnapshot.docs[0];
+                    finalClientId = existingClientDoc.id;
+                    clientName = phoneQuery;
+                    clientPhone = phoneQuery;
+                } else {
+                    // El cliente ES NUEVO, hay que crearlo
                     const newClientRef = await addDoc(clientsCollection, {
-                        name: clientName,
-                        phone: clientPhone,
-                        email: '' // Email es opcional
+                        phone: phoneQuery
                     });
                     finalClientId = newClientRef.id;
-
-                } catch (error) {
-                    console.error("Error al crear nuevo cliente:", error);
-                    showModal("Error", "No se pudo guardar el nuevo cliente.");
-                    return;
+                    clientName = phoneQuery;
+                    clientPhone = phoneQuery;
                 }
-
-            } else if (clientId) {
-                // --- CLIENTE EXISTENTE ---
-                finalClientId = clientId;
-                clientName = selectedOption.getAttribute('data-name');
-                clientPhone = selectedOption.getAttribute('data-phone');
-            } else {
-                // No se seleccionó nada
-                showModal("Venta incompleta", "Seleccione un cliente o agregue uno nuevo.");
+                // hideModal(); // Se oculta al final del try/catch del submit
+            } catch (error) {
+                console.error("Error al buscar/crear cliente:", error);
+                hideModal();
+                showModal("Error", "No se pudo verificar el cliente.");
                 return;
             }
+        }
+        // --- FIN NUEVA LÓGICA ---
 
             // --- VALIDACIÓN DE ITEMS Y FECHA ---
+            // MODIFICADO: Se incluye !medioDePago
             if (currentSaleItems.length === 0 || !date || !medioDePago) {
-                showModal("Venta incompleta", "Agregue al menos un item y elija una fecha.");
+                showModal("Venta incompleta", "Agregue al menos un item, elija una fecha y un medio de pago.");
                 return;
             }
             
@@ -1079,7 +1446,7 @@
                     clientName,
                     clientPhone,
                     date,
-                    medioDePago: medioDePago,
+                    medioDePago: medioDePago, // <-- AÑADIDO
                     items: currentSaleItems,
                     total: currentSaleTotal,
                     totalCosto: totalCostoVenta, // Guardamos el costo total
@@ -1093,7 +1460,7 @@
                         clientId: finalClientId,
                         clientName: clientName,
                         date: date,
-                        medioDePago: medioDePago,
+                        medioDePago: medioDePago, // <-- AÑADIDO
                         enviado: false, // Estado inicial
                         
                         // Datos del item
@@ -1125,7 +1492,10 @@
                 currentSaleItems = [];
                 renderCurrentSaleItems();
                 document.getElementById('sale-date').valueAsDate = new Date();
-                newClientFields.setAttribute('hidden', true); // Ocultar campos de nuevo cliente
+                // --- AÑADIR ESTAS LÍNEAS ---
+                clientSearchInput.value = '';
+                clientSearchHiddenId.value = '';
+                // --- FIN ---
                 
                 hideModal();
                 showModal("Venta Exitosa", "La venta se guardó y el stock se actualizó.");
@@ -1165,6 +1535,7 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-brand-muted dark:text-gray-400">${productDesc}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-brand-muted dark:text-gray-400">${item.qty}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-brand-muted dark:text-gray-400">${currencyFormatter.format(item.total)}</td>
+                        <!-- NUEVA CELDA -->
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-brand-muted dark:text-gray-400">${item.medioDePago || 'N/A'}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-brand-muted dark:text-gray-400">${estadoHtml}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -1205,15 +1576,14 @@
         // --- FIN DE MODIFICACIÓN DE LÓGICA DE VENTAS ---
 
 
-        // --- LÓGICA DE PRODUCTOS (MODIFICADA) ---
-        const productForm = document.getElementById('add-product-form');
-        const productsList = document.getElementById('products-list');
+
 
         // NUEVO: Función extraída para crear o actualizar productos (reutilizable)
         // MODIFICADO: Añadir purchaseDate
-        async function createOrUpdateProduct(name, stockToAdd, newCost, purchaseDate) {
-            if (stockToAdd < 0 || newCost <= 0 || !name || !purchaseDate) {
-                throw new Error("Datos de producto inválidos. Se requiere nombre, stock positivo, costo positivo y fecha.");
+        async function createOrUpdateProduct(name, stockToAdd, newUnitCost, purchaseDate) {
+            // MODIFICADO: Permitir newUnitCost 0
+            if (stockToAdd <= 0 || newUnitCost < 0 || !name || !purchaseDate) {
+                throw new Error("Datos de producto inválidos. Se requiere nombre, stock positivo, costo >= 0 y fecha.");
             }
             
             // 1. Buscar si el producto ya existe (por nombre exacto)
@@ -1228,7 +1598,7 @@
                 const newDocRef = await addDoc(productsCollection, { 
                     name: name, 
                     stock: stockToAdd, 
-                    cost: newCost,
+                    cost: newUnitCost, // Guardar costo unitario
                     purchaseDate: purchaseDate // <-- AÑADIDO
                 });
                 productId = newDocRef.id;
@@ -1247,10 +1617,10 @@
                 const newTotalStock = oldStock + stockToAdd;
 
                 // Calcular nuevo costo promedio ponderado
-                let newAverageCost = newCost; // Por defecto, el nuevo costo
+                let newAverageCost = newUnitCost; // Por defecto, el nuevo costo unitario
                 if (newTotalStock > 0) { // Evitar división por cero
                     const oldTotalValue = oldStock * oldCost;
-                    const newTotalValue = stockToAdd * newCost;
+                    const newTotalValue = stockToAdd * newUnitCost; // Usar costo unitario
                     newAverageCost = (oldTotalValue + newTotalValue) / newTotalStock;
                 }
 
@@ -1268,54 +1638,35 @@
         productForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             if (!isAuthReady) return;
-
+            
             // --- Lógica de Submit Modificada ---
-            const selectedProductId = productSelectInventory.value;
+            const name = normalizeString(productInventorySearchInput.value.trim());
             const stockToAdd = parseInt(document.getElementById('product-stock').value, 10);
-            
-            // --- MODIFICACIÓN AQUÍ ---
-            const totalCost = parseFloat(document.getElementById('product-cost').value); // Renombramos la variable
-            
-            // Validamos que se pueda dividir
-            if (!stockToAdd || stockToAdd <= 0) {
-                 showModal("Datos incompletos", "La cantidad a agregar debe ser mayor a 0.");
-                 return;
-            }
-            if (!totalCost || totalCost < 0) { // Permitimos 0 por si es un bono
-                 showModal("Datos incompletos", "Debe ingresar un costo total válido.");
-                 return;
-            }
-
-            const newUnitCost = totalCost / stockToAdd; // Calculamos el costo unitario
-            // --- FIN MODIFICACIÓN ---
-
-            // NUEVA LÍNEA
+            const totalCost = parseFloat(document.getElementById('product-cost').value);
             const purchaseDate = document.getElementById('product-purchase-date').value;
-            
-            let name;
 
-            if (selectedProductId === '--NEW-PRODUCT--') {
-                // MODIFICADO: Normalizar el nombre
-                name = normalizeString(document.getElementById('product-name-new').value.trim());
-                if (!name) {
-                    showModal("Datos incompletos", "Debe ingresar un nombre para el nuevo producto.");
-                    return;
-                }
-            } else if (selectedProductId) {
-                // MODIFICADO: Normalizar el nombre
-                name = normalizeString(productSelectInventory.options[productSelectInventory.selectedIndex].text);
-            } else {
-                showModal("Datos incompletos", "Seleccione un producto o cree uno nuevo.");
-                return;
-            }
+            // ... (el resto de la lectura de formulario: totalCost, purchaseDate, newUnitCost) ...
             
-            // --- Fin Lógica de Submit Modificada ---
-
             // NUEVA VALIDACIÓN
             if (!purchaseDate) {
                 showModal("Datos incompletos", "Debe seleccionar una fecha de compra.");
                 return;
             }
+
+            if (!name) {
+                showModal("Datos incomchos", "Debe ingresar un nombre de producto.");
+                return;
+            }
+            if (!stockToAdd || stockToAdd <= 0) {
+                 showModal("Datos incompletos", "La cantidad a agregar debe ser mayor a 0.");
+                 return;
+            }
+            if (totalCost === null || totalCost < 0) { // Permitir 0
+                 showModal("Datos incompletos", "Debe ingresar un costo total válido.");
+                 return;
+            }
+
+            const newUnitCost = (totalCost === 0) ? 0 : (totalCost / stockToAdd); // Permitir precio 0
 
 
             showModal("Actualizando Inventario", "Guardando producto...", false);
@@ -1329,7 +1680,8 @@
                 productForm.reset();
                 // RE-INICIALIZAR FECHA A HOY
                 document.getElementById('product-purchase-date').valueAsDate = new Date();
-                newProductNameField.setAttribute('hidden', true); // Ocultar el campo de nuevo nombre
+                productInventorySearchInput.value = '';
+                productInventoryHiddenId.value = '';            
 
             } catch (error) {
                 console.error("Error al guardar/actualizar producto:", error);
@@ -1343,14 +1695,8 @@
 
             onSnapshot(productsCollection, (snapshot) => {
                 productsList.innerHTML = '';
-                saleProductSelect.innerHTML = '<option value="">Seleccione un producto...</option>';
-                // NUEVO: Limpiar y re-poblar el select del inventario
-                productSelectInventory.innerHTML = '<option value="">Seleccione un producto...</option>';
-                productSelectInventory.innerHTML += '<option value="--NEW-PRODUCT--" class="font-bold text-brand-accent dark:text-brand-accent-alt">** + Agregar Nuevo Producto **</option>';
-
-                // ELIMINADO: Opción de crear nuevo producto
-                // saleProductSelect.innerHTML += '<option value="--NEW-PRODUCT--" ... </option>';
-                
+                // Limpiar caches
+                allProductsCache = [];
                 productsCache = {};
 
                 snapshot.forEach(doc => {
@@ -1373,25 +1719,23 @@
                     `;
                     productsList.appendChild(tr);
 
-                    // Llenar el select en el panel de Ventas
-                    const option = document.createElement('option');
-                    option.value = productId;
-                    if (product.stock > 0) {
-                        option.textContent = `${product.name} (Stock: ${product.stock})`;
-                        option.disabled = false;
-                    } else {
-                        option.textContent = `${product.name} (SIN STOCK)`;
-                        option.disabled = true;
-                    }
-                    saleProductSelect.appendChild(option);
-                    
-                    // NUEVO: Llenar el select en el panel de Productos (Inventario)
-                    const optionInventory = document.createElement('option');
-                    optionInventory.value = productId;
-                    optionInventory.textContent = product.name;
-                    productSelectInventory.appendChild(optionInventory);
+                    // Llenar el cache unificado de Productos
+                    allProductsCache.push({
+                        id: productId,
+                        name: product.name,
+                        stock: product.stock,
+                        cost: product.cost
+                    });
                 });
-            }, (error) => console.error("Error al cargar productos:", error));
+
+                // Ya no se renderiza aquí, el 'input' lo hará
+
+            }, (error) => {
+                console.error("Error al cargar productos:", error);
+                if (error.code === 'permission-denied' || error.code === 'failed-precondition') {
+                    showModal("Error de Permisos", "No se pudieron cargar los productos. Asegúrese de que las reglas de seguridad de su proyecto Firestore estén configuradas correctamente para permitir lecturas en la ruta 'users/" + userId + "/products'.");
+                }
+            });
         }
         
         productsList.addEventListener('click', async (e) => {
@@ -1418,7 +1762,7 @@
                 return;
             }
 
-            let message = `¡Hola ${clientName}! 👋\n\nTe enviamos el detalle de tu *envío del ${shipmentDate}*:\n\n`;
+            let message = `¡Hola! 👋\n\nTe enviamos el detalle de tu *envío del ${shipmentDate}* (Cliente: ${clientName}):\n\n`;
             
             let totalEnvio = 0;
             items.forEach(item => {
@@ -1441,13 +1785,7 @@
             window.open(whatsappUrl, '_blank');
         }
         // --- FIN DE LA NUEVA FUNCIÓN ---
-
-        // --- INICIALIZAR FECHAS ---
-        document.getElementById('sale-date').valueAsDate = new Date();
-        document.getElementById('shipment-date').valueAsDate = new Date();
-        // NUEVA LÍNEA
-        document.getElementById('product-purchase-date').valueAsDate = new Date();
-
+        
     </script>
 </body>
 </html>
