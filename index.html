@@ -1256,9 +1256,13 @@
                         const itemData = itemDoc.data();
                         itemsToShip.push({
                             itemId: itemId,
-                            description: `${itemData.qty} x ${itemData.desc} ${itemData.color || ''} ${itemData.talla || ''}`,
+                            description: `${itemData.qty} x ${itemData.desc} ${itemData.color || ''} ${itemData.talla || ''}`, // Para el historial
                             total: itemData.total,
-                            qty: itemData.qty
+                            qty: itemData.qty,
+                            // --- NUEVOS CAMPOS PARA WHATSAPP ---
+                            desc: itemData.desc,
+                            color: itemData.color || '',
+                            talla: itemData.talla || ''
                         });
                         itemRefsToUpdate.push(itemRef);
                         parentSaleIds.add(itemData.saleId); // Guardar el ID de la venta padre
@@ -1379,11 +1383,8 @@
 
             // Calculamos el precio unitario para guardarlo
             const unitPrice = (totalPrice === 0) ? 0 : (totalPrice / qty); // Permitir precio 0
-            const color = document.getElementById('sale-item-color').value;
-            const talla = document.getElementById('sale-item-talla').value;
-            // const productId = saleProductHiddenId.value; // YA NO SE USA
-            // const productName = saleProductSearchInput.value; // YA NO SE USA
-
+            const color = document.getElementById('sale-item-color').value.trim().toUpperCase();
+            const talla = document.getElementById('sale-item-talla').value.trim().toUpperCase();
             let productCost, productStock;
             let productId, productName; // <-- MOVIDAS AQUÍ
 
@@ -1837,23 +1838,45 @@
             let totalPrendas = 0;
             
             items.forEach(item => {
-                // 'item.description' ya viene formateado ("2 x Enterizo...")
-                message += `🌻 ${item.description}\n\n`; 
+                // --- INICIO DE NUEVO FORMATO ---
                 
-                // Sumar el total de prendas
+                // Fallback para envíos antiguos: si 'desc' no existe, usa la 'description'
+                const desc = item.desc || item.description; 
+                const qty = item.qty || 1;
+                
+                // 1. Construir la línea principal (ej. *2 x Enterizo Chanel Diana*)
+                let mainDesc = `*${qty} x ${desc}*`;
+                
+                // 2. Construir atributos (ej. _(color: acero, talla: S)_)
+                let attributes = [];
+                if (item.color) {
+                    // Convertir "ACERO" a "acero"
+                    attributes.push(`color: ${item.color.toLowerCase()}`);
+                }
+                if (item.talla) {
+                    // Convertir "S" a "s" (o "S", tu ejemplo usa "S", vamos a dejarlo como está pero en minúscula)
+                    attributes.push(`talla: ${item.talla.toLowerCase()}`);
+                }
+                
+                message += `🌻 ${mainDesc}`; // Añadir línea principal
+                if (attributes.length > 0) {
+                    message += ` _(${attributes.join(', ')})_`; // Añadir atributos
+                }
+                message += `\n\n`; // Doble salto de línea
+                // --- FIN DE NUEVO FORMATO ---
+
+                // 3. Sumar el total de prendas (lógica existente)
                 let cantidadItem = 0;
                 if (item.qty && item.qty > 0) {
-                    // Usamos la 'qty' que guardamos en el Paso 1
                     cantidadItem = item.qty;
                 } else {
-                    // Fallback para envíos antiguos (antes de este cambio)
-                    // Intenta "adivinar" la cantidad desde la descripción (ej. "2 x Polo")
+                    // Fallback (lógica existente)
                     try {
                         const match = item.description.match(/^(\d+)\s*x/);
                         if (match && match[1]) {
                             cantidadItem = parseInt(match[1], 10);
                         }
-                    } catch(e) { /* ignorar error si no puede 'adivinar' */ }
+                    } catch(e) { /* ignorar */ }
                 }
                 totalPrendas += cantidadItem;
             });
