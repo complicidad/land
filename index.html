@@ -192,7 +192,7 @@
                 <!-- BOTÓN ELIMINADO - Ya no se agrega cliente desde aquí -->
             </div>
             
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
                 <!-- Columna 1: Lista de Clientes Seleccionable -->
                 <div class="lg:col-span-1 bg-brand-card dark:bg-gray-800 p-6 rounded-lg shadow-lg">
                     <h2 class="text-xl font-semibold mb-4 text-brand-text dark:text-brand-bg">Lista de Clientes</h2>
@@ -207,7 +207,7 @@
                 </div>
                 
                 <!-- Columna 2: Detalle de Cliente y Envíos -->
-                <div id="client-detail-panel" class="lg:col-span-2 space-y-6" hidden>
+                <div id="client-detail-panel" class="lg:col-span-3 space-y-6" hidden>
                     
                     <!-- Detalles del Cliente (Tarjeta eliminada por solicitud) -->
                     
@@ -242,7 +242,7 @@
 
         <!-- Panel de Ventas -->
         <div id="sales-panel" class="tab-panel" hidden>
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
                 <!-- Columna 1: Formulario de Venta -->
                 <div class="lg:col-span-1 bg-brand-card dark:bg-gray-800 p-6 rounded-lg shadow-lg">
                     <h2 class="text-xl font-semibold mb-4 text-brand-text dark:text-brand-bg">Registrar Nueva Venta</h2>
@@ -321,8 +321,52 @@
                 </div>
                 
                 <!-- Columna 2: Historial de Ventas (MODIFICADO) -->
-                <div class="lg:col-span-2 bg-brand-card dark:bg-gray-800 p-6 rounded-lg shadow-lg">
+                <div class="lg:col-span-3 bg-brand-card dark:bg-gray-800 p-6 rounded-lg shadow-lg">
                     <h2 class="text-xl font-semibold mb-4 text-brand-text dark:text-brand-bg">Historial de Items Vendidos</h2>
+
+                    <!-- NUEVO: Contenedor de Filtros -->
+                    <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg mb-4 grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                        
+                        <!-- Filtro Cliente -->
+                        <div class="relative">
+                            <label for="client-sales-filter-search" class="block text-sm font-medium text-brand-muted dark:text-gray-400">Filtrar por Cliente</label>
+                            <input type="text" id="client-sales-filter-search" placeholder="Buscar teléfono..." class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-brand-bg shadow-sm sm:text-sm">
+                            <input type="hidden" id="client-sales-filter-id">
+                            <div id="client-sales-filter-results" class.="autocomplete-results hidden"></div>
+                        </div>
+
+                        <!-- Filtro Producto -->
+                        <div class="relative">
+                            <label for="product-sales-filter-search" class="block text-sm font-medium text-brand-muted dark:text-gray-400">Filtrar por Producto</label>
+                            <input type="text" id="product-sales-filter-search" placeholder="Buscar producto..." class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-brand-bg shadow-sm sm:text-sm">
+                            <input type="hidden" id="product-sales-filter-id">
+                            <div id="product-sales-filter-results" class="autocomplete-results hidden"></div>
+                        </div>
+
+                        <!-- Filtro Fecha -->
+                        <div>
+                            <label for="date-sales-filter" class="block text-sm font-medium text-brand-muted dark:text-gray-400">Filtrar por Fecha</label>
+                            <input type="date" id="date-sales-filter" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-brand-bg shadow-sm sm:text-sm">
+                        </div>
+                        
+                        <!-- Checkbox y Botones -->
+                        <div class="flex items-end space-x-2">
+                            <div class="flex-grow">
+                                <label for="pending-sales-filter-toggle" class="flex items-center">
+                                    <input type="checkbox" id="pending-sales-filter-toggle" checked class="h-4 w-4 text-brand-accent rounded border-gray-300 dark:border-gray-600 focus:ring-brand-accent">
+                                    <span class="ml-2 text-sm text-brand-muted dark:text-gray-400">Solo Pendientes</span>
+                                </label>
+                            </div>
+                            <button id="clear-sales-filter-btn" title="Limpiar Filtros" class="p-2 bg-gray-300 dark:bg-gray-600 text-brand-text dark:text-brand-bg rounded-md hover:bg-gray-400">
+                                <i data-feather="x" class="w-5 h-5"></i>
+                            </button>
+                            <button id="apply-sales-filter-btn" class="p-2 bg-brand-accent text-white rounded-md hover:bg-brand-accent-alt">
+                                <i data-feather="search" class="w-5 h-5"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <!-- FIN: Contenedor de Filtros -->                    
+                      
                     <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                             <!-- CABECERA DE TABLA MODIFICADA -->
@@ -350,7 +394,7 @@
 
         <!-- Panel de Productos -->
         <div id="products-panel" class="tab-panel" hidden>
-             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+             <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
                 <!-- Columna 1: Formulario de Productos -->
                 <div class="lg:col-span-1 bg-brand-card dark:bg-gray-800 p-6 rounded-lg shadow-lg">
                     <h2 class="text-xl font-semibold mb-4 text-brand-text dark:text-brand-bg">Agregar/Actualizar Inventario</h2>
@@ -391,7 +435,7 @@
                 </div>
                 
                 <!-- Columna 2: Inventario -->
-                <div class="lg:col-span-2 bg-brand-card dark:bg-gray-800 p-6 rounded-lg shadow-lg">
+                <div class="lg:col-span-3 bg-brand-card dark:bg-gray-800 p-6 rounded-lg shadow-lg">
                     <h2 class="text-xl font-semibold mb-4 text-brand-text dark:text-brand-bg">Inventario de Productos</h2>
                     <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
@@ -466,7 +510,9 @@
             collection, 
             query, 
             where, 
-            getDocs 
+            getDocs,
+            orderBy,
+            limit
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- MANEJO DE MODO OSCURO (DE LA CONFIGURACIÓN PROPORCIONADA) ---
@@ -516,6 +562,7 @@
         // Listeners de OnSnapshot (para poder desvincularlos al cambiar de cliente)
         let pendingSalesListener = null;
         let shipmentHistoryListener = null;
+        let salesListener = null;
         
         // --- MODIFICADO: Cache para los buscadores ---
         let allClientsCache = []; // { id, name, phone, normalizedText }
@@ -558,6 +605,18 @@
         // Elementos Pestaña Productos
         const productForm = document.getElementById('add-product-form');
         const productsList = document.getElementById('products-list');
+
+        // --- NUEVO: Elementos Filtro Ventas ---
+        const clientSalesFilterSearch = document.getElementById('client-sales-filter-search');
+        const clientSalesFilterId = document.getElementById('client-sales-filter-id');
+        const clientSalesFilterResults = document.getElementById('client-sales-filter-results');
+        const productSalesFilterSearch = document.getElementById('product-sales-filter-search');
+        const productSalesFilterId = document.getElementById('product-sales-filter-id');
+        const productSalesFilterResults = document.getElementById('product-sales-filter-results');
+        const dateSalesFilter = document.getElementById('date-sales-filter');
+        const pendingSalesFilterToggle = document.getElementById('pending-sales-filter-toggle');
+        const applySalesFilterBtn = document.getElementById('apply-sales-filter-btn');
+        const clearSalesFilterBtn = document.getElementById('clear-sales-filter-btn');
 
         // Elementos de Buscadores (Autocompletado)
         const clientSearchInput = document.getElementById('client-search');
@@ -847,7 +906,6 @@
         if (query.length === 0) {
             hideAllAutocomplete();
             clientSearchHiddenId.value = ''; // Limpiar ID si se borra
-            newClientFields.setAttribute('hidden', true); // Ocultar
             return;
         }
 
@@ -932,6 +990,55 @@
         productInventoryHiddenId.value = id; // Guardar ID
         hideAllAutocomplete();
     }
+
+        // --- NUEVO: LÓGICA AUTOCOMPLETADO PARA FILTROS DE VENTAS ---
+
+        // Autocompletado para Filtro de Clientes
+        clientSalesFilterSearch.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            if (query.length === 0) {
+                clientSalesFilterResults.classList.add('hidden');
+                clientSalesFilterId.value = '';
+                return;
+            }
+            const results = allClientsCache.filter(client => client.phone.includes(query));
+            const resultItems = results.map(client => ({
+                html: `<strong>${client.phone}</strong>`,
+                onClick: () => selectSalesFilterClient(client.id, client.phone)
+            }));
+            showAutocompleteResults(clientSalesFilterResults, resultItems);
+        });
+
+        function selectSalesFilterClient(id, phone) {
+            clientSalesFilterSearch.value = phone;
+            clientSalesFilterId.value = id;
+            clientSalesFilterResults.classList.add('hidden');
+        }
+
+        // Autocompletado para Filtro de Productos
+        productSalesFilterSearch.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            if (query.length === 0) {
+                productSalesFilterResults.classList.add('hidden');
+                productSalesFilterId.value = '';
+                return;
+            }
+            const results = allProductsCache.filter(prod => prod.name.toLowerCase().includes(query));
+            const resultItems = results.map(prod => ({
+                html: `<strong>${prod.name}</strong> (Stock: ${prod.stock})`,
+                onClick: () => selectSalesFilterProduct(prod.id, prod.name)
+            }));
+            showAutocompleteResults(productSalesFilterResults, resultItems);
+        });
+
+        function selectSalesFilterProduct(id, name) {
+            productSalesFilterSearch.value = name;
+            productSalesFilterId.value = id;
+            productSalesFilterResults.classList.add('hidden');
+        }
+        // --- FIN LÓGICA AUTOCOMPLETADO FILTROS ---
+
+
 
         function loadClients() {
             if (!isAuthReady) return; // Salir si la autenticación no está lista
@@ -1578,45 +1685,86 @@
             }
         });
 
-        // --- LÓGICA DE VENTAS MODIFICADA ---
+        // --- LÓGICA DE VENTAS REESCRITA CON FILTROS ---
         function loadSales() {
             if (!isAuthReady) return;
 
-            // MODIFICADO: Escuchar 'saleItemsCollection' en lugar de 'salesCollection'
-            onSnapshot(saleItemsCollection, (snapshot) => {
+            // Desvincular el listener anterior para evitar duplicados
+            if (salesListener) {
+                salesListener();
+                salesListener = null;
+            }
+
+            // 1. Leer los valores de los filtros
+            const filtroCliente = clientSalesFilterId.value;
+            const filtroProducto = productSalesFilterId.value;
+            const filtroFecha = dateSalesFilter.value;
+            const soloPendientes = pendingSalesFilterToggle.checked;
+            
+            // 2. Construir la consulta base
+            let q = query(saleItemsCollection, orderBy("date", "desc"));
+
+            // 3. Añadir filtros dinámicamente
+            // (Si se usa un filtro, se desactiva el 'soloPendientes' por defecto, 
+            // a menos que el checkbox esté marcado explícitamente)
+            const isFiltering = filtroCliente || filtroProducto || filtroFecha;
+
+            if (filtroCliente) {
+                q = query(q, where("clientId", "==", filtroCliente));
+            }
+            if (filtroProducto) {
+                q = query(q, where("productId", "==", filtroProducto));
+            }
+            if (filtroFecha) {
+                q = query(q, where("date", "==", filtroFecha));
+            }
+
+            // Lógica de "Solo Pendientes":
+            // Se aplica si el checkbox está marcado, O si no hay filtros (vista por defecto)
+            if (soloPendientes || !isFiltering) {
+                q = query(q, where("enviado", "==", false));
+            }
+            
+            // ¡Recuerda! Estas consultas fallarán y te pedirán crear Índices en la consola.
+
+            // 4. Ejecutar la consulta con el listener
+            salesListener = onSnapshot(q, (snapshot) => {
                 salesList.innerHTML = '';
+                if (snapshot.empty) {
+                    salesList.innerHTML = '<tr><td colspan="8" class="px-6 py-4 text-center text-brand-muted dark:text-gray-400">No se encontraron items con esos filtros.</td></tr>';
+                    return;
+                }
+
                 snapshot.forEach(doc => {
-                    const item = doc.data(); // Ahora 'item' es un item de venta individual
+                    const item = doc.data(); 
                     const tr = document.createElement('tr');
                     
-                    // Definir estado
                     let estadoHtml = item.enviado 
                         ? '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 dark:bg-green-700 text-green-800 dark:text-green-200">Enviado</span>'
                         : '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 dark:bg-yellow-700 text-yellow-800 dark:text-yellow-200">Pendiente</span>';
                     
-                    // Construir descripción del producto (con color y talla si existen)
                     let productDesc = item.desc;
                     if (item.color) productDesc += ` (${item.color})`;
                     if (item.talla) productDesc += ` [${item.talla}]`;
 
-                    // MODIFICADO: Generar fila de tabla con datos del item
                     tr.innerHTML = `
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-brand-muted dark:text-gray-400">${item.date}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-brand-text dark:text-brand-bg">${item.clientName}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-brand-muted dark:text-gray-400">${productDesc}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-brand-muted dark:text-gray-400">${item.qty}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-brand-muted dark:text-gray-400">${currencyFormatter.format(item.total)}</td>
-                        <!-- NUEVA CELDA -->
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-brand-muted dark:text-gray-400">${item.medioDePago || 'N/A'}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-brand-muted dark:text-gray-400">${estadoHtml}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <!-- MODIFICADO: El botón ahora usa 'data-sale-id' y elimina la VENTA COMPLETA -->
                             <button data-sale-id="${item.saleId}" class="btn-delete-sale text-red-600 hover:text-red-900">Eliminar Venta</button>
                         </td>
                     `;
                     salesList.appendChild(tr);
                 });
-            }, (error) => console.error("Error al cargar items de ventas:", error));
+            }, (error) => {
+                console.error("Error al cargar items de ventas (¡REVISA SI NECESITAS UN ÍNDICE!):", error);
+                salesList.innerHTML = `<tr><td colspan="8" class="px-6 py-4 text-center text-red-500">Error: ${error.message}. Es probable que necesites crear un índice en Firestore. Revisa la consola (F12).</td></tr>`;
+            });
         }
         
         salesList.addEventListener('click', async (e) => {
@@ -1646,7 +1794,30 @@
         });
         // --- FIN DE MODIFICACIÓN DE LÓGICA DE VENTAS ---
 
-
+        // --- NUEVO: Listeners para los botones de filtro ---
+        
+        // Botón "Buscar"
+        applySalesFilterBtn.addEventListener('click', () => {
+            loadSales();
+        });
+        
+        // Botón "Limpiar"
+        clearSalesFilterBtn.addEventListener('click', () => {
+            // Limpiar valores
+            clientSalesFilterSearch.value = '';
+            clientSalesFilterId.value = '';
+            productSalesFilterSearch.value = '';
+            productSalesFilterId.value = '';
+            dateSalesFilter.value = '';
+            
+            // Marcar "Solo Pendientes" (la vista por defecto)
+            pendingSalesFilterToggle.checked = true;
+            
+            // Recargar la lista (volverá a la vista por defecto)
+            loadSales();
+        });
+        
+        // --- FIN DE Listeners de filtro ---
 
 
         // NUEVO: Función extraída para crear o actualizar productos (reutilizable)
