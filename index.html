@@ -1383,8 +1383,8 @@
 
             // Calculamos el precio unitario para guardarlo
             const unitPrice = (totalPrice === 0) ? 0 : (totalPrice / qty); // Permitir precio 0
-            const color = toProperCase(document.getElementById('sale-item-color').value.trim());
-            const talla = document.getElementById('sale-item-talla').value.trim().toUpperCase();
+            const color = normalizeString(document.getElementById('sale-item-color').value.trim());
+            const talla = normalizeString(document.getElementById('sale-item-talla').value.trim());
             let productCost, productStock;
             let productId, productName; // <-- MOVIDAS AQUÍ
 
@@ -1711,7 +1711,7 @@
             if (!isAuthReady) return;
             
             // --- Lógica de Submit Modificada ---
-            const name = toProperCase(productInventorySearchInput.value.trim());
+            const name = normalizeString(productInventorySearchInput.value.trim());
             const stockToAdd = parseInt(document.getElementById('product-stock').value, 10);
             const totalCost = parseFloat(document.getElementById('product-cost').value);
             const purchaseDate = document.getElementById('product-purchase-date').value;
@@ -1845,7 +1845,7 @@
                 const qty = item.qty || 1;
                 
                 // 1. Construir la línea principal (ej. *2 x Enterizo Chanel Diana*)
-                let mainDesc = `*${qty} x ${desc.toProperCase()}*`;
+                let mainDesc = `*${qty} x ${toProperCase(item.desc)}*`;
                 
                 // 2. Construir atributos (ej. _(color: acero, talla: S)_)
                 let attributes = [];
@@ -1855,7 +1855,7 @@
                 }
                 if (item.talla) {
                     // Convertir "S" a "s" (o "S", tu ejemplo usa "S", vamos a dejarlo como está pero en minúscula)
-                    attributes.push(`talla: ${item.talla.toProperCase()}`);
+                    attributes.push(`talla: ${item.talla}`);
                 }
                 
                 message += `🌻 ${mainDesc}`; // Añadir línea principal
