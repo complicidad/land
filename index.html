@@ -25,17 +25,6 @@
         [hidden] { display: none; }
         select:disabled { background-color: #f3f4f6; cursor: not-allowed; }
         
-        /* Estilo para cliente seleccionado */
-        .client-item.selected {
-            background-color: #f7e0d6; /* Ligero brand-accent */
-            border-left-width: 4px;
-            border-color: #D96B4F; /* brand-accent */
-        }
-        .dark .client-item.selected {
-            background-color: #374151; /* gray-700 en dark mode */
-            border-color: #FF8B6A; /* brand-accent-alt en dark mode */
-        }
-
         /* Ocultar flechas en inputs de tipo número */
         input::-webkit-outer-spin-button,
         input::-webkit-inner-spin-button {
@@ -178,7 +167,7 @@
                     <button data-tab="products" class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-brand-muted border-transparent hover:text-brand-accent dark:hover:text-brand-accent-alt hover:border-brand-accent">
                         Productos
                     </button>
-                    <!-- NUEVO: Pestaña Envíos -->
+                    <!-- MODIFICADO: Pestaña Envíos -->
                     <button data-tab="shipping" class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-brand-muted border-transparent hover:text-brand-accent dark:hover:text-brand-accent-alt hover:border-brand-accent">
                         Envíos (Logística)
                     </button>
@@ -430,10 +419,10 @@
         </div>
         <!-- Fin del cambio -->
 
-        <!-- NUEVO: Panel de Envíos (Logística) -->
+        <!-- MODIFICADO: Panel de Envíos (Logística) -->
         <div id="shipping-panel" class="tab-panel" hidden>
             <div class="bg-brand-card dark:bg-gray-800 p-6 rounded-lg shadow-lg">
-                <h2 class="text-xl font-semibold mb-4 text-brand-text dark:text-brand-bg">Vista de Logística (Todos los Envíos)</h2>
+                <h2 class="text-xl font-semibold mb-4 text-brand-text dark:text-brand-bg">Vista de Logística (Envíos por Fecha)</h2>
 
                 <!-- Filtro de Fecha -->
                 <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg mb-4 flex flex-col md:flex-row gap-4 items-end">
@@ -452,14 +441,14 @@
                     <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                         <thead class="bg-gray-50 dark:bg-gray-700">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-brand-muted dark:text-gray-400 uppercase tracking-wider">Fecha Envío</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-brand-muted dark:text-gray-400 uppercase tracking-wider">Cliente (Teléfono)</th>
+                                <!-- MODIFICADO: Columna Detalle -->
                                 <th class="px-6 py-3 text-left text-xs font-medium text-brand-muted dark:text-gray-400 uppercase tracking-wider">Detalle del Envío</th>
                                 <th class="px-6 py-3 text-right text-xs font-medium text-brand-muted dark:text-gray-400 uppercase tracking-wider">Acciones</th>
                             </tr>
                         </thead>
                         <tbody id="all-shipments-list" class="bg-brand-card dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                            <tr><td colspan="4" class="px-6 py-4 text-center text-brand-muted dark:text-gray-400">Seleccione una fecha y presione "Buscar".</td></tr>
+                            <tr><td colspan="3" class="px-6 py-4 text-center text-brand-muted dark:text-gray-400">Seleccione una fecha y presione "Buscar".</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -550,9 +539,9 @@
         let isAuthReady = false;
         
         // Colecciones de Firestore
-        let clientsCollection, salesCollection, productsCollection, shipmentsCollection;
+        let clientsCollection, salesCollection, productsCollection;
         let saleItemsCollection;
-        let allShipmentsCollection; // <-- NUEVO
+        // ELIMINADAS: shipmentsCollection, allShipmentsCollection
 
         // Estado temporal
         let currentSaleItems = [];
@@ -592,6 +581,7 @@
         const addSaleItemBtn = document.getElementById('add-sale-item-btn');
         const currentSaleItemsList = document.getElementById('current-sale-items');
         const currentSaleTotalEl = document.getElementById('current-sale-total');
+        // ELIMINADO: newClientFields
 
         // Elementos Pestaña Productos
         const productForm = document.getElementById('add-product-form');
@@ -671,7 +661,6 @@
                     
                     try {
                         document.getElementById('sale-date').valueAsDate = new Date();
-                        // ELIMINADO: shipment-date
                         document.getElementById('product-purchase-date').valueAsDate = new Date();
                         document.getElementById('mass-shipping-date').valueAsDate = new Date();
                         document.getElementById('shipping-date-filter').valueAsDate = new Date();
@@ -683,9 +672,8 @@
                     clientsCollection = collection(db, `artifacts/${appId}/users/${userId}/clients`);
                     salesCollection = collection(db, `artifacts/${appId}/users/${userId}/sales`);
                     productsCollection = collection(db, `artifacts/${appId}/users/${userId}/products`);
-                    shipmentsCollection = collection(db, `artifacts/${appId}/users/${userId}/shipments`); // (Conservado para Wpp)
                     saleItemsCollection = collection(db, `artifacts/${appId}/users/${userId}/saleItems`);
-                    allShipmentsCollection = collection(db, `artifacts/${appId}/allShipments`);
+                    // ELIMINADAS: shipmentsCollection, allShipmentsCollection
 
                     isAuthReady = true;
                     // Cargar datos iniciales
@@ -1011,7 +999,9 @@
                 console.error("Error al cargar clientes:", error);
             });
         }
+        // --- FIN LÓGICA CLIENTES ---
         
+
         // --- LÓGICA DE VENTAS (FORMULARIO) ---
         function updateSaleTotal() {
             currentSaleTotal = currentSaleItems.reduce((acc, item) => acc + item.total, 0);
@@ -1024,7 +1014,7 @@
                 const li = document.createElement('li');
                 li.className = "flex justify-between items-center text-xs";
                 li.innerHTML = `
-                    <span>${item.qty} x ${item.desc} ${item.color || ''} ${item.talla || ''} (S/ ${item.price.toFixed(2)} c/u)</span>
+                    <span>${item.qty} x ${toProperCase(item.desc)} ${item.color || ''} ${item.talla || ''} (S/ ${item.price.toFixed(2)} c/u)</span>
                     <button type="button" data-index="${index}" class="btn-remove-item text-red-500 font-bold px-1 hover:text-red-700">X</button>
                 `;
                 currentSaleItemsList.appendChild(li);
@@ -1059,7 +1049,8 @@
             let productCost, productStock;
 
             const productId = saleProductHiddenId.value;
-            const productName = saleProductSearchInput.value;
+            // MODIFICADO: Aplicar normalizeString al nombre del producto al seleccionarlo
+            const productName = normalizeString(saleProductSearchInput.value);
 
             if (productId && productName) {
                 const product = productsCache[productId];
@@ -1104,7 +1095,9 @@
             const date = document.getElementById('sale-date').value;
             const medioDePago = document.getElementById('sale-payment-method').value;
 
+            // --- NUEVA LÓGICA: BUSCAR O CREAR CLIENTE ---
             let finalClientId, clientName, clientPhone;
+            
             const phoneQuery = clientSearchInput.value.trim();
             const selectedClientId = clientSearchHiddenId.value;
 
@@ -1112,7 +1105,7 @@
                 showModal("Venta incompleta", "Debe ingresar un teléfono de cliente.");
                 return;
             }
-
+            
             const clientData = allClientsCache.find(c => c.id === selectedClientId);
             if (clientData && clientData.phone === phoneQuery) {
                 finalClientId = clientData.id;
@@ -1144,6 +1137,7 @@
                     return;
                 }
             }
+            // --- FIN NUEVA LÓGICA ---
 
             if (currentSaleItems.length === 0 || !date || !medioDePago) {
                 showModal("Venta incompleta", "Agregue al menos un item, elija una fecha y un medio de pago.");
@@ -1175,6 +1169,7 @@
                         date: date,
                         medioDePago: medioDePago, 
                         enviado: false, 
+                        fechaEnvio: '', // Importante inicializarlo
                         productId: item.productId,
                         desc: item.desc,
                         qty: item.qty,
@@ -1247,8 +1242,8 @@
                         ? '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 dark:bg-green-700 text-green-800 dark:text-green-200">Enviado</span>'
                         : '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 dark:bg-yellow-700 text-yellow-800 dark:text-yellow-200">Pendiente</span>';
                     
-                    let productDesc = item.desc;
-                    if (item.color) productDesc += ` (${item.color})`;
+                    let productDesc = toProperCase(item.desc);
+                    if (item.color) productDesc += ` (${toProperCase(item.color)})`;
                     if (item.talla) productDesc += ` [${item.talla}]`;
 
                     tr.innerHTML = `
@@ -1461,7 +1456,7 @@
 
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-brand-text dark:text-brand-bg">${product.name}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-brand-text dark:text-brand-bg">${toProperCase(product.name)}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-brand-muted dark:text-gray-400">${product.stock}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-brand-muted dark:text-gray-400">${currencyFormatter.format(product.cost)}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-brand-muted dark:text-gray-400">${product.purchaseDate || 'N/A'}</td>
@@ -1515,6 +1510,7 @@
 
 
         // --- LÓGICA DE LA PESTAÑA DE ENVÍOS (LOGÍSTICA) ---
+        // MODIFICADO: Leer de 'saleItems' en lugar de 'allShipments'
         shippingSearchBtn.addEventListener('click', () => {
             loadAllShipments();
         });
@@ -1528,41 +1524,71 @@
                 return;
             }
 
-            allShipmentsList.innerHTML = '<tr><td colspan="4" class="px-6 py-4 text-center text-brand-muted dark:text-gray-400">Buscando envíos...</td></tr>';
+            allShipmentsList.innerHTML = '<tr><td colspan="3" class="px-6 py-4 text-center text-brand-muted dark:text-gray-400">Buscando envíos...</td></tr>';
             
             try {
-                const q = query(allShipmentsCollection, 
-                                where("userId", "==", userId), 
-                                where("fechaEnvio", "==", filterDate));
+                // 1. Crear la consulta a saleItems (¡Necesitará índice!)
+                const q = query(saleItemsCollection, 
+                                where("enviado", "==", true), 
+                                where("fechaEnvio", "==", filterDate),
+                                orderBy("clientName") // Ordenar por cliente
+                            );
                 
                 const querySnapshot = await getDocs(q);
                 
                 if (querySnapshot.empty) {
-                    allShipmentsList.innerHTML = '<tr><td colspan="4" class="px-6 py-4 text-center text-brand-muted dark:text-gray-400">No se encontraron envíos para esta fecha.</td></tr>';
+                    allShipmentsList.innerHTML = '<tr><td colspan="3" class="px-6 py-4 text-center text-brand-muted dark:text-gray-400">No se encontraron envíos para esta fecha.</td></tr>';
                     return;
                 }
                 
+                // 2. Agrupar los items por cliente en el navegador
+                const shipmentsByClient = new Map();
+                querySnapshot.forEach(doc => {
+                    const item = doc.data();
+                    const clientId = item.clientId;
+
+                    if (!shipmentsByClient.has(clientId)) {
+                        shipmentsByClient.set(clientId, {
+                            clienteName: item.clientName,
+                            fechaEnvio: item.fechaEnvio,
+                            items: []
+                        });
+                    }
+                    // Añadir el item (en el formato que espera Wpp)
+                    shipmentsByClient.get(clientId).items.push({
+                        desc: item.desc,
+                        qty: item.qty,
+                        color: item.color,
+                        talla: item.talla,
+                        description: `${item.qty} x ${item.desc} ${item.color || ''} ${item.talla || ''}`
+                    });
+                });
+
+                // 3. Renderizar la tabla con los datos agrupados
                 allShipmentsList.innerHTML = ''; 
                 
-                querySnapshot.forEach(doc => {
-                    const shipment = doc.data();
+                shipmentsByClient.forEach((shipment, clientId) => {
+                    
+                    // --- NUEVO: Ordenar los items alfabéticamente ---
+                    shipment.items.sort((a, b) => {
+                        const descA = a.desc || a.description || '';
+                        const descB = b.desc || b.description || '';
+                        return descA.localeCompare(descB);
+                    });
+                    // --- FIN NUEVO ---
+
                     const itemsJson = JSON.stringify(shipment.items);
                     
-                    // --- MODIFICADO: Construir la lista de items ---
                     let itemsHtml = shipment.items.map(item => `
                         <li class="text-xs">${item.description}</li>
                     `).join('');
 
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-brand-muted dark:text-gray-400">${shipment.fechaEnvio}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-brand-text dark:text-brand-bg">${shipment.clienteName}</td>
-                        
-                        <!-- MODIFICADO: Mostrar lista de items -->
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-brand-muted dark:text-gray-400">
                             <ul class="list-disc list-inside">${itemsHtml}</ul>
                         </td>
-
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <button 
                               class="btn-whatsapp-shipment text-xs text-green-600 dark:text-green-400 hover:text-green-800 font-medium"
@@ -1580,7 +1606,7 @@
 
             } catch(error) {
                 console.error("Error al cargar envíos (¡REVISA SI NECESITAS UN ÍNDICE!):", error);
-                allShipmentsList.innerHTML = `<tr><td colspan="4" class="px-6 py-4 text-center text-red-500">Error: ${error.message}. Es probable que necesites crear un índice en Firestore. Revisa la consola (F12).</td></tr>`;
+                allShipmentsList.innerHTML = `<tr><td colspan="3" class="px-6 py-4 text-center text-red-500">Error: ${error.message}. Es probable que necesites crear un índice en Firestore. Revisa la consola (F12).</td></tr>`;
             }
         }
 
@@ -1623,19 +1649,26 @@
                 let talla = '';
                 let isGroupable = false;
 
+                // Verificar si es un item "nuevo" (con campos separados)
                 if (item.desc) {
                     qty = item.qty || 0;
                     desc = item.desc;
                     color = item.color || '';
                     talla = item.talla || '';
                     isGroupable = true;
-                } else {
+                } else { 
+                    // Es un item "antiguo" (solo 'description')
+                    // Intentar parsear la descripción antigua (ej. "10 x CHOMPA BONI")
                     const match = item.description.match(/^(\d+)\s*x\s*(.*?)(?:\(|\s|$)/i);
                     if (match && match[1] && match[2]) {
                         qty = parseInt(match[1], 10);
                         desc = match[2].trim();
+                        // (No podemos adivinar color/talla de forma fiable aquí)
+                        color = '';
+                        talla = '';
                         isGroupable = true;
                     } else {
+                        // No se pudo parsear, tratar como item único
                         isGroupable = false;
                         const key = item.description; // Usar descripción completa como llave única
                         if (groupedItems.has(key)) {
@@ -1648,11 +1681,15 @@
                 }
 
                 // Sumar al total de prendas
-                if(isGroupable) totalPrendas += qty;
-                else totalPrendas += 1; // Sumar 1 por el item no agrupable
+                totalPrendas += qty;
 
                 if (isGroupable) {
-                    const key = `${desc}::${color}::${talla}`;
+                    // Normalizar antes de agrupar
+                    const normalizedDesc = normalizeString(desc);
+                    const normalizedColor = normalizeString(color);
+                    const normalizedTalla = normalizeString(talla);
+                    
+                    const key = `${normalizedDesc}::${normalizedColor}::${normalizedTalla}`;
                     const existing = groupedItems.get(key);
                     
                     if (existing) {
@@ -1660,7 +1697,7 @@
                     } else {
                         groupedItems.set(key, { 
                             isOld: false, 
-                            desc: desc, 
+                            desc: desc, // Guardar el original (no normalizado) para mostrar
                             qty: qty, 
                             color: color, 
                             talla: talla 
@@ -1670,16 +1707,32 @@
             });
 
             // --- PASO 2: Construir el mensaje a partir de los items agrupados ---
-            for (const item of groupedItems.values()) {
+            
+            // --- NUEVO: Convertir a Array y Ordenar ---
+            const itemsArray = Array.from(groupedItems.values());
+            itemsArray.sort((a, b) => {
+                const descA = a.desc || a.description || '';
+                const descB = b.desc || b.description || '';
+                return descA.localeCompare(descB);
+            });
+            // --- FIN NUEVO ---
+
+            // MODIFICADO: Recorrer el array ordenado
+            for (const item of itemsArray) {
                 if (item.isOld) {
+                    // Para items antiguos no parseables
                     message += `🌻 ${toProperCase(item.description)}\n\n`;
                 } else {
+                    // Para items nuevos o parseados
+                    // REGLA: Producto en Nombre Propio
                     let mainDesc = `*${item.qty} x ${toProperCase(item.desc)}*`;
                     let attributes = [];
                     if (item.color) {
+                        // REGLA: Color en minúsculas
                         attributes.push(`color: ${item.color.toLowerCase()}`);
                     }
                     if (item.talla) {
+                        // REGLA: Talla en Mayúsculas (ya viene así)
                         attributes.push(`talla: ${item.talla}`);
                     }
                     
@@ -1707,4 +1760,3 @@
     </script>
 </body>
 </html>
-
