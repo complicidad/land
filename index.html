@@ -1189,7 +1189,8 @@
                         itemsToShip.push({
                             itemId: itemId,
                             description: `${itemData.qty} x ${itemData.desc} ${itemData.color || ''} ${itemData.talla || ''}`,
-                            total: itemData.total
+                            total: itemData.total,
+                            qty: itemData.qty
                         });
                         itemRefsToUpdate.push(itemRef);
                         parentSaleIds.add(itemData.saleId); // Guardar el ID de la venta padre
@@ -1755,25 +1756,43 @@
         // --- LÓGICA DEL RESUMEN DE WHATSAPP (ELIMINADA) ---
         // async function generateWhatsAppSummary(clientId, clientName, clientPhone) { ... }
         
-        
-        // --- FUNCIÓN DE WHATSAPP POR ENVÍO (SE MANTIENE) ---
+        // --- FUNCIÓN DE WHATSAPP POR ENVÍO (MODIFICADA) ---
         function generateShipmentWhatsAppSummary(clientName, clientPhone, shipmentDate, items) {
             if (!clientName || !clientPhone || !items) {
                 showModal("Error", "Faltan datos del cliente o del envío.");
                 return;
             }
 
-            let message = `¡Hola! 👋\n\nTe enviamos el detalle de tu *envío del ${shipmentDate}* (Cliente: ${clientName}):\n\n`;
+            // --- INICIO DE MODIFICACIÓN: NUEVA PLANTILLA ---
+            let message = `*Compras incluidas en tu envío 📦*\n\n`;
             
-            let totalEnvio = 0;
+            let totalPrendas = 0;
+            
             items.forEach(item => {
-                // 'item.description' ya viene formateado ("10 x gorra...")
-                message += `  - ${item.description}\n`; 
-                totalEnvio += item.total || 0; // Sumar el total del item
+                // 'item.description' ya viene formateado ("2 x Enterizo...")
+                message += `🌻 ${item.description}\n\n`; 
+                
+                // Sumar el total de prendas
+                let cantidadItem = 0;
+                if (item.qty && item.qty > 0) {
+                    // Usamos la 'qty' que guardamos en el Paso 1
+                    cantidadItem = item.qty;
+                } else {
+                    // Fallback para envíos antiguos (antes de este cambio)
+                    // Intenta "adivinar" la cantidad desde la descripción (ej. "2 x Polo")
+                    try {
+                        const match = item.description.match(/^(\d+)\s*x/);
+                        if (match && match[1]) {
+                            cantidadItem = parseInt(match[1], 10);
+                        }
+                    } catch(e) { /* ignorar error si no puede 'adivinar' */ }
+                }
+                totalPrendas += cantidadItem;
             });
 
-            message += `\n*Total de este envío: ${currencyFormatter.format(totalEnvio)}*\n\n`;
-            message += "¡Muchas gracias! 😊";
+            message += `*✅ Total de prendas: ${totalPrendas}*\n\n`;
+            message += `_Atte. CompliCompras 🛍️_`;
+            // --- FIN DE MODIFICACIÓN ---
 
             const encodedMessage = encodeURIComponent(message);
             
