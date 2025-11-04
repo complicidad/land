@@ -168,17 +168,19 @@
         <div class="mb-6">
             <div class="border-b border-gray-200 dark:border-gray-700">
                 <nav class="-mb-px flex space-x-8" aria-label="Tabs" id="tabs">
-                    <!-- Clientes y Envíos -->
-                    <button data-tab="clients" class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-semibold text-sm text-brand-accent border-brand-accent dark:text-brand-accent-alt dark:border-brand-accent-alt">
-                        Clientes y Envíos
-                    </button>
+                    <!-- Clientes y Envíos (ELIMINADO) -->
+                    
                     <!-- Ventas -->
-                    <button data-tab="sales" class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-brand-muted border-transparent hover:text-brand-accent dark:hover:text-brand-accent-alt hover:border-brand-accent">
+                    <button data-tab="sales" class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-semibold text-sm text-brand-accent border-brand-accent dark:text-brand-accent-alt dark:border-brand-accent-alt">
                         Ventas
                     </button>
                     <!-- Productos -->
                     <button data-tab="products" class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-brand-muted border-transparent hover:text-brand-accent dark:hover:text-brand-accent-alt hover:border-brand-accent">
                         Productos
+                    </button>
+                    <!-- NUEVO: Pestaña Envíos -->
+                    <button data-tab="shipping" class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-brand-muted border-transparent hover:text-brand-accent dark:hover:text-brand-accent-alt hover:border-brand-accent">
+                        Envíos (Logística)
                     </button>
                 </nav>
             </div>
@@ -186,62 +188,10 @@
 
         <!-- Paneles de Contenido -->
 
-        <!-- Panel de Clientes y Envíos -->
-        <div id="clients-panel" class="tab-panel">
-            <div class="flex justify-end mb-4">
-                <!-- BOTÓN ELIMINADO - Ya no se agrega cliente desde aquí -->
-            </div>
-            
-            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                <!-- Columna 1: Lista de Clientes Seleccionable -->
-                <div class="lg:col-span-1 bg-brand-card dark:bg-gray-800 p-6 rounded-lg shadow-lg">
-                    <h2 class="text-xl font-semibold mb-4 text-brand-text dark:text-brand-bg">Lista de Clientes</h2>
-                    <!-- NUEVO: Buscador de Clientes -->
-                    <div class="mb-4">
-                        <input type="text" id="client-list-search" placeholder="Buscar por teléfono..." class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-brand-bg shadow-sm focus:border-brand-accent focus:ring-brand-accent sm:text-sm">
-                    </div>
-                    <div id="clients-list-selectable" class="space-y-2">
-                        <!-- Clientes se cargarán aquí -->
-                        <p class="text-brand-muted dark:text-gray-400 text-sm">Cargando clientes...</p>
-                    </div>
-                </div>
-                
-                <!-- Columna 2: Detalle de Cliente y Envíos -->
-                <div id="client-detail-panel" class="lg:col-span-3 space-y-6" hidden>
-                    
-                    <!-- Detalles del Cliente (Tarjeta eliminada por solicitud) -->
-                    
-                     <!-- Ventas Pendientes de Envío -->
-                    <div class="bg-brand-card dark:bg-gray-800 p-6 rounded-lg shadow-lg">
-                        <h3 class="text-xl font-semibold mb-4 text-brand-text dark:text-brand-bg">Ventas Pendientes de Envío</h3>
-                        <div id="pending-sales-list" class="space-y-4 max-h-96 overflow-y-auto">
-                            <!-- Ventas pendientes se cargarán aquí -->
-                        </div>
-                        <div class="mt-6 border-t pt-4 space-y-3 dark:border-gray-700">
-                            <h4 class="text-md font-medium text-brand-text dark:text-brand-bg">Agrupar en nuevo envío</h4>
-                            <div>
-                                <label for="shipment-date" class="block text-sm font-medium text-brand-muted dark:text-gray-400">Fecha de Envío</label>
-                                <input type="date" id="shipment-date" required class="mt-1 block w-full sm:w-1/2 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-brand-bg shadow-sm focus:border-brand-accent focus:ring-brand-accent sm:text-sm">
-                            </div>
-                            <button id="create-shipment-btn" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:ring-green-500">
-                                Crear Envío con Ventas Seleccionadas
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Historial de Envíos -->
-                    <div class="bg-brand-card dark:bg-gray-800 p-6 rounded-lg shadow-lg">
-                        <h3 class="text-xl font-semibold mb-4 text-brand-text dark:text-brand-bg">Historial de Envíos</h3>
-                        <div id="shipment-history-list" class="space-y-3">
-                            <!-- Historial se cargarán aquí -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <!-- Panel de Clientes y Envíos (ELIMINADO POR COMPLETO) -->
 
         <!-- Panel de Ventas -->
-        <div id="sales-panel" class="tab-panel" hidden>
+        <div id="sales-panel" class="tab-panel">
             <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
                 <!-- Columna 1: Formulario de Venta -->
                 <div class="lg:col-span-1 bg-brand-card dark:bg-gray-800 p-6 rounded-lg shadow-lg">
@@ -480,6 +430,44 @@
         </div>
         <!-- Fin del cambio -->
 
+        <!-- NUEVO: Panel de Envíos (Logística) -->
+        <div id="shipping-panel" class="tab-panel" hidden>
+            <div class="bg-brand-card dark:bg-gray-800 p-6 rounded-lg shadow-lg">
+                <h2 class="text-xl font-semibold mb-4 text-brand-text dark:text-brand-bg">Vista de Logística (Todos los Envíos)</h2>
+
+                <!-- Filtro de Fecha -->
+                <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg mb-4 flex flex-col md:flex-row gap-4 items-end">
+                    <div class="flex-grow">
+                        <label for="shipping-date-filter" class="block text-sm font-medium text-brand-muted dark:text-gray-400">Filtrar por Fecha de Envío</label>
+                        <input type="date" id="shipping-date-filter" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-brand-bg shadow-sm sm:text-sm">
+                    </div>
+                    <button id="shipping-search-btn" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-brand-accent hover:bg-brand-accent-alt">
+                        <i data-feather="search" class="w-5 h-5 mr-2"></i>
+                        Buscar Envíos
+                    </button>
+                </div>
+
+                <!-- Tabla de Todos los Envíos -->
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                        <thead class="bg-gray-50 dark:bg-gray-700">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-brand-muted dark:text-gray-400 uppercase tracking-wider">Fecha Envío</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-brand-muted dark:text-gray-400 uppercase tracking-wider">Cliente (Teléfono)</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-brand-muted dark:text-gray-400 uppercase tracking-wider">Detalle del Envío</th>
+                                <th class="px-6 py-3 text-right text-xs font-medium text-brand-muted dark:text-gray-400 uppercase tracking-wider">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="all-shipments-list" class="bg-brand-card dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                            <tr><td colspan="4" class="px-6 py-4 text-center text-brand-muted dark:text-gray-400">Seleccione una fecha y presione "Buscar".</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- FIN: Panel de Envíos -->
+
+
     </div>
 
     <!-- Modal para mensajes -->
@@ -499,10 +487,6 @@
         </div>
     </div>
 
-    <!-- Modal para Agregar Cliente (NUEVO) -->
-    <!-- ESTE MODAL COMPLETO HA SIDO ELIMINADO -->
-    
-
 
     <!-- Firebase SDKs -->
     <script type="module">
@@ -511,10 +495,8 @@
         // MODIFICADO: Importar funciones de autenticación
         import { 
             getAuth, 
-            // ELIMINADO: signInAnonymously
             signInWithEmailAndPassword,
-            sendPasswordResetEmail, // <-- AÑADIDO
-            // ELIMINADO: createUserWithEmailAndPassword
+            sendPasswordResetEmail,
             signOut,
             onAuthStateChanged 
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -550,13 +532,11 @@
                 document.documentElement.classList.toggle('dark');
                 const isNowDark = document.documentElement.classList.contains('dark');
                 localStorage.setItem('darkMode', isNowDark);
-                // Vuelve a renderizar los íconos de Feather para asegurar que se muestren correctamente
                 if (typeof feather !== 'undefined') {
                     feather.replace();
                 }
             });
             
-            // Reemplazar íconos de Feather al cargar
             if (typeof feather !== 'undefined') {
                 feather.replace();
             }
@@ -571,19 +551,15 @@
         
         // Colecciones de Firestore
         let clientsCollection, salesCollection, productsCollection, shipmentsCollection;
-        let saleItemsCollection; // <-- NUEVO
+        let saleItemsCollection;
+        let allShipmentsCollection; // <-- NUEVO
 
         // Estado temporal
         let currentSaleItems = [];
         let currentSaleTotal = 0;
         let productsCache = {}; // Cache para stock y costos
-        let selectedClientId = null; // Para panel de envíos
-        let selectedClientName = null;
-        let selectedClientPhone = null;
         
-        // Listeners de OnSnapshot (para poder desvincularlos al cambiar de cliente)
-        let pendingSalesListener = null;
-        let shipmentHistoryListener = null;
+        // Listeners de OnSnapshot
         let salesListener = null;
         
         // --- MODIFICADO: Cache para los buscadores ---
@@ -608,13 +584,7 @@
         const modalMessage = document.getElementById('modal-message');
         const modalCloseBtn = document.getElementById('modal-close-btn');
 
-        // Elementos Pestaña Clientes
-        const clientsListSelectable = document.getElementById('clients-list-selectable');
-        const clientListSearchInput = document.getElementById('client-list-search');
-        const clientDetailPanel = document.getElementById('client-detail-panel');
-        const pendingSalesList = document.getElementById('pending-sales-list');
-        const shipmentHistoryList = document.getElementById('shipment-history-list');
-        const createShipmentBtn = document.getElementById('create-shipment-btn');
+        // Elementos Pestaña Clientes (ELIMINADOS)
 
         // Elementos Pestaña Ventas
         const saleForm = document.getElementById('add-sale-form');
@@ -622,11 +592,17 @@
         const addSaleItemBtn = document.getElementById('add-sale-item-btn');
         const currentSaleItemsList = document.getElementById('current-sale-items');
         const currentSaleTotalEl = document.getElementById('current-sale-total');
-        // ELIMINADO: newClientFields
 
         // Elementos Pestaña Productos
         const productForm = document.getElementById('add-product-form');
         const productsList = document.getElementById('products-list');
+
+        // --- NUEVO: Elementos Pestaña Envíos (Logística) ---
+        const shippingPanel = document.getElementById('shipping-panel');
+        const shippingDateFilter = document.getElementById('shipping-date-filter');
+        const shippingSearchBtn = document.getElementById('shipping-search-btn');
+        const allShipmentsList = document.getElementById('all-shipments-list');
+        // --- FIN ---
 
         // --- NUEVO: Elementos Filtro Ventas ---
         const clientSalesFilterSearch = document.getElementById('client-sales-filter-search');
@@ -686,38 +662,34 @@
                     userId = user.uid;
                     document.getElementById('userIdDisplay').textContent = user.email; // Mostrar email
                     
-                    // Ocultar auth, mostrar app
                     authContainer.classList.add('hidden');
                     mainApp.classList.remove('hidden');
                     
-                    // Vuelve a renderizar los íconos de Feather para el botón de logout
                     if (typeof feather !== 'undefined') {
                         feather.replace();
                     }
                     
-                    // --- CORRECCIÓN: INICIALIZAR FECHAS AQUÍ ---
-                    // Ahora que 'main-app' está visible, podemos encontrar los elementos
                     try {
                         document.getElementById('sale-date').valueAsDate = new Date();
-                        document.getElementById('shipment-date').valueAsDate = new Date();
+                        // ELIMINADO: shipment-date
                         document.getElementById('product-purchase-date').valueAsDate = new Date();
-                        // NUEVO: Inicializar fecha de acción masiva
                         document.getElementById('mass-shipping-date').valueAsDate = new Date();
+                        document.getElementById('shipping-date-filter').valueAsDate = new Date();
                     } catch(e) {
                         console.warn("Error al inicializar fechas (ignorar si es la primera carga):", e.message);
                     }
-                    // --- FIN DE LA CORRECCIÓN ---
 
                     // Definir rutas de las colecciones (dependientes del userId)
                     clientsCollection = collection(db, `artifacts/${appId}/users/${userId}/clients`);
                     salesCollection = collection(db, `artifacts/${appId}/users/${userId}/sales`);
                     productsCollection = collection(db, `artifacts/${appId}/users/${userId}/products`);
-                    shipmentsCollection = collection(db, `artifacts/${appId}/users/${userId}/shipments`);
+                    shipmentsCollection = collection(db, `artifacts/${appId}/users/${userId}/shipments`); // (Conservado para Wpp)
                     saleItemsCollection = collection(db, `artifacts/${appId}/users/${userId}/saleItems`);
+                    allShipmentsCollection = collection(db, `artifacts/${appId}/allShipments`);
 
                     isAuthReady = true;
                     // Cargar datos iniciales
-                    loadClients();
+                    loadClients(); // (Sigue cargando el caché en segundo plano)
                     loadSales();
                     loadProducts();
 
@@ -727,18 +699,14 @@
                     userId = null;
                     isAuthReady = false;
                     
-                    // Mostrar auth, ocultar app
                     authContainer.classList.remove('hidden');
                     mainApp.classList.add('hidden');
                     
-                    // Limpiar datos (si es necesario, aunque los listeners se cortarán)
-                    if(clientsListSelectable) clientsListSelectable.innerHTML = '';
                     if(salesList) salesList.innerHTML = '';
                     if(productsList) productsList.innerHTML = '';
+                    if(allShipmentsList) allShipmentsList.innerHTML = ''; 
                     
-                    // Desvincular listeners si existen
-                    if (pendingSalesListener) pendingSalesListener();
-                    if (shipmentHistoryListener) shipmentHistoryListener();
+                    if (salesListener) salesListener(); 
                 }
             });
 
@@ -747,9 +715,7 @@
             showModal("Error de Conexión", "No se pudo conectar a Firebase. Verifique la configuración.");
         }
         
-        // --- NUEVOS LISTENERS DE AUTENTICACIÓN ---
-        
-        // Formulario de Login
+        // --- LISTENERS DE AUTENTICACIÓN ---
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('login-email').value;
@@ -757,7 +723,6 @@
             showModal("Iniciando Sesión", "Por favor, espere...", false);
             try {
                 await signInWithEmailAndPassword(auth, email, password);
-                // onAuthStateChanged se encargará de ocultar el modal y mostrar la app
                 hideModal();
             } catch (error) {
                 console.error("Error de login:", error.code);
@@ -766,18 +731,15 @@
             }
         });
 
-        // Botón de Cerrar Sesión
         logoutButton.addEventListener('click', async () => {
             try {
                 await signOut(auth);
-                // onAuthStateChanged se encargará de mostrar el login
             } catch (error) {
                 console.error("Error al cerrar sesión:", error);
                 showModal("Error", "No se pudo cerrar sesión.");
             }
         });
         
-        // --- NUEVO: LISTENER PARA RESTABLECER CONTRASEÑA ---
         forgotPasswordLink.addEventListener('click', async (e) => {
             e.preventDefault();
             const email = document.getElementById('login-email').value;
@@ -785,7 +747,6 @@
                 showModal("Correo Requerido", "Por favor, ingrese su correo en el campo 'Correo' para poder restablecer la contraseña.");
                 return;
             }
-            
             showModal("Procesando", "Enviando correo de restablecimiento...", false);
             try {
                 await sendPasswordResetEmail(auth, email);
@@ -794,28 +755,17 @@
             } catch (error) {
                 console.error("Error al enviar correo de restablecimiento:", error);
                 hideModal();
-                if (error.code === 'auth/invalid-email') {
-                    showModal("Error", "El formato del correo no es válido.");
-                } else {
-                    showModal("Error", "No se pudo enviar el correo de restablecimiento. Intente de nuevo más tarde.");
-                }
+                showModal("Error", "No se pudo enviar el correo de restablecimiento. Intente de nuevo más tarde.");
             }
         });
-
         // --- FIN DE LÓGICA DE AUTENTICACIÓN ---
 
 
         // --- MANEJO DE PESTAÑAS ---
-        // ELIMINADO: const tabs = document.querySelectorAll('.tab-btn');
-        // ELIMINADO: const panels = document.querySelectorAll('.tab-panel');
-
-        // Función para resetear clases de tabs
         function resetTabStyles() {
             tabs.forEach(t => {
-                t.classList.remove('text-brand-accent', 'border-brand-accent', 'dark:text-brand-accent-alt', 'dark:border-brand-accent-alt');
-                t.classList.add('text-brand-muted', 'border-transparent', 'hover:text-brand-accent', 'dark:hover:text-brand-accent-alt', 'hover:border-brand-accent');
-                t.classList.remove('font-semibold');
-                t.classList.add('font-medium');
+                t.classList.remove('text-brand-accent', 'border-brand-accent', 'dark:text-brand-accent-alt', 'dark:border-brand-accent-alt', 'font-semibold');
+                t.classList.add('text-brand-muted', 'border-transparent', 'hover:text-brand-accent', 'dark:hover:text-brand-accent-alt', 'hover:border-brand-accent', 'font-medium');
             });
         }
         
@@ -824,26 +774,19 @@
                 resetTabStyles();
                 panels.forEach(p => p.setAttribute('hidden', true));
                 
-                // Aplicar estilos de pestaña activa
                 tab.classList.remove('text-brand-muted', 'border-transparent', 'hover:text-brand-accent', 'dark:hover:text-brand-accent-alt', 'hover:border-brand-accent');
                 tab.classList.add('text-brand-accent', 'border-brand-accent', 'dark:text-brand-accent-alt', 'dark:border-brand-accent-alt', 'font-semibold');
 
                 const panelId = tab.getAttribute('data-tab') + '-panel';
                 document.getElementById(panelId).removeAttribute('hidden');
+                
+                if (typeof feather !== 'undefined') {
+                    feather.replace();
+                }
             });
         });
         
-        // Inicializar la primera pestaña como activa
-        // (Ahora se hace cuando el usuario inicia sesión)
-        
-
-
         // --- MANEJO DE MODAL (Mensajes) ---
-        // ELIMINADO: const modal = document.getElementById('modal');
-        // ELIMINADO: const modalTitle = document.getElementById('modal-title');
-        // ELIMINADO: const modalMessage = document.getElementById('modal-message');
-        // ELIMINADO: const modalCloseBtn = document.getElementById('modal-close-btn');
-
         modalCloseBtn.addEventListener('click', () => modal.setAttribute('hidden', true));
 
         function showModal(title, message, showClose = true) {
@@ -856,9 +799,6 @@
         function hideModal() {
             modal.setAttribute('hidden', true);
         }
-
-        // --- MANEJO DE MODAL (Agregar Cliente) ---
-        // ESTA SECCIÓN HA SIDO ELIMINADA
 
         // --- Formateador de moneda (ej. S/ para Soles) ---
         const currencyFormatter = new Intl.NumberFormat('es-PE', {
@@ -875,161 +815,136 @@
                 .normalize("NFD") // Descomponer tildes
                 .replace(/[\u0300-\u036f]/g, ""); // Eliminar tildes
         }
-        // --- FIN DE LA NUEVA FUNCIÓN ---
 
         // --- NUEVA FUNCIÓN PROPER CASE ---
         function toProperCase(str) {
             if (!str) return '';
-            // Convierte todo a minúsculas, luego pone en mayúscula la primera letra de cada palabra
             return str.toLowerCase().replace(/\b\w/g, char => char.toUpperCase());
         }
-        // --- FIN DE LA NUEVA FUNCIÓN ---
 
-    // --- NUEVO: LÓGICA DE AUTOCOMPLETADO ---
+        // --- LÓGICA DE AUTOCOMPLETADO ---
+        let activeAutocomplete = null; 
 
-    let activeAutocomplete = null; // Para manejar el clic fuera
-
-    // Función genérica para mostrar resultados
-    function showAutocompleteResults(container, results) {
-        container.innerHTML = '';
-        if (results.length === 0) {
-            container.classList.add('hidden');
-            return;
-        }
-
-        results.forEach(item => {
-            const div = document.createElement('div');
-            div.className = 'autocomplete-item';
-            div.innerHTML = item.html; // Usar HTML pre-formateado
-            div.onclick = () => item.onClick();
-            container.appendChild(div);
-        });
-        container.classList.remove('hidden');
-        activeAutocomplete = container;
-    }
-
-    // Función genérica para ocultar todos los autocompletados
-    function hideAllAutocomplete() {
-        if (clientSearchResults) clientSearchResults.classList.add('hidden');
-        if (saleProductSearchResults) saleProductSearchResults.classList.add('hidden');
-        if (productInventorySearchResults) productInventorySearchResults.classList.add('hidden');
-        // NUEVO: Ocultar autocompletados de filtros
-        if(clientSalesFilterResults) clientSalesFilterResults.classList.add('hidden');
-        if(productSalesFilterResults) productSalesFilterResults.classList.add('hidden');
-        activeAutocomplete = null;
-    }
-
-    // Clic fuera para cerrar autocompletados
-    document.addEventListener('click', (e) => {
-        if (activeAutocomplete) {
-            // Si el clic NO es dentro del contenedor de autocompletado activo
-            // Y NO es en el input asociado
-            if (!activeAutocomplete.contains(e.target) && 
-                e.target !== clientSearchInput &&
-                e.target !== saleProductSearchInput &&
-                e.target !== productInventorySearchInput &&
-                e.target !== clientSalesFilterSearch && // <-- AÑADIDO
-                e.target !== productSalesFilterSearch // <-- AÑADIDO
-                ) {
-                hideAllAutocomplete();
+        function showAutocompleteResults(container, results) {
+            container.innerHTML = '';
+            if (results.length === 0) {
+                container.classList.add('hidden');
+                return;
             }
+            results.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'autocomplete-item';
+                div.innerHTML = item.html;
+                div.onclick = () => item.onClick();
+                container.appendChild(div);
+            });
+            container.classList.remove('hidden');
+            activeAutocomplete = container;
         }
-    });
 
-    // --- LÓGICA DEL BUSCADOR DE CLIENTES (VENTAS) ---
-    clientSearchInput.addEventListener('input', (e) => {
-        const query = e.target.value.toLowerCase();
-        if (query.length === 0) {
-            hideAllAutocomplete();
-            clientSearchHiddenId.value = ''; // Limpiar ID si se borra
-            return;
+        function hideAllAutocomplete() {
+            if (clientSearchResults) clientSearchResults.classList.add('hidden');
+            if (saleProductSearchResults) saleProductSearchResults.classList.add('hidden');
+            if (productInventorySearchResults) productInventorySearchResults.classList.add('hidden');
+            if(clientSalesFilterResults) clientSalesFilterResults.classList.add('hidden');
+            if(productSalesFilterResults) productSalesFilterResults.classList.add('hidden');
+            activeAutocomplete = null;
         }
+        
+        document.addEventListener('click', (e) => {
+            if (activeAutocomplete) {
+                if (!activeAutocomplete.contains(e.target) && 
+                    e.target !== clientSearchInput &&
+                    e.target !== saleProductSearchInput &&
+                    e.target !== productInventorySearchInput &&
+                    e.target !== clientSalesFilterSearch && 
+                    e.target !== productSalesFilterSearch
+                    ) {
+                    hideAllAutocomplete();
+                }
+            }
+        });
 
-        const results = allClientsCache.filter(client => 
-            client.phone.includes(query) // <-- Solo busca en el teléfono
-        );
-
-        const resultItems = results.map(client => ({
-            html: `<strong>${client.phone}</strong>`, // <-- Solo muestra el teléfono
-            onClick: () => selectClient(client.id, client.phone) // <-- Solo pasa el teléfono
-        }));
-
-        showAutocompleteResults(clientSearchResults, resultItems);
-    });
+        // --- LÓGICA DEL BUSCADOR DE CLIENTES (VENTAS) ---
+        clientSearchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            if (query.length === 0) {
+                hideAllAutocomplete();
+                clientSearchHiddenId.value = '';
+                return;
+            }
+            const results = allClientsCache.filter(client => 
+                client.phone.includes(query)
+            );
+            const resultItems = results.map(client => ({
+                html: `<strong>${client.phone}</strong>`,
+                onClick: () => selectClient(client.id, client.phone)
+            }));
+            showAutocompleteResults(clientSearchResults, resultItems);
+        });
 
         function selectClient(id, phone = '') {
-            clientSearchInput.value = phone; // Rellenar buscador con el teléfono
-            clientSearchHiddenId.value = id; // Guardar ID
+            clientSearchInput.value = phone; 
+            clientSearchHiddenId.value = id;
             hideAllAutocomplete();
         }
 
-    // --- LÓGICA DEL BUSCADOR DE PRODUCTOS (VENTAS) ---
-    saleProductSearchInput.addEventListener('input', (e) => {
-        const query = e.target.value.toLowerCase();
-        if (query.length === 0) {
+        // --- LÓGICA DEL BUSCADOR DE PRODUCTOS (VENTAS) ---
+        saleProductSearchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            if (query.length === 0) {
+                hideAllAutocomplete();
+                saleProductHiddenId.value = '';
+                return;
+            }
+            const results = allProductsCache.filter(prod => 
+                prod.name.toLowerCase().includes(query)
+            );
+            const resultItems = results.map(prod => ({
+                html: `<strong>${prod.name}</strong> (Stock: ${prod.stock > 0 ? prod.stock : 'SIN STOCK'})`,
+                onClick: () => selectSaleProduct(prod.id, prod.name, prod.stock)
+            }));
+            showAutocompleteResults(saleProductSearchResults, resultItems);
+        });
+
+        function selectSaleProduct(id, name, stock) {
+            if (stock <= 0) {
+                showModal("Sin Stock", `El producto "${name}" no tiene stock disponible.`);
+                saleProductSearchInput.value = '';
+                saleProductHiddenId.value = '';
+                hideAllAutocomplete();
+                return;
+            }
+            saleProductSearchInput.value = name;
+            saleProductHiddenId.value = id;
             hideAllAutocomplete();
-            saleProductHiddenId.value = ''; // Limpiar
-            return;
         }
 
-        const results = allProductsCache.filter(prod => 
-            prod.name.toLowerCase().includes(query)
-        );
+        // --- LÓGICA DEL BUSCADOR DE PRODUCTOS (INVENTARIO) ---
+        productInventorySearchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            productInventoryHiddenId.value = ''; 
+            if (query.length === 0) {
+                hideAllAutocomplete();
+                return;
+            }
+            const results = allProductsCache.filter(prod => 
+                prod.name.toLowerCase().includes(query)
+            );
+            const resultItems = results.map(prod => ({
+                html: `<strong>${prod.name}</strong>`,
+                onClick: () => selectInventoryProduct(prod.id, prod.name)
+            }));
+            showAutocompleteResults(productInventorySearchResults, resultItems);
+        });
 
-        const resultItems = results.map(prod => ({
-            html: `<strong>${prod.name}</strong> (Stock: ${prod.stock > 0 ? prod.stock : 'SIN STOCK'})`,
-            onClick: () => selectSaleProduct(prod.id, prod.name, prod.stock)
-        }));
-
-        showAutocompleteResults(saleProductSearchResults, resultItems);
-    });
-
-    function selectSaleProduct(id, name, stock) {
-        if (stock <= 0) {
-            showModal("Sin Stock", `El producto "${name}" no tiene stock disponible.`);
-            saleProductSearchInput.value = '';
-            saleProductHiddenId.value = '';
+        function selectInventoryProduct(id, name) {
+            productInventorySearchInput.value = name;
+            productInventoryHiddenId.value = id;
             hideAllAutocomplete();
-            return;
-        }
-        saleProductSearchInput.value = name;
-        saleProductHiddenId.value = id;
-        hideAllAutocomplete();
-    }
-
-    // --- LÓGICA DEL BUSCADOR DE PRODUCTOS (INVENTARIO) ---
-    productInventorySearchInput.addEventListener('input', (e) => {
-        const query = e.target.value.toLowerCase();
-        // Limpiar ID oculto cada vez que se teclea
-        // Se seteará solo si se hace clic en una sugerencia
-        productInventoryHiddenId.value = ''; 
-
-        if (query.length === 0) {
-            hideAllAutocomplete();
-            return;
         }
 
-        const results = allProductsCache.filter(prod => 
-            prod.name.toLowerCase().includes(query)
-        );
-
-        const resultItems = results.map(prod => ({
-            html: `<strong>${prod.name}</strong>`,
-            onClick: () => selectInventoryProduct(prod.id, prod.name)
-        }));
-
-        showAutocompleteResults(productInventorySearchResults, resultItems);
-    });
-
-    function selectInventoryProduct(id, name) {
-        productInventorySearchInput.value = name; // Rellenar
-        productInventoryHiddenId.value = id; // Guardar ID
-        hideAllAutocomplete();
-    }
-
-        // --- NUEVO: LÓGICA AUTOCOMPLETADO PARA FILTROS DE VENTAS ---
-
-        // Autocompletado para Filtro de Clientes
+        // --- LÓGICA AUTOCOMPLETADO PARA FILTROS DE VENTAS ---
         clientSalesFilterSearch.addEventListener('input', (e) => {
             const query = e.target.value.toLowerCase();
             if (query.length === 0) {
@@ -1051,7 +966,6 @@
             clientSalesFilterResults.classList.add('hidden');
         }
 
-        // Autocompletado para Filtro de Productos
         productSalesFilterSearch.addEventListener('input', (e) => {
             const query = e.target.value.toLowerCase();
             if (query.length === 0) {
@@ -1075,416 +989,30 @@
         // --- FIN LÓGICA AUTOCOMPLETADO FILTROS ---
 
 
-
+        // --- LÓGICA DE CLIENTES (SOLO CARGA DE CACHÉ) ---
         function loadClients() {
-            if (!isAuthReady) return; // Salir si la autenticación no está lista
+            if (!isAuthReady) return; 
 
-            // Activar la primera pestaña por defecto al cargar datos
-            document.querySelector('.tab-btn[data-tab="clients"]').click();
+            // Activar la pestaña Ventas por defecto
+            document.querySelector('.tab-btn[data-tab="sales"]').click();
 
             onSnapshot(clientsCollection, (snapshot) => {
-                // clientsListSelectable.innerHTML = ''; // <-- ELIMINADO (renderClientList lo hace)
                 allClientsCache = []; // Limpiar cache
-
-                if (snapshot.empty) {
-                    // clientsListSelectable.innerHTML = ... // <-- ELIMINADO
-                }
-
                 snapshot.forEach(doc => {
                     const client = doc.data();
                     const clientId = doc.id;
-
-                    // ELIMINADO: Todo el bloque que creaba el 'div'
-
-                    // Añadir al cache (Panel Ventas)
                     allClientsCache.push({
                         id: clientId,
                         phone: client.phone,
-                        normalizedText: client.phone.toLowerCase() // Modificado para consistencia
+                        normalizedText: client.phone.toLowerCase() 
                     });
                 });
-
-                // --- MODIFICADO: Llamar a la nueva función de renderizado ---
-                // Pasa el valor actual del buscador para que la lista se mantenga filtrada
-                renderClientList(clientListSearchInput.value);
-
-                // ELIMINADO: Bloque 'if (selectedClientId) { ... }' (movido a renderClientList)
-
             }, (error) => {
                 console.error("Error al cargar clientes:", error);
             });
         }
         
-        // --- NUEVA FUNCIÓN PARA RENDERIZAR LA LISTA DE CLIENTES ---
-        function renderClientList(filter = '') {
-            const lowerFilter = filter.toLowerCase();
-            clientsListSelectable.innerHTML = ''; // Limpiar la lista
-
-            // Filtrar el caché
-            const filteredClients = allClientsCache.filter(client => 
-                client.phone.includes(lowerFilter)
-            );
-
-            if (filteredClients.length === 0) {
-                if (filter) {
-                    clientsListSelectable.innerHTML = '<p class="text-brand-muted dark:text-gray-500 text-sm">No se encontraron clientes.</p>';
-                } else {
-                    clientsListSelectable.innerHTML = '<p class="text-brand-muted dark:text-gray-500 text-sm">No hay clientes. ¡Agrega uno!</p>';
-                }
-                return;
-            }
-
-            filteredClients.forEach(client => {
-                const clientId = client.id;
-                const div = document.createElement('div');
-                div.className = 'client-item p-3 rounded-lg border border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700';
-                div.setAttribute('data-id', clientId);
-                div.setAttribute('data-phone', client.phone);
-                div.innerHTML = `
-                    <div class="flex justify-between items-center">
-                        <p class="font-medium text-brand-text dark:text-brand-bg">${client.phone}</p>
-                        <button data-id="${clientId}" data-phone="${client.phone}" class="btn-delete-client text-red-500 hover:text-red-700 text-sm font-bold p-1 leading-none rounded-full hover:bg-red-100 dark:hover:bg-gray-700">X</button>
-                    </div>
-                `;
-                div.addEventListener('click', () => handleClientSelect(clientId, client.phone));
-                clientsListSelectable.appendChild(div);
-            });
-
-            // Re-seleccionar si el cliente activo sigue en la lista
-            if (selectedClientId) {
-                const clientElement = document.querySelector(`.client-item[data-id="${selectedClientId}"]`);
-                if (clientElement) {
-                    clientElement.classList.add('selected');
-                }
-            }
-        }
-        // --- FIN DE LA NUEVA FUNCIÓN ---
-
-        // Manejador al seleccionar un cliente de la lista
-        function handleClientSelect(clientId, phone) { // <-- 'name' eliminado
-            selectedClientId = clientId; // Guardar ID globalmente
-            selectedClientName = phone; // <-- Usar 'phone' como nombre
-            selectedClientPhone = phone; // Guardar globalmente
-            
-            // Resaltar cliente seleccionado
-            document.querySelectorAll('.client-item').forEach(item => item.classList.remove('selected'));
-            document.querySelector(`.client-item[data-id="${clientId}"]`).classList.add('selected');
-            
-            // Mostrar panel de detalle
-            clientDetailPanel.removeAttribute('hidden');
-            // clientDetailName.textContent = name; // Eliminado
-            // clientDetailPhone.textContent = phone; // Eliminado
-            
-            // Configurar botón de resumen WhatsApp
-            // clientDetailSummaryBtn.removeAttribute('hidden'); // Eliminado
-            // clientDetailSummaryBtn.setAttribute('data-id', clientId); // Eliminado
-            // clientDetailSummaryBtn.setAttribute('data-name', name); // Eliminado
-            // clientDetailSummaryBtn.setAttribute('data-phone', phone); // Eliminado
-            
-            // Cargar datos de ventas y envíos
-            loadPendingSales(clientId);
-            loadShipmentHistory(clientId);
-
-        }
-
-// --- NUEVA FUNCIÓN: LÓGICA PARA ELIMINAR CLIENTE ---
-    async function handleDeleteClient(clientId, clientPhone) {
-        if (!isAuthReady) return;
-
-        // Paso 1: Verificar si el cliente tiene ventas.
-        showModal("Verificando...", `Revisando historial de ${clientPhone}...`, false);
-        try {
-            const q = query(saleItemsCollection, where("clientId", "==", clientId));
-            const querySnapshot = await getDocs(q);
-
-            if (!querySnapshot.empty) {
-                // NO SE PUEDE ELIMINAR
-                hideModal();
-                showModal("No se puede eliminar", `El cliente ${clientPhone} tiene (${querySnapshot.size}) ventas asociadas. No se puede eliminar para mantener la integridad de los datos.`);
-                return;
-            }
-
-            // Paso 2: Si no tiene ventas, pedir confirmación.
-            hideModal();
-            // Usamos el 'confirm' nativo que ya usas para eliminar ventas/productos
-            if (confirm(`¿Estás seguro de que deseas eliminar al cliente ${clientPhone}? Esta acción no se puede deshacer.`)) {
-
-                // Paso 3: Eliminar.
-                await deleteDoc(doc(clientsCollection, clientId));
-
-                // Si el cliente eliminado era el que estaba seleccionado, limpiar el panel
-                if (selectedClientId === clientId) {
-                    clientDetailPanel.setAttribute('hidden', true);
-                    selectedClientId = null;
-                    selectedClientName = null;
-                    selectedClientPhone = null;
-                }
-
-                showModal("Éxito", `Cliente ${clientPhone} eliminado.`);
-                // El listener onSnapshot de loadClients() actualizará la lista.
-            }
-
-        } catch (error) {
-            console.error("Error al verificar/eliminar cliente:", error);
-            hideModal();
-            showModal("Error", "Ocurrió un error al intentar eliminar el cliente.");
-        }
-    }
-    // --- FIN DE LA NUEVA FUNCIÓN ---
-
-
-// --- NUEVO: LISTENER PARA ELIMINAR CLIENTES (EN LA LISTA) ---
-    clientsListSelectable.addEventListener('click', async (e) => {
-        // Buscar si el clic fue en un botón de eliminar
-        if (e.target.classList.contains('btn-delete-client')) {
-            const button = e.target;
-            const clientId = button.getAttribute('data-id');
-            const clientPhone = button.getAttribute('data-phone');
-
-            // Detener la acción de 'handleClientSelect'
-            // para que no se seleccione el cliente al borrarlo
-            e.stopPropagation(); 
-
-            await handleDeleteClient(clientId, clientPhone);
-        }
-    });
-
-
-            // --- NUEVO: LISTENER PARA EL BUSCADOR DE LA LISTA DE CLIENTES ---
-            clientListSearchInput.addEventListener('input', (e) => {
-                renderClientList(e.target.value);
-            });
-        
-        // Cargar ventas pendientes para el cliente seleccionado
-        // const pendingSalesList = document.getElementById('pending-sales-list'); // MOVIDO ARRIBA
-        function loadPendingSales(clientId) {
-            if (pendingSalesListener) pendingSalesListener(); // Desvincular listener anterior
-            
-            // MODIFICADO: Consultar 'saleItemsCollection' en lugar de 'salesCollection'
-            const q = query(saleItemsCollection, where("clientId", "==", clientId), where("enviado", "==", false));
-            
-            pendingSalesListener = onSnapshot(q, (snapshot) => {
-                pendingSalesList.innerHTML = '';
-                if (snapshot.empty) {
-                    pendingSalesList.innerHTML = '<p class="text-sm text-brand-muted dark:text-gray-500">Este cliente no tiene items pendientes de envío.</p>';
-                    return;
-                }
-                
-                snapshot.forEach(doc => {
-                    const item = doc.data();
-                    const itemId = doc.id;
-                    
-                    // MODIFICADO: Mostrar item individual en lugar de venta agrupada
-                    const div = document.createElement('div');
-                    div.className = 'border-b pb-3 dark:border-gray-700';
-                    div.innerHTML = `
-                        <div class="flex items-center">
-                            <input id="item-${itemId}" data-item-id="${itemId}" type="checkbox" class="h-4 w-4 text-brand-accent border-gray-300 dark:border-gray-600 rounded focus:ring-brand-accent">
-                            <label for="item-${itemId}" class="ml-3 block text-sm font-medium text-brand-text dark:text-brand-bg">
-                                ${item.qty} x ${item.desc} ${item.color ? `(${item.color})` : ''} ${item.talla ? `[${item.talla}]` : ''}
-                            </label>
-                        </div>
-                        <p class="ml-7 text-xs text-brand-muted dark:text-gray-400">
-                            (De la venta del ${item.date} - Total Item: ${currencyFormatter.format(item.total)})
-                        </p>
-                    `;
-                    pendingSalesList.appendChild(div);
-                });
-            }, (error) => console.error("Error al cargar items pendientes:", error));
-        }
-
-        // Cargar historial de envíos para el cliente seleccionado
-        // const shipmentHistoryList = document.getElementById('shipment-history-list'); // MOVIDO ARRIBA
-        function loadShipmentHistory(clientId) {
-            if (shipmentHistoryListener) shipmentHistoryListener(); // Desvincular listener
-            
-            const q = query(shipmentsCollection, where("clientId", "==", clientId));
-            
-            shipmentHistoryListener = onSnapshot(q, (snapshot) => {
-                shipmentHistoryList.innerHTML = '';
-                if (snapshot.empty) {
-                    shipmentHistoryList.innerHTML = '<p class="text-sm text-brand-muted dark:text-gray-500">No hay historial de envíos para este cliente.</p>';
-                    return;
-                }
-                
-                // Capturar los detalles del cliente desde las variables globales
-                const clientNameForButton = selectedClientName;
-                const clientPhoneForButton = selectedClientPhone;
-
-                snapshot.forEach(doc => {
-                    const shipment = doc.data();
-                    // Preparar datos para el botón
-                    const itemsJson = JSON.stringify(shipment.items); 
-                    
-                    // MODIFICADO: Mapear 'items' en lugar de 'sales'
-                    let itemsHtml = shipment.items.map(item => `
-                        <li class="text-xs text-brand-muted dark:text-gray-400 ml-4">${item.description} (ID: ...${item.itemId.slice(-6)})</li>
-                    `).join('');
-                    
-                    const div = document.createElement('div');
-                    div.className = 'border-b pb-2 dark:border-gray-700';
-                    // MODIFICADO: Añadir botón de WhatsApp con data-attributes
-                    div.innerHTML = `
-                        <div class="flex justify-between items-center">
-                            <p class="font-medium text-brand-text dark:text-brand-bg">Envío del ${shipment.fechaEnvio}</p>
-                            <button 
-                              class="btn-whatsapp-shipment text-xs text-green-600 dark:text-green-400 hover:text-green-800 font-medium"
-                              data-shipment-date="${shipment.fechaEnvio}"
-                              data-client-name="${clientNameForButton}"
-                              data-client-phone="${clientPhoneForButton}"
-                              data-items="${encodeURIComponent(itemsJson)}"
-                            >
-                              Resumen Wpp
-                            </button>
-                        </div>
-                        <ul class="mt-1 list-disc list-inside">${itemsHtml}</ul>
-                    `;
-                    shipmentHistoryList.appendChild(div);
-                });
-
-            }, (error) => console.error("Error al cargar historial de envíos:", error));
-        }
-
-        // --- AÑADE ESTE NUEVO BLOQUE ---
-        shipmentHistoryList.addEventListener('click', (e) => {
-            if (e.target.classList.contains('btn-whatsapp-shipment')) {
-                const button = e.target;
-                try {
-                    const clientName = button.getAttribute('data-client-name');
-                    const clientPhone = button.getAttribute('data-client-phone');
-                    const shipmentDate = button.getAttribute('data-shipment-date');
-                    const items = JSON.parse(decodeURIComponent(button.getAttribute('data-items')));
-                    
-                    generateShipmentWhatsAppSummary(clientName, clientPhone, shipmentDate, items);
-                } catch (error) {
-                    console.error("Error al parsear datos del envío:", error);
-                    showModal("Error", "No se pudieron cargar los datos para el resumen.");
-                }
-            }
-        });
-        // --- FIN DEL NUEVO BLOQUE ---
-
-        // Botón de Crear Envío
-        // const createShipmentBtn = document.getElementById('create-shipment-btn'); // MOVIDO ARRIBA
-        createShipmentBtn.addEventListener('click', async () => {
-            if (!selectedClientId) return;
-            
-            const fechaEnvio = document.getElementById('shipment-date').value;
-            if (!fechaEnvio) {
-                showModal("Falta la fecha", "Por favor, seleccione una fecha de envío.");
-                return;
-            }
-            
-            // MODIFICADO: Seleccionar items individuales
-            const selectedItemsCheckboxes = pendingSalesList.querySelectorAll('input[type="checkbox"]:checked');
-            if (selectedItemsCheckboxes.length === 0) {
-                showModal("Sin items", "Seleccione al menos un item para incluir en el envío.");
-                return;
-            }
-            
-            showModal("Procesando Envío", "Creando envío y actualizando items...", false);
-            
-            try {
-                // MODIFICADO: Listas para items y ventas padres
-                const itemsToShip = []; // Para guardar en el doc de envío
-                const itemRefsToUpdate = []; // Para actualizar los items
-                const parentSaleIds = new Set(); // Para verificar si la venta padre se completó
-
-                // Recolectar info de los items seleccionados
-                for (const checkbox of selectedItemsCheckboxes) {
-                    const itemId = checkbox.getAttribute('data-item-id');
-                    const itemRef = doc(saleItemsCollection, itemId);
-                    const itemDoc = await getDoc(itemRef);
-                    if (itemDoc.exists()) {
-                        const itemData = itemDoc.data();
-                        itemsToShip.push({
-                            itemId: itemId,
-                            description: `${itemData.qty} x ${itemData.desc} ${itemData.color || ''} ${itemData.talla || ''}`, // Para el historial
-                            total: itemData.total,
-                            qty: itemData.qty,
-                            // --- NUEVOS CAMPOS PARA WHATSAPP ---
-                            desc: itemData.desc,
-                            color: itemData.color || '',
-                            talla: itemData.talla || ''
-                        });
-                        itemRefsToUpdate.push(itemRef);
-                        parentSaleIds.add(itemData.saleId); // Guardar el ID de la venta padre
-                    }
-                }
-                
-                // 1. Crear el documento de Envío (con 'items' en lugar de 'sales')
-                await addDoc(shipmentsCollection, {
-                    clientId: selectedClientId,
-                    clienteName: selectedClientName, // Usar variable global
-                    fechaEnvio: fechaEnvio,
-                    items: itemsToShip, // Array de objetos de items
-                    createdAt: new Date().toISOString()
-                });
-                
-                // 2. Actualizar todos los items a "enviado: true"
-                for (const itemRef of itemRefsToUpdate) {
-                    await updateDoc(itemRef, { 
-                        enviado: true,
-                        fechaEnvio: fechaEnvio // <-- AÑADE ESTA LÍNEA
-                    });
-                }
-
-                // 3. (NUEVO) Verificar y actualizar las ventas padre
-                for (const saleId of parentSaleIds) {
-                    const q = query(saleItemsCollection, where("saleId", "==", saleId), where("enviado", "==", false));
-                    const remainingItemsSnap = await getDocs(q);
-                    
-                    // Si no quedan items pendientes, marcar la VENTA padre como enviada
-                    if (remainingItemsSnap.empty) {
-                        await updateDoc(doc(salesCollection, saleId), { enviado: true });
-                    }
-                }
-                
-                document.getElementById('shipment-date').value = '';
-                hideModal();
-                showModal("Éxito", "El envío se ha registrado y los items se han actualizado.");
-                
-            } catch (error) {
-                console.error("Error al crear envío:", error);
-                hideModal();
-                showModal("Error", "No se pudo crear el envío. " + error.message);
-            }
-        });
-        
-        // Botón Resumen WhatsApp (ELIMINADO)
-        // clientDetailSummaryBtn.addEventListener('click', (e) => { ... });
-
-
-
-
-        // NUEVO: Referencia a los campos de nuevo cliente
-        // const newClientFields = document.getElementById('new-client-fields'); // MOVIDO ARRIBA
-        // ELIMINADO: Referencia a los campos de nuevo producto
-        // const newProductFields = document.getElementById('new-product-fields');
-
-        // NUEVO: Referencia a los campos del formulario de productos
-        // const productSelectInventory = document.getElementById('product-select-inventory'); // <-- ELIMINADO
-        // const newProductNameField = document.getElementById('new-product-name-field'); // <-- ELIMINADO
-
-
-
-        // ELIMINADO: Listener para mostrar/ocultar los campos de nuevo producto
-        /*
-        saleProductSelect.addEventListener('change', () => {
-            if (saleProductSelect.value === '--NEW-PRODUCT--') {
-                newProductFields.removeAttribute('hidden');
-            } else {
-                newProductFields.setAttribute('hidden', true);
-            }
-        });
-        */
-
-        // const saleForm = document.getElementById('add-sale-form'); // MOVIDO ARRIBA
-        // const salesList = document.getElementById('sales-list'); // MOVIDO ARRIBA
-        // const addSaleItemBtn = document.getElementById('add-sale-item-btn'); // MOVIDO ARRIBA
-        // const currentSaleItemsList = document.getElementById('current-sale-items'); // MOVIDO ARRIBA
-        // const currentSaleTotalEl = document.getElementById('current-sale-total'); // MOVIDO ARRIBA
-
+        // --- LÓGICA DE VENTAS (FORMULARIO) ---
         function updateSaleTotal() {
             currentSaleTotal = currentSaleItems.reduce((acc, item) => acc + item.total, 0);
             currentSaleTotalEl.textContent = currentSaleTotal.toFixed(2);
@@ -1514,47 +1042,33 @@
 
         addSaleItemBtn.addEventListener('click', async () => {
             const qty = parseInt(document.getElementById('sale-item-qty').value, 10);
-            // MODIFICADO: Leemos el precio TOTAL del input
             const totalPrice = parseFloat(document.getElementById('sale-item-price').value);
 
-            // Validamos que se pueda dividir
             if (!qty || qty <= 0) {
                  showModal("Datos incompletos", "La cantidad debe ser mayor a 0.");
                  return;
             }
-            if (totalPrice === null || totalPrice < 0) { // Permitir 0
+            if (totalPrice === null || totalPrice < 0) {
                  showModal("Datos incompletos", "Debe ingresar un precio total válido.");
                  return;
             }
 
-            // Calculamos el precio unitario para guardarlo
-            const unitPrice = (totalPrice === 0) ? 0 : (totalPrice / qty); // Permitir precio 0
+            const unitPrice = (totalPrice === 0) ? 0 : (totalPrice / qty); 
             const color = normalizeString(document.getElementById('sale-item-color').value.trim());
             const talla = normalizeString(document.getElementById('sale-item-talla').value.trim());
             let productCost, productStock;
-            let productId, productName; // <-- MOVIDAS AQUÍ
 
-            // --- Lógica para manejar producto nuevo vs. existente ---
-            // ELIMINADO: Bloque "if (selectedOption.value === '--NEW-PRODUCT--')"
-            
-            // MODIFICADO: Leer desde los inputs ocultos
-            productId = saleProductHiddenId.value;
-            productName = saleProductSearchInput.value;
+            const productId = saleProductHiddenId.value;
+            const productName = saleProductSearchInput.value;
 
             if (productId && productName) {
-                // --- PRODUCTO EXISTENTE ---
                 const product = productsCache[productId];
                 productCost = product.cost;
                 productStock = product.stock;
-
             } else {
-                // No se seleccionó nada
                 showModal("Datos incompletos", "Seleccione un producto, cantidad y un precio de venta válido.");
                 return;
             }
-            
-            // ELIMINADO: Validación duplicada
-            // if (qty <= 0 || !price || price <= 0) { ... }
             
             const existingItem = currentSaleItems.find(item => item.productId === productId && item.color === color && item.talla === talla);
             if(existingItem) {
@@ -1566,87 +1080,71 @@
                 productId,
                 desc: productName,
                 qty,
-                price: unitPrice, // Precio de venta (calculado)
-                costo: productCost, // Costo (del producto)
-                total: totalPrice, // Total (del input)
+                price: unitPrice, 
+                costo: productCost, 
+                total: totalPrice, 
                 totalCosto: qty * productCost,
                 color: color || '',
                 talla: talla || ''
             });
             renderCurrentSaleItems();
 
-            // Limpiar inputs
             saleProductSearchInput.value = '';
             saleProductHiddenId.value = '';
             document.getElementById('sale-item-qty').value = '1';
             document.getElementById('sale-item-price').value = '';
             document.getElementById('sale-item-color').value = '';
             document.getElementById('sale-item-talla').value = '';
-
         });
 
         saleForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        if (!isAuthReady) return;
+            e.preventDefault();
+            if (!isAuthReady) return;
 
-        // --- CORRECCIÓN: Leer fecha y medio de pago aquí ---
-        const date = document.getElementById('sale-date').value;
-        const medioDePago = document.getElementById('sale-payment-method').value;
-        // --- FIN DE LA CORRECCIÓN ---
+            const date = document.getElementById('sale-date').value;
+            const medioDePago = document.getElementById('sale-payment-method').value;
 
-        // --- NUEVA LÓGICA: BUSCAR O CREAR CLIENTE ---
-        let finalClientId, clientName, clientPhone;
+            let finalClientId, clientName, clientPhone;
+            const phoneQuery = clientSearchInput.value.trim();
+            const selectedClientId = clientSearchHiddenId.value;
 
-        const phoneQuery = clientSearchInput.value.trim();
-        const selectedClientId = clientSearchHiddenId.value;
-
-        if (!phoneQuery) {
-            showModal("Venta incompleta", "Debe ingresar un teléfono de cliente.");
-            return;
-        }
-
-        // Primero, verificar si el usuario seleccionó un cliente Y no cambió el texto
-        const clientData = allClientsCache.find(c => c.id === selectedClientId);
-        if (clientData && clientData.phone === phoneQuery) {
-            // SCENARIO 1: Cliente seleccionado de la lista
-            finalClientId = clientData.id;
-            clientName = clientData.phone;
-            clientPhone = clientData.phone;
-        } else {
-            // SCENARIO 2: Texto tipeado (nuevo o existente no seleccionado)
-            // Buscar en Firestore por el teléfono tipeado
-            showModal("Validando Cliente", "Buscando o registrando cliente...", false);
-            try {
-                const q = query(clientsCollection, where("phone", "==", phoneQuery));
-                const querySnapshot = await getDocs(q);
-
-                if (!querySnapshot.empty) {
-                    // El cliente YA EXISTE
-                    const existingClientDoc = querySnapshot.docs[0];
-                    finalClientId = existingClientDoc.id;
-                    clientName = phoneQuery;
-                    clientPhone = phoneQuery;
-                } else {
-                    // El cliente ES NUEVO, hay que crearlo
-                    const newClientRef = await addDoc(clientsCollection, {
-                        phone: phoneQuery
-                    });
-                    finalClientId = newClientRef.id;
-                    clientName = phoneQuery;
-                    clientPhone = phoneQuery;
-                }
-                // hideModal(); // Se oculta al final del try/catch del submit
-            } catch (error) {
-                console.error("Error al buscar/crear cliente:", error);
-                hideModal();
-                showModal("Error", "No se pudo verificar el cliente.");
+            if (!phoneQuery) {
+                showModal("Venta incompleta", "Debe ingresar un teléfono de cliente.");
                 return;
             }
-        }
-        // --- FIN NUEVA LÓGICA ---
 
-            // --- VALIDACIÓN DE ITEMS Y FECHA ---
-            // MODIFICADO: Se incluye !medioDePago
+            const clientData = allClientsCache.find(c => c.id === selectedClientId);
+            if (clientData && clientData.phone === phoneQuery) {
+                finalClientId = clientData.id;
+                clientName = clientData.phone;
+                clientPhone = clientData.phone;
+            } else {
+                showModal("Validando Cliente", "Buscando o registrando cliente...", false);
+                try {
+                    const q = query(clientsCollection, where("phone", "==", phoneQuery));
+                    const querySnapshot = await getDocs(q);
+
+                    if (!querySnapshot.empty) {
+                        const existingClientDoc = querySnapshot.docs[0];
+                        finalClientId = existingClientDoc.id;
+                        clientName = phoneQuery;
+                        clientPhone = phoneQuery;
+                    } else {
+                        const newClientRef = await addDoc(clientsCollection, {
+                            phone: phoneQuery
+                        });
+                        finalClientId = newClientRef.id;
+                        clientName = phoneQuery;
+                        clientPhone = phoneQuery;
+                    }
+                } catch (error) {
+                    console.error("Error al buscar/crear cliente:", error);
+                    hideModal();
+                    showModal("Error", "No se pudo verificar el cliente.");
+                    return;
+                }
+            }
+
             if (currentSaleItems.length === 0 || !date || !medioDePago) {
                 showModal("Venta incompleta", "Agregue al menos un item, elija una fecha y un medio de pago.");
                 return;
@@ -1657,30 +1155,26 @@
             showModal("Procesando Venta", "Guardando y actualizando stock...", false);
 
             try {
-                // 1. Guardar la venta (AHORA CON EL ID CORRECTO)
-                const newSaleRef = await addDoc(salesCollection, { // <-- Capturar la referencia
-                    clientId: finalClientId, // Usar el ID final (nuevo o existente)
+                const newSaleRef = await addDoc(salesCollection, { 
+                    clientId: finalClientId, 
                     clientName,
                     clientPhone,
                     date,
-                    medioDePago: medioDePago, // <-- AÑADIDO
+                    medioDePago: medioDePago, 
                     items: currentSaleItems,
                     total: currentSaleTotal,
-                    totalCosto: totalCostoVenta, // Guardamos el costo total
-                    enviado: false // NUEVO
+                    totalCosto: totalCostoVenta, 
+                    enviado: false 
                 });
 
-                // --- NUEVO: 2. Generar registro único por producto ---
                 for (const item of currentSaleItems) {
                     await addDoc(saleItemsCollection, {
-                        saleId: newSaleRef.id, // Vínculo a la venta principal
+                        saleId: newSaleRef.id, 
                         clientId: finalClientId,
                         clientName: clientName,
                         date: date,
-                        medioDePago: medioDePago, // <-- AÑADIDO
-                        enviado: false, // Estado inicial
-                        
-                        // Datos del item
+                        medioDePago: medioDePago, 
+                        enviado: false, 
                         productId: item.productId,
                         desc: item.desc,
                         qty: item.qty,
@@ -1692,9 +1186,7 @@
                         talla: item.talla
                     });
                 }
-                // --- FIN NUEVO ---
 
-                // 3. Actualizar el stock (Antes era el 2)
                 for (const item of currentSaleItems) {
                     const productRef = doc(productsCollection, item.productId);
                     const product = productsCache[item.productId];
@@ -1704,15 +1196,12 @@
                     }
                 }
 
-                // Resetear formulario
                 saleForm.reset();
                 currentSaleItems = [];
                 renderCurrentSaleItems();
                 document.getElementById('sale-date').valueAsDate = new Date();
-                // --- AÑADIR ESTAS LÍNEAS ---
                 clientSearchInput.value = '';
                 clientSearchHiddenId.value = '';
-                // --- FIN ---
                 
                 hideModal();
                 showModal("Venta Exitosa", "La venta se guardó y el stock se actualizó.");
@@ -1724,49 +1213,25 @@
             }
         });
 
-        // --- LÓGICA DE VENTAS REESCRITA CON FILTROS ---
+        // --- LÓGICA DE VENTAS (HISTORIAL Y FILTROS) ---
         function loadSales() {
             if (!isAuthReady) return;
+            if (salesListener) salesListener();
 
-            // Desvincular el listener anterior para evitar duplicados
-            if (salesListener) {
-                salesListener();
-                salesListener = null;
-            }
-
-            // 1. Leer los valores de los filtros
             const filtroCliente = clientSalesFilterId.value;
             const filtroProducto = productSalesFilterId.value;
             const filtroFecha = dateSalesFilter.value;
             const soloPendientes = pendingSalesFilterToggle.checked;
             
-            // 2. Construir la consulta base
             let q = query(saleItemsCollection, orderBy("date", "desc"));
 
-            // 3. Añadir filtros dinámicamente
-            // (Si se usa un filtro, se desactiva el 'soloPendientes' por defecto, 
-            // a menos que el checkbox esté marcado explícitamente)
             const isFiltering = filtroCliente || filtroProducto || filtroFecha;
 
-            if (filtroCliente) {
-                q = query(q, where("clientId", "==", filtroCliente));
-            }
-            if (filtroProducto) {
-                q = query(q, where("productId", "==", filtroProducto));
-            }
-            if (filtroFecha) {
-                q = query(q, where("date", "==", filtroFecha));
-            }
-
-            // Lógica de "Solo Pendientes":
-            // Se aplica si el checkbox está marcado, O si no hay filtros (vista por defecto)
-            if (soloPendientes || !isFiltering) {
-                q = query(q, where("enviado", "==", false));
-            }
+            if (filtroCliente) q = query(q, where("clientId", "==", filtroCliente));
+            if (filtroProducto) q = query(q, where("productId", "==", filtroProducto));
+            if (filtroFecha) q = query(q, where("date", "==", filtroFecha));
+            if (soloPendientes || !isFiltering) q = query(q, where("enviado", "==", false));
             
-            // ¡Recuerda! Estas consultas fallarán y te pedirán crear Índices en la consola.
-
-            // 4. Ejecutar la consulta con el listener
             salesListener = onSnapshot(q, (snapshot) => {
                 salesList.innerHTML = '';
                 if (snapshot.empty) {
@@ -1786,7 +1251,6 @@
                     if (item.color) productDesc += ` (${item.color})`;
                     if (item.talla) productDesc += ` [${item.talla}]`;
 
-                    // --- NUEVO: Celda Checkbox ---
                     tr.innerHTML = `
                         <td class="px-2 py-4 text-center">
                             <input type="checkbox" class="sale-item-checkbox" data-item-id="${doc.id}">
@@ -1798,7 +1262,6 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-brand-muted dark:text-gray-400">${currencyFormatter.format(item.total)}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-brand-muted dark:text-gray-400">${item.medioDePago || 'N/A'}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-brand-muted dark:text-gray-400">${estadoHtml}</td>
-                        <!-- NUEVO: Celda Fecha Envío -->
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-brand-muted dark:text-gray-400">${item.fechaEnvio || 'N/A'}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <button data-sale-id="${item.saleId}" class="btn-delete-sale text-red-600 hover:text-red-900">Eliminar Venta</button>
@@ -1814,68 +1277,43 @@
         
         salesList.addEventListener('click', async (e) => {
             if (e.target.classList.contains('btn-delete-sale')) {
-                // MODIFICADO: Obtener 'data-sale-id' en lugar de 'data-id'
                 const saleId = e.target.getAttribute('data-sale-id');
                 
-                // TODO: Agregar lógica para restaurar stock si se borra una venta
                 if (confirm("¿Estás seguro de que deseas eliminar la VENTA COMPLETA asociada a este item? (El stock NO se restaurará automáticamente). Esta acción eliminará todos los items de esa venta.")) {
                     try {
-                        // 1. Eliminar la venta principal
-                        await deleteDoc(doc(salesCollection, saleId)); // Usar saleId
-                        
-                        // --- 2. Eliminar los items de venta asociados (lógica existente es correcta) ---
-                        const qItems = query(saleItemsCollection, where("saleId", "==", saleId)); // Usar saleId
+                        await deleteDoc(doc(salesCollection, saleId)); 
+                        const qItems = query(saleItemsCollection, where("saleId", "==", saleId)); 
                         const itemsSnapshot = await getDocs(qItems);
                         for (const itemDoc of itemsSnapshot.docs) {
                             await deleteDoc(itemDoc.ref);
                         }
-                        // --- FIN ---
-                        
                     } catch (error) {
                         showModal("Error", "No se pudo eliminar la venta.");
                     }
                 }
             }
         });
-        // --- FIN DE MODIFICACIÓN DE LÓGICA DE VENTAS ---
 
-        // --- NUEVO: Listeners para los botones de filtro ---
+        // Listeners para los botones de filtro
+        applySalesFilterBtn.addEventListener('click', () => loadSales());
         
-        // Botón "Buscar"
-        applySalesFilterBtn.addEventListener('click', () => {
-            loadSales();
-        });
-        
-        // Botón "Limpiar"
         clearSalesFilterBtn.addEventListener('click', () => {
-            // Limpiar valores
             clientSalesFilterSearch.value = '';
             clientSalesFilterId.value = '';
             productSalesFilterSearch.value = '';
             productSalesFilterId.value = '';
             dateSalesFilter.value = '';
-            
-            // Marcar "Solo Pendientes" (la vista por defecto)
             pendingSalesFilterToggle.checked = true;
-            
-            // Recargar la lista (volverá a la vista por defecto)
             loadSales();
         });
         
-        // --- FIN DE Listeners de filtro ---
-        
-        // --- NUEVO: Listeners para Acciones Masivas ---
-
-        // "Seleccionar Todo" Checkbox
+        // Listeners para Acciones Masivas
         selectAllSalesCheckbox.addEventListener('change', () => {
             const isChecked = selectAllSalesCheckbox.checked;
             const itemCheckboxes = salesList.querySelectorAll('.sale-item-checkbox');
-            itemCheckboxes.forEach(checkbox => {
-                checkbox.checked = isChecked;
-            });
+            itemCheckboxes.forEach(checkbox => checkbox.checked = isChecked);
         });
 
-        // Botón "Actualizar Envío Masivo"
         massUpdateShippingBtn.addEventListener('click', async () => {
             if (!isAuthReady) return;
             
@@ -1886,12 +1324,10 @@
                 showModal("Error", "No ha seleccionado ningún item de la lista.");
                 return;
             }
-            
             if (!newShippingDate) {
                 showModal("Error", "Por favor, seleccione una Fecha de Envío válida.");
                 return;
             }
-            
             if (!confirm(`¿Está seguro de que desea marcar ${selectedItemsCheckboxes.length} items como "Enviado" con fecha ${newShippingDate}?`)) {
                 return;
             }
@@ -1899,9 +1335,7 @@
             showModal("Actualización Masiva", `Actualizando ${selectedItemsCheckboxes.length} items...`, false);
             
             try {
-                // Usar un Lote de Escritura (Batch Write) para eficiencia
                 const batch = writeBatch(db);
-                
                 selectedItemsCheckboxes.forEach(checkbox => {
                     const itemId = checkbox.getAttribute('data-item-id');
                     const itemRef = doc(saleItemsCollection, itemId);
@@ -1910,17 +1344,12 @@
                         fechaEnvio: newShippingDate
                     });
                 });
-                
-                // Ejecutar todas las actualizaciones a la vez
                 await batch.commit();
                 
                 hideModal();
                 showModal("Éxito", "Items actualizados masivamente.");
-                
-                // Limpiar (onSnapshot de loadSales se encargará de refrescar la tabla)
                 selectAllSalesCheckbox.checked = false;
                 massShippingDateInput.value = '';
-
             } catch (error) {
                 console.error("Error en actualización masiva:", error);
                 hideModal();
@@ -1930,33 +1359,25 @@
         // --- FIN Listeners Acciones Masivas ---
 
 
-        // NUEVO: Función extraída para crear o actualizar productos (reutilizable)
-        // MODIFICADO: Añadir purchaseDate
+        // --- LÓGICA DE PRODUCTOS (INVENTARIO) ---
         async function createOrUpdateProduct(name, stockToAdd, newUnitCost, purchaseDate) {
-            // MODIFICADO: Permitir newUnitCost 0
             if (stockToAdd <= 0 || newUnitCost < 0 || !name || !purchaseDate) {
                 throw new Error("Datos de producto inválidos. Se requiere nombre, stock positivo, costo >= 0 y fecha.");
             }
             
-            // 1. Buscar si el producto ya existe (por nombre exacto)
             const q = query(productsCollection, where("name", "==", name));
             const querySnapshot = await getDocs(q);
-
             let productId;
 
             if (querySnapshot.empty) {
-                // --- PRODUCTO NUEVO ---
-                // MODIFICADO: Añadir purchaseDate
                 const newDocRef = await addDoc(productsCollection, { 
                     name: name, 
                     stock: stockToAdd, 
-                    cost: newUnitCost, // Guardar costo unitario
-                    purchaseDate: purchaseDate // <-- AÑADIDO
+                    cost: newUnitCost,
+                    purchaseDate: purchaseDate
                 });
                 productId = newDocRef.id;
-
             } else {
-                // --- PRODUCTO EXISTENTE ---
                 const productDoc = querySnapshot.docs[0];
                 const productRef = productDoc.ref;
                 productId = productDoc.id;
@@ -1964,77 +1385,60 @@
 
                 const oldStock = productData.stock || 0;
                 const oldCost = productData.cost || 0;
-
-                // Calcular nuevo stock total
                 const newTotalStock = oldStock + stockToAdd;
 
-                // Calcular nuevo costo promedio ponderado
-                let newAverageCost = newUnitCost; // Por defecto, el nuevo costo unitario
-                if (newTotalStock > 0) { // Evitar división por cero
+                let newAverageCost = newUnitCost; 
+                if (newTotalStock > 0) { 
                     const oldTotalValue = oldStock * oldCost;
-                    const newTotalValue = stockToAdd * newUnitCost; // Usar costo unitario
+                    const newTotalValue = stockToAdd * newUnitCost; 
                     newAverageCost = (oldTotalValue + newTotalValue) / newTotalStock;
                 }
-
-                // Actualizar el documento
-                // MODIFICADO: Añadir purchaseDate
                 await updateDoc(productRef, {
                     stock: newTotalStock,
                     cost: newAverageCost,
-                    purchaseDate: purchaseDate // <-- AÑADIDO
+                    purchaseDate: purchaseDate
                 });
             }
-            return productId; // Devuelve el ID del producto creado o actualizado
+            return productId;
         }
 
         productForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             if (!isAuthReady) return;
             
-            // --- Lógica de Submit Modificada ---
             const name = normalizeString(productInventorySearchInput.value.trim());
             const stockToAdd = parseInt(document.getElementById('product-stock').value, 10);
             const totalCost = parseFloat(document.getElementById('product-cost').value);
             const purchaseDate = document.getElementById('product-purchase-date').value;
-
-            // ... (el resto de la lectura de formulario: totalCost, purchaseDate, newUnitCost) ...
             
-            // NUEVA VALIDACIÓN
             if (!purchaseDate) {
                 showModal("Datos incompletos", "Debe seleccionar una fecha de compra.");
                 return;
             }
-
             if (!name) {
-                showModal("Datos incomchos", "Debe ingresar un nombre de producto.");
+                showModal("Datos incompletos", "Debe ingresar un nombre de producto.");
                 return;
             }
             if (!stockToAdd || stockToAdd <= 0) {
                  showModal("Datos incompletos", "La cantidad a agregar debe ser mayor a 0.");
                  return;
             }
-            if (totalCost === null || totalCost < 0) { // Permitir 0
+            if (totalCost === null || totalCost < 0) {
                  showModal("Datos incompletos", "Debe ingresar un costo total válido.");
                  return;
             }
 
-            const newUnitCost = (totalCost === 0) ? 0 : (totalCost / stockToAdd); // Permitir precio 0
-
-
+            const newUnitCost = (totalCost === 0) ? 0 : (totalCost / stockToAdd);
             showModal("Actualizando Inventario", "Guardando producto...", false);
 
             try {
-                // MODIFICADO: Pasar purchaseDate y el nuevo costo unitario
                 await createOrUpdateProduct(name, stockToAdd, newUnitCost, purchaseDate);
-                
                 hideModal();
                 showModal("Éxito", `Inventario de "${name}" actualizado.`);
                 productForm.reset();
-                // RE-INICIALIZAR FECHA A HOY
                 document.getElementById('product-purchase-date').valueAsDate = new Date();
                 productInventorySearchInput.value = '';
                 productInventoryHiddenId.value = '';            
-
             } catch (error) {
                 console.error("Error al guardar/actualizar producto:", error);
                 hideModal();
@@ -2047,19 +1451,15 @@
 
             onSnapshot(productsCollection, (snapshot) => {
                 productsList.innerHTML = '';
-                // Limpiar caches
                 allProductsCache = [];
                 productsCache = {};
 
                 snapshot.forEach(doc => {
                     const product = doc.data();
                     const productId = doc.id;
-                    
-                    productsCache[productId] = { ...product, id: productId }; // Llenar cache
+                    productsCache[productId] = { ...product, id: productId }; 
 
-                    // Llenar la tabla de productos
                     const tr = document.createElement('tr');
-                    // MODIFICADO: Añadir <td> para purchaseDate
                     tr.innerHTML = `
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-brand-text dark:text-brand-bg">${product.name}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-brand-muted dark:text-gray-400">${product.stock}</td>
@@ -2071,7 +1471,6 @@
                     `;
                     productsList.appendChild(tr);
 
-                    // Llenar el cache unificado de Productos
                     allProductsCache.push({
                         id: productId,
                         name: product.name,
@@ -2079,9 +1478,6 @@
                         cost: product.cost
                     });
                 });
-
-                // Ya no se renderiza aquí, el 'input' lo hará
-
             }, (error) => {
                 console.error("Error al cargar productos:", error);
                 if (error.code === 'permission-denied' || error.code === 'failed-precondition') {
@@ -2093,84 +1489,192 @@
         productsList.addEventListener('click', async (e) => {
             if (e.target.classList.contains('btn-delete-product')) {
                 const id = e.target.getAttribute('data-id');
-                if (confirm("¿Estás seguro de que deseas eliminar este producto?")) {
-                    try {
-                        await deleteDoc(doc(productsCollection, id));
-                    } catch (error) {
-                        showModal("Error", "No se pudo eliminar el producto.");
+                // MODIFICACIÓN: Lógica de eliminación segura de productos
+                showModal("Verificando...", "Revisando historial de ventas...", false);
+                try {
+                    const q = query(saleItemsCollection, where("productId", "==", id), limit(1));
+                    const querySnapshot = await getDocs(q);
+
+                    if (!querySnapshot.empty) {
+                        hideModal();
+                        showModal("No se puede eliminar", "Este producto tiene ventas asociadas y no puede ser eliminado.");
+                        return;
                     }
+
+                    hideModal();
+                    if (confirm("¿Estás seguro de que deseas eliminar este producto? No tiene ventas asociadas.")) {
+                        await deleteDoc(doc(productsCollection, id));
+                        showModal("Éxito", "Producto eliminado.");
+                    }
+                } catch (error) {
+                    hideModal();
+                    showModal("Error", "No se pudo verificar o eliminar el producto.");
                 }
             }
         });
 
-        // --- LÓGICA DEL RESUMEN DE WHATSAPP (ELIMINADA) ---
-        // async function generateWhatsAppSummary(clientId, clientName, clientPhone) { ... }
-        
-        // --- FUNCIÓN DE WHATSAPP POR ENVÍO (MODIFICADA) ---
+
+        // --- LÓGICA DE LA PESTAÑA DE ENVÍOS (LOGÍSTICA) ---
+        shippingSearchBtn.addEventListener('click', () => {
+            loadAllShipments();
+        });
+
+        async function loadAllShipments() {
+            if (!isAuthReady) return;
+
+            const filterDate = shippingDateFilter.value;
+            if (!filterDate) {
+                showModal("Error", "Por favor, seleccione una fecha para buscar.");
+                return;
+            }
+
+            allShipmentsList.innerHTML = '<tr><td colspan="4" class="px-6 py-4 text-center text-brand-muted dark:text-gray-400">Buscando envíos...</td></tr>';
+            
+            try {
+                const q = query(allShipmentsCollection, 
+                                where("userId", "==", userId), 
+                                where("fechaEnvio", "==", filterDate));
+                
+                const querySnapshot = await getDocs(q);
+                
+                if (querySnapshot.empty) {
+                    allShipmentsList.innerHTML = '<tr><td colspan="4" class="px-6 py-4 text-center text-brand-muted dark:text-gray-400">No se encontraron envíos para esta fecha.</td></tr>';
+                    return;
+                }
+                
+                allShipmentsList.innerHTML = ''; 
+                
+                querySnapshot.forEach(doc => {
+                    const shipment = doc.data();
+                    const itemsJson = JSON.stringify(shipment.items);
+                    
+                    // --- MODIFICADO: Construir la lista de items ---
+                    let itemsHtml = shipment.items.map(item => `
+                        <li class="text-xs">${item.description}</li>
+                    `).join('');
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-brand-muted dark:text-gray-400">${shipment.fechaEnvio}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-brand-text dark:text-brand-bg">${shipment.clienteName}</td>
+                        
+                        <!-- MODIFICADO: Mostrar lista de items -->
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-brand-muted dark:text-gray-400">
+                            <ul class="list-disc list-inside">${itemsHtml}</ul>
+                        </td>
+
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <button 
+                              class="btn-whatsapp-shipment text-xs text-green-600 dark:text-green-400 hover:text-green-800 font-medium"
+                              data-shipment-date="${shipment.fechaEnvio}"
+                              data-client-name="${shipment.clienteName}"
+                              data-client-phone="${shipment.clienteName}" 
+                              data-items="${encodeURIComponent(itemsJson)}"
+                            >
+                              Resumen Wpp
+                            </button>
+                        </td>
+                    `;
+                    allShipmentsList.appendChild(tr);
+                });
+
+            } catch(error) {
+                console.error("Error al cargar envíos (¡REVISA SI NECESITAS UN ÍNDICE!):", error);
+                allShipmentsList.innerHTML = `<tr><td colspan="4" class="px-6 py-4 text-center text-red-500">Error: ${error.message}. Es probable que necesites crear un índice en Firestore. Revisa la consola (F12).</td></tr>`;
+            }
+        }
+
+        allShipmentsList.addEventListener('click', (e) => {
+            if (e.target.classList.contains('btn-whatsapp-shipment')) {
+                const button = e.target;
+                try {
+                    const clientName = button.getAttribute('data-client-name');
+                    const clientPhone = button.getAttribute('data-client-phone');
+                    const shipmentDate = button.getAttribute('data-shipment-date');
+                    const items = JSON.parse(decodeURIComponent(button.getAttribute('data-items')));
+                    
+                    generateShipmentWhatsAppSummary(clientName, clientPhone, shipmentDate, items);
+                } catch (error) {
+                    console.error("Error al parsear datos del envío:", error);
+                    showModal("Error", "No se pudieron cargar los datos para el resumen.");
+                }
+            }
+        });
+        // --- FIN DE LÓGICA DE PESTAÑA DE ENVÍOS ---
+
+
+        // --- FUNCIÓN DE WHATSAPP POR ENVÍO (MODIFICADA CON AGRUPACIÓN) ---
         function generateShipmentWhatsAppSummary(clientName, clientPhone, shipmentDate, items) {
             if (!clientName || !clientPhone || !items) {
                 showModal("Error", "Faltan datos del cliente o del envío.");
                 return;
             }
 
-            // --- INICIO DE MODIFICACIÓN: NUEVA PLANTILLA ---
             let message = `*Compras incluidas en tu envío 📦*\n\n`;
-            
             let totalPrendas = 0;
             const groupedItems = new Map();
 
-            // --- PASO 1: Agrupar items y sumar el total de prendas ---
+            // --- PASO 1: Parsear y Agrupar items ---
             items.forEach(item => {
                 
-                // 1. Sumar el total de prendas (Lógica existente)
-                let cantidadItem = 0;
-                if (item.qty && item.qty > 0) {
-                    cantidadItem = item.qty;
-                } else {
-                    // Fallback para envíos antiguos
-                    try {
-                        const match = item.description.match(/^(\d+)\s*x/);
-                        if (match && match[1]) {
-                            cantidadItem = parseInt(match[1], 10);
-                        }
-                    } catch(e) { /* ignorar */ }
-                }
-                totalPrendas += cantidadItem;
+                let qty = 0;
+                let desc = '';
+                let color = '';
+                let talla = '';
+                let isGroupable = false;
 
-                
-                // 2. Agrupar los items para el mensaje
                 if (item.desc) {
-                    // SÍ, es un envío NUEVO (con campos separados)
-                    const key = `${item.desc}::${item.color}::${item.talla}`;
+                    qty = item.qty || 0;
+                    desc = item.desc;
+                    color = item.color || '';
+                    talla = item.talla || '';
+                    isGroupable = true;
+                } else {
+                    const match = item.description.match(/^(\d+)\s*x\s*(.*?)(?:\(|\s|$)/i);
+                    if (match && match[1] && match[2]) {
+                        qty = parseInt(match[1], 10);
+                        desc = match[2].trim();
+                        isGroupable = true;
+                    } else {
+                        isGroupable = false;
+                        const key = item.description; // Usar descripción completa como llave única
+                        if (groupedItems.has(key)) {
+                             groupedItems.get(key).qty += 1; // Asumir 1 si no se puede parsear
+                        } else {
+                             groupedItems.set(key, { isOld: true, description: item.description, qty: 1 });
+                        }
+                        qty = 1; // Asumir 1 para el total de prendas
+                    }
+                }
+
+                // Sumar al total de prendas
+                if(isGroupable) totalPrendas += qty;
+                else totalPrendas += 1; // Sumar 1 por el item no agrupable
+
+                if (isGroupable) {
+                    const key = `${desc}::${color}::${talla}`;
                     const existing = groupedItems.get(key);
                     
                     if (existing) {
-                        existing.qty += item.qty;
+                        existing.qty += qty;
                     } else {
-                        // Guardar una copia
-                        groupedItems.set(key, { ...item });
+                        groupedItems.set(key, { 
+                            isOld: false, 
+                            desc: desc, 
+                            qty: qty, 
+                            color: color, 
+                            talla: talla 
+                        });
                     }
-
-                } else {
-                    // NO, es un envío ANTIGUO (solo 'description')
-                    // No se puede agrupar de forma fiable, tratar como único
-                    const key = item.description; 
-                    groupedItems.set(key, { isOld: true, description: item.description });
                 }
             });
 
             // --- PASO 2: Construir el mensaje a partir de los items agrupados ---
             for (const item of groupedItems.values()) {
                 if (item.isOld) {
-                    // Es un envío ANTIGUO, solo mostrar la descripción
                     message += `🌻 ${toProperCase(item.description)}\n\n`;
                 } else {
-                    // Es un envío NUEVO, aplicar formato bonito
-                    
-                    // 1. Construir la línea principal
                     let mainDesc = `*${item.qty} x ${toProperCase(item.desc)}*`;
-                    
-                    // 2. Construir atributos
                     let attributes = [];
                     if (item.color) {
                         attributes.push(`color: ${item.color.toLowerCase()}`);
@@ -2179,7 +1683,6 @@
                         attributes.push(`talla: ${item.talla}`);
                     }
                     
-                    // 3. Añadir al mensaje
                     message += `🌻 ${mainDesc}`;
                     if (attributes.length > 0) {
                         message += ` _(${attributes.join(', ')})_`;
@@ -2190,11 +1693,9 @@
 
             message += `*✅ Total de prendas: ${totalPrendas}*\n\n`;
             message += `_Atte. CompliCompras 🛍️_`;
-            // --- FIN DE MODIFICACIÓN ---
 
             const encodedMessage = encodeURIComponent(message);
             
-            // Validar teléfono (simple)
             if (clientPhone.length < 8) {
                 showModal("Error", `El número de teléfono "${clientPhone}" no parece válido.`);
                 return;
@@ -2202,7 +1703,6 @@
             const whatsappUrl = `https://wa.me/${clientPhone}?text=${encodedMessage}`;
             window.open(whatsappUrl, '_blank');
         }
-        // --- FIN DE LA NUEVA FUNCIÓN ---
         
     </script>
 </body>
