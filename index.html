@@ -839,6 +839,30 @@
             activeAutocomplete = null;
         }
         
+        // --- NUEVO: Función para copiar al portapapeles ---
+        function copyTextToClipboard(text) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            
+            // Estilos para hacerlo invisible
+            textArea.style.position = "fixed";
+            textArea.style.top = "-9999px";
+            textArea.style.left = "-9999px";
+            
+            document.body.appendChild(textArea);
+            textArea.select();
+            
+            try {
+                document.execCommand('copy');
+                showModal("¡Copiado!", "Resumen copiado al portapapeles.");
+            } catch (err) {
+                console.error('Error al copiar:', err);
+                showModal("Error", "No se pudo copiar el texto. Inténtelo manualmente.");
+            }
+            
+            document.body.removeChild(textArea);
+        }
+        
         document.addEventListener('click', (e) => {
             if (activeAutocomplete) {
                 if (!activeAutocomplete.contains(e.target) && 
@@ -1651,7 +1675,7 @@
                     let itemsHtml = '';
                     for (const item of itemsArray) {
                         if (item.isOld) {
-                            itemsHtml += `<li class="text-xs">\u{1F33B} ${toProperCase(item.description)}</li>`;
+                            itemsHtml += `<li class="text-xs">🌻 ${toProperCase(item.description)}</li>`;
                         } else {
                             let mainDesc = `<strong class="text-brand-text dark:text-brand-bg">${item.qty} x ${toProperCase(item.desc)}</strong>`;
                             let attributes = [];
@@ -1662,7 +1686,7 @@
                                 attributes.push(`talla: ${item.talla}`);
                             }
                             
-                            itemsHtml += `<li class="text-xs">\u{1F33B} ${mainDesc}`;
+                            itemsHtml += `<li class="text-xs">🌻 ${mainDesc}`;
                             if (attributes.length > 0) {
                                 itemsHtml += ` <em class="text-brand-muted dark:text-gray-400">(${attributes.join(', ')})</em>`;
                             }
@@ -1677,7 +1701,16 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-brand-muted dark:text-gray-400">
                             <ul class="list-none space-y-1">${itemsHtml}</ul>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                            <!-- NUEVO: Botón Copiar -->
+                            <button 
+                              class="btn-copy-shipment text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 font-medium"
+                              data-shipment-date="${shipment.fechaEnvio}"
+                              data-client-name="${shipment.clienteName}"
+                              data-items="${encodeURIComponent(itemsJson)}"
+                            >
+                              Copiar
+                            </button>
                             <button 
                               class="btn-whatsapp-shipment text-xs text-green-600 dark:text-green-400 hover:text-green-800 font-medium"
                               data-shipment-date="${shipment.fechaEnvio}"
@@ -1685,7 +1718,7 @@
                               data-client-phone="${shipment.clienteName}" 
                               data-items="${encodeURIComponent(itemsJson)}"
                             >
-                              Resumen Wpp
+                              Wpp
                             </button>
                         </td>
                     `;
@@ -1713,18 +1746,33 @@
                     showModal("Error", "No se pudieron cargar los datos para el resumen.");
                 }
             }
+            
+            // --- NUEVO: Listener para el botón de Copiar ---
+            if (e.target.classList.contains('btn-copy-shipment')) {
+                const button = e.target;
+                try {
+                    const clientName = button.getAttribute('data-client-name');
+                    const shipmentDate = button.getAttribute('data-shipment-date');
+                    const items = JSON.parse(decodeURIComponent(button.getAttribute('data-items')));
+                    
+                    // 1. Construir el mensaje
+                    const message = buildShipmentMessage(clientName, shipmentDate, items);
+                    // 2. Copiar al portapapeles
+                    copyTextToClipboard(message);
+
+                } catch (error) {
+                    console.error("Error al parsear datos para copiar:", error);
+                    showModal("Error", "No se pudieron cargar los datos para copiar.");
+                }
+            }
         });
         // --- FIN DE LÓGICA DE PESTAÑA DE ENVÍOS ---
 
 
-        // --- FUNCIÓN DE WHATSAPP POR ENVÍO (MODIFICADA CON AGRUPACIÓN) ---
-        function generateShipmentWhatsAppSummary(clientName, clientPhone, shipmentDate, items) {
-            if (!clientName || !clientPhone || !items) {
-                showModal("Error", "Faltan datos del cliente o del envío.");
-                return;
-            }
-
-            let message = `*Compras incluidas en tu envío \u{1F4E6}*\n\n`;
+        // --- NUEVA FUNCIÓN: Construye el texto del mensaje ---
+        function buildShipmentMessage(clientName, shipmentDate, items) {
+            
+            let message = `*Compras incluidas en tu envío* 📦\n\n`; // Emoji 📦 eliminado
             let totalPrendas = 0;
             const groupedItems = new Map();
 
@@ -1746,37 +1794,30 @@
                     isGroupable = true;
                 } else { 
                     // Es un item "antiguo" (solo 'description')
-                    // Intentar parsear la descripción antigua (ej. "10 x CHOMPA BONI")
                     const match = item.description.match(/^(\d+)\s*x\s*(.*?)(?:\(|\s|$)/i);
                     if (match && match[1] && match[2]) {
                         qty = parseInt(match[1], 10);
                         desc = match[2].trim();
-                        // (No podemos adivinar color/talla de forma fiable aquí)
                         color = '';
                         talla = '';
                         isGroupable = true;
                     } else {
-                        // No se pudo parsear, tratar como item único
                         isGroupable = false;
-                        const key = item.description; // Usar descripción completa como llave única
+                        const key = item.description;
                         if (groupedItems.has(key)) {
-                             groupedItems.get(key).qty += 1; // Asumir 1 si no se puede parsear
+                             groupedItems.get(key).qty += 1;
                         } else {
                              groupedItems.set(key, { isOld: true, description: item.description, qty: 1 });
                         }
-                        qty = 1; // Asumir 1 para el total de prendas
+                        qty = 1;
                     }
                 }
-
-                // Sumar al total de prendas
                 totalPrendas += qty;
 
                 if (isGroupable) {
-                    // Normalizar antes de agrupar
                     const normalizedDesc = normalizeString(desc);
                     const normalizedColor = normalizeString(color);
                     const normalizedTalla = normalizeString(talla);
-                    
                     const key = `${normalizedDesc}::${normalizedColor}::${normalizedTalla}`;
                     const existing = groupedItems.get(key);
                     
@@ -1785,7 +1826,7 @@
                     } else {
                         groupedItems.set(key, { 
                             isOld: false, 
-                            desc: desc, // Guardar el original (no normalizado) para mostrar
+                            desc: desc, 
                             qty: qty, 
                             color: color, 
                             talla: talla 
@@ -1795,36 +1836,27 @@
             });
 
             // --- PASO 2: Construir el mensaje a partir de los items agrupados ---
-            
-            // --- NUEVO: Convertir a Array y Ordenar ---
             const itemsArray = Array.from(groupedItems.values());
             itemsArray.sort((a, b) => {
                 const descA = a.desc || a.description || '';
                 const descB = b.desc || b.description || '';
                 return descA.localeCompare(descB);
             });
-            // --- FIN NUEVO ---
 
-            // MODIFICADO: Recorrer el array ordenado
             for (const item of itemsArray) {
                 if (item.isOld) {
-                    // Para items antiguos no parseables
-                    message += `\u{1F33B} ${toProperCase(item.description)}\n\n`;
+                    message += `🌻 ${toProperCase(item.description)}\n\n`; // Emoji 🌻 eliminado
                 } else {
-                    // Para items nuevos o parseados
-                    // REGLA: Producto en Nombre Propio
                     let mainDesc = `*${item.qty} x ${toProperCase(item.desc)}*`;
                     let attributes = [];
                     if (item.color) {
-                        // REGLA: Color en minúsculas
                         attributes.push(`color: ${item.color.toLowerCase()}`);
                     }
                     if (item.talla) {
-                        // REGLA: Talla en Mayúsculas (ya viene así)
                         attributes.push(`talla: ${item.talla}`);
                     }
                     
-                    message += `\u{1F33B} ${mainDesc}`;
+                    message += `🌻 ${mainDesc}`; // Emoji 🌻 eliminado
                     if (attributes.length > 0) {
                         message += ` _(${attributes.join(', ')})_`;
                     }
@@ -1832,9 +1864,23 @@
                 }
             }
 
-            message += `*\u{2705} Total de prendas: ${totalPrendas}*\n\n`;
-            message += `_Atte. CompliCompras \u{1F6CD}_`;
+            message += `✅ *Total de prendas: ${totalPrendas}*\n\n`; // Emoji ✅ eliminado
+            message += `_Atte. CompliCompras_ 🛍️`; // Emoji 🛍️ eliminado
 
+            return message;
+        }
+
+        // --- FUNCIÓN DE WHATSAPP POR ENVÍO (AHORA REFACTORIZADA) ---
+        function generateShipmentWhatsAppSummary(clientName, clientPhone, shipmentDate, items) {
+            if (!clientName || !clientPhone || !items) {
+                showModal("Error", "Faltan datos del cliente o del envío.");
+                return;
+            }
+
+            // 1. Construir el mensaje
+            const message = buildShipmentMessage(clientName, shipmentDate, items).normalize("NFC");
+
+            // 2. Encodear y enviar
             const encodedMessage = encodeURIComponent(message);
             
             if (clientPhone.length < 8) {
