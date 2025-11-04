@@ -1302,7 +1302,7 @@
             loadSales();
         });
         
-        // Listeners para Acciones Masivas
+        // Listenlers para Acciones Masivas
         selectAllSalesCheckbox.addEventListener('change', () => {
             const isChecked = selectAllSalesCheckbox.checked;
             const itemCheckboxes = salesList.querySelectorAll('.sale-item-checkbox');
@@ -1579,15 +1579,103 @@
 
                     const itemsJson = JSON.stringify(shipment.items);
                     
-                    let itemsHtml = shipment.items.map(item => `
-                        <li class="text-xs">${item.description}</li>
-                    `).join('');
+                    // --- NUEVO: Lógica de agrupación y formato para la tabla ---
+                    const groupedItems = new Map();
+                    let totalPrendas = 0; // (No se usa aquí, pero se mantiene para la lógica de parseo)
+
+                    // 1. Parsear y Agrupar items (lógica copiada de generateShipmentWhatsAppSummary)
+                    shipment.items.forEach(item => {
+                        let qty = 0;
+                        let desc = '';
+                        let color = '';
+                        let talla = '';
+                        let isGroupable = false;
+
+                        if (item.desc) {
+                            qty = item.qty || 0;
+                            desc = item.desc;
+                            color = item.color || '';
+                            talla = item.talla || '';
+                            isGroupable = true;
+                        } else { 
+                            const match = item.description.match(/^(\d+)\s*x\s*(.*?)(?:\(|\s|$)/i);
+                            if (match && match[1] && match[2]) {
+                                qty = parseInt(match[1], 10);
+                                desc = match[2].trim();
+                                color = '';
+                                talla = '';
+                                isGroupable = true;
+                            } else {
+                                isGroupable = false;
+                                const key = item.description;
+                                if (groupedItems.has(key)) {
+                                    groupedItems.get(key).qty += 1;
+                                } else {
+                                    groupedItems.set(key, { isOld: true, description: item.description, qty: 1 });
+                                }
+                                qty = 1;
+                            }
+                        }
+                        totalPrendas += qty;
+
+                        if (isGroupable) {
+                            const normalizedDesc = normalizeString(desc);
+                            const normalizedColor = normalizeString(color);
+                            const normalizedTalla = normalizeString(talla);
+                            const key = `${normalizedDesc}::${normalizedColor}::${normalizedTalla}`;
+                            const existing = groupedItems.get(key);
+                            
+                            if (existing) {
+                                existing.qty += qty;
+                            } else {
+                                groupedItems.set(key, { 
+                                    isOld: false, 
+                                    desc: desc,
+                                    qty: qty, 
+                                    color: color, 
+                                    talla: talla 
+                                });
+                            }
+                        }
+                    });
+
+                    // 2. Convertir a Array y Ordenar
+                    const itemsArray = Array.from(groupedItems.values());
+                    itemsArray.sort((a, b) => {
+                        const descA = a.desc || a.description || '';
+                        const descB = b.desc || b.description || '';
+                        return descA.localeCompare(descB);
+                    });
+
+                    // 3. Construir el HTML
+                    let itemsHtml = '';
+                    for (const item of itemsArray) {
+                        if (item.isOld) {
+                            itemsHtml += `<li class="text-xs">🌻 ${toProperCase(item.description)}</li>`;
+                        } else {
+                            let mainDesc = `<strong class="text-brand-text dark:text-brand-bg">${item.qty} x ${toProperCase(item.desc)}</strong>`;
+                            let attributes = [];
+                            if (item.color) {
+                                attributes.push(`color: ${item.color.toLowerCase()}`);
+                            }
+                            if (item.talla) {
+                                attributes.push(`talla: ${item.talla}`);
+                            }
+                            
+                            itemsHtml += `<li class="text-xs">🌻 ${mainDesc}`;
+                            if (attributes.length > 0) {
+                                itemsHtml += ` <em class="text-brand-muted dark:text-gray-400">(${attributes.join(', ')})</em>`;
+                            }
+                            itemsHtml += `</li>`;
+                        }
+                    }
+                    // --- FIN DE LA NUEVA LÓGICA ---
 
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-brand-text dark:text-brand-bg">${shipment.clienteName}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-brand-muted dark:text-gray-400">
-                            <ul class="list-disc list-inside">${itemsHtml}</ul>
+                            <ul class="list-none space-y-1">${itemsHtml}</ul>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <button 
