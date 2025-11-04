@@ -1651,7 +1651,7 @@
                     let itemsHtml = '';
                     for (const item of itemsArray) {
                         if (item.isOld) {
-                            itemsHtml += `<li class="text-xs">🌻 ${toProperCase(item.description)}</li>`;
+                            itemsHtml += `<li class="text-xs">\u{1F33B} ${toProperCase(item.description)}</li>`;
                         } else {
                             let mainDesc = `<strong class="text-brand-text dark:text-brand-bg">${item.qty} x ${toProperCase(item.desc)}</strong>`;
                             let attributes = [];
@@ -1662,7 +1662,7 @@
                                 attributes.push(`talla: ${item.talla}`);
                             }
                             
-                            itemsHtml += `<li class="text-xs">🌻 ${mainDesc}`;
+                            itemsHtml += `<li class="text-xs">\u{1F33B} ${mainDesc}`;
                             if (attributes.length > 0) {
                                 itemsHtml += ` <em class="text-brand-muted dark:text-gray-400">(${attributes.join(', ')})</em>`;
                             }
@@ -1724,7 +1724,7 @@
                 return;
             }
 
-            let message = `*Compras incluidas en tu envío 📦*\n\n`;
+            let message = `*Compras incluidas en tu envío \u{1F4E6}*\n\n`;
             let totalPrendas = 0;
             const groupedItems = new Map();
 
@@ -1809,7 +1809,7 @@
             for (const item of itemsArray) {
                 if (item.isOld) {
                     // Para items antiguos no parseables
-                    message += `🌻 ${toProperCase(item.description)}\n\n`;
+                    message += `\u{1F33B} ${toProperCase(item.description)}\n\n`;
                 } else {
                     // Para items nuevos o parseados
                     // REGLA: Producto en Nombre Propio
@@ -1824,7 +1824,7 @@
                         attributes.push(`talla: ${item.talla}`);
                     }
                     
-                    message += `🌻 ${mainDesc}`;
+                    message += `\u{1F33B} ${mainDesc}`;
                     if (attributes.length > 0) {
                         message += ` _(${attributes.join(', ')})_`;
                     }
@@ -1832,8 +1832,8 @@
                 }
             }
 
-            message += `*✅ Total de prendas: ${totalPrendas}*\n\n`;
-            message += `_Atte. CompliCompras 🛍️_`;
+            message += `*\u{2705} Total de prendas: ${totalPrendas}*\n\n`;
+            message += `_Atte. CompliCompras \u{1F6CD}_`;
 
             const encodedMessage = encodeURIComponent(message);
             
@@ -1848,3 +1848,4 @@
     </script>
 </body>
 </html>
+
