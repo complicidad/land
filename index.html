@@ -134,11 +134,11 @@
         <!-- Encabezado -->
         <header class="mb-6 flex justify-between items-center">
             
-            <div> <!-- AÑADE ESTA LÍNEA -->
+            <div>
                 <h1 class="text-3xl font-bold text-brand-text dark:text-brand-bg">Complicidad Boutique</h1>
                 <!-- MODIFICADO: Muestra el email del usuario -->
                 <p class="text-sm text-brand-muted dark:text-gray-400">Usuario: <span id="userIdDisplay" class="font-medium text-brand-text dark:text-brand-bg">Cargando...</span></p>
-            </div> <!-- AÑADE ESTA LÍNEA -->
+            </div>
 
             <div class="flex space-x-4">
                 <!-- Botón de Modo Oscuro -->
@@ -168,9 +168,13 @@
                     <button data-tab="sales" class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-semibold text-sm text-brand-accent border-brand-accent dark:text-brand-accent-alt dark:border-brand-accent-alt">
                         Ventas
                     </button>
-                    <!-- MODIFICADO: Pestaña Envíos -->
+                    <!-- Envíos -->
                     <button data-tab="shipping" class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-brand-muted border-transparent hover:text-brand-accent dark:hover:text-brand-accent-alt hover:border-brand-accent">
                         Envíos (Logística)
+                    </button>
+                    <!-- NUEVA PESTAÑA: Reportes -->
+                    <button data-tab="reports" class="tab-btn whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-brand-muted border-transparent hover:text-brand-accent dark:hover:text-brand-accent-alt hover:border-brand-accent">
+                        Reportes
                     </button>
                 </nav>
             </div>
@@ -456,6 +460,49 @@
             </div>
         </div>
         <!-- FIN: Panel de Envíos -->
+        
+        <!-- NUEVO: Panel de Reportes -->
+        <div id="reports-panel" class="tab-panel" hidden>
+            <div class="bg-brand-card dark:bg-gray-800 p-6 rounded-lg shadow-lg">
+                <h2 class="text-xl font-semibold mb-4 text-brand-text dark:text-brand-bg">Reporte de Totales por Día</h2>
+
+                <!-- Filtro de Fecha -->
+                <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg mb-4 flex flex-col md:flex-row gap-4 items-end">
+                    <div class="flex-grow">
+                        <label for="report-date-filter" class="block text-sm font-medium text-brand-muted dark:text-gray-400">Seleccionar Fecha de Venta</label>
+                        <input type="date" id="report-date-filter" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-brand-bg shadow-sm sm:text-sm">
+                    </div>
+                    <button id="report-search-btn" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-brand-accent hover:bg-brand-accent-alt">
+                        <i data-feather="bar-chart-2" class="w-5 h-5 mr-2"></i>
+                        Generar Reporte
+                    </button>
+                </div>
+
+                <!-- Tabla de Resultados -->
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                        <thead class="bg-gray-50 dark:bg-gray-700">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-brand-muted dark:text-gray-400 uppercase tracking-wider">Medio de Pago</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-brand-muted dark:text-gray-400 uppercase tracking-wider">N° Transacciones</th>
+                                <th class="px-6 py-3 text-right text-xs font-medium text-brand-muted dark:text-gray-400 uppercase tracking-wider">Monto Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="report-results-tbody" class="bg-brand-card dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                            <tr><td colspan="3" class="px-6 py-4 text-center text-brand-muted dark:text-gray-400">Seleccione una fecha y presione "Generar Reporte".</td></tr>
+                        </tbody>
+                        <tfoot class="bg-gray-50 dark:bg-gray-700">
+                            <tr id="report-results-total-row" hidden>
+                                <td class="px-6 py-4 text-left font-bold text-brand-text dark:text-brand-bg uppercase">Total General</td>
+                                <td id="report-total-transactions" class="px-6 py-4 text-left font-bold text-brand-text dark:text-brand-bg"></td>
+                                <td id="report-grand-total" class="px-6 py-4 text-right font-bold text-brand-text dark:text-brand-bg"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- FIN: Panel de Reportes -->
 
         <footer class="pt-10 pb-2 bg-bg-soft flex-shrink-0 flex justify-center items-center gap-2 text-gray-500 text-sm mt-auto">
             <span>Powered by</span>
@@ -601,6 +648,16 @@
         const allShipmentsList = document.getElementById('all-shipments-list');
         // --- FIN ---
 
+        // --- NUEVO: Elementos Pestaña Reportes ---
+        const reportsPanel = document.getElementById('reports-panel');
+        const reportDateFilter = document.getElementById('report-date-filter');
+        const reportSearchBtn = document.getElementById('report-search-btn');
+        const reportResultsTbody = document.getElementById('report-results-tbody');
+        const reportResultsTotalRow = document.getElementById('report-results-total-row');
+        const reportTotalTransactions = document.getElementById('report-total-transactions');
+        const reportGrandTotal = document.getElementById('report-grand-total');
+        // --- FIN ---
+
         // --- NUEVO: Elementos Filtro Ventas ---
         const clientSalesFilterSearch = document.getElementById('client-sales-filter-search');
         const clientSalesFilterId = document.getElementById('client-sales-filter-id');
@@ -671,6 +728,7 @@
                         document.getElementById('product-purchase-date').valueAsDate = new Date();
                         document.getElementById('mass-shipping-date').valueAsDate = new Date();
                         document.getElementById('shipping-date-filter').valueAsDate = new Date();
+                        document.getElementById('report-date-filter').valueAsDate = new Date(); // <-- NUEVA FECHA
                     } catch(e) {
                         console.warn("Error al inicializar fechas (ignorar si es la primera carga):", e.message);
                     }
@@ -700,6 +758,7 @@
                     if(salesList) salesList.innerHTML = '';
                     if(productsList) productsList.innerHTML = '';
                     if(allShipmentsList) allShipmentsList.innerHTML = ''; 
+                    if(reportResultsTbody) reportResultsTbody.innerHTML = ''; // <-- NUEVO
                     
                     if (salesListener) salesListener(); 
                 }
@@ -1686,7 +1745,7 @@
                     let itemsHtml = '';
                     for (const item of itemsArray) {
                         if (item.isOld) {
-                            itemsHtml += `<li class="text-xs">🌻 ${toProperCase(item.description)}</li>`;
+                            itemsHtml += `<li class="text-xs"></li>`;
                         } else {
                             let mainDesc = `<strong class="text-brand-text dark:text-brand-bg">${item.qty} x ${toProperCase(item.desc)}</strong>`;
                             let attributes = [];
@@ -1697,7 +1756,7 @@
                                 attributes.push(`talla: ${item.talla}`);
                             }
                             
-                            itemsHtml += `<li class="text-xs">🌻 ${mainDesc}`;
+                            itemsHtml += `<li class="text-xs">${mainDesc}`;
                             if (attributes.length > 0) {
                                 itemsHtml += ` <em class="text-brand-muted dark:text-gray-400">(${attributes.join(', ')})</em>`;
                             }
@@ -1737,6 +1796,10 @@
                     `;
                     allShipmentsList.appendChild(tr);
                 });
+                // MUY IMPORTANTE: Volver a renderizar los iconos de Feather
+                if (typeof feather !== 'undefined') {
+                    feather.replace();
+                }
 
             } catch(error) {
                 console.error("Error al cargar envíos (¡REVISA SI NECESITAS UN ÍNDICE!):", error);
@@ -1745,13 +1808,16 @@
         }
 
         allShipmentsList.addEventListener('click', (e) => {
-            if (e.target.classList.contains('btn-whatsapp-shipment')) {
-                const button = e.target;
+            // Se usa .closest() para detectar el clic en el botón O en el icono <i> dentro de él
+            const wppButton = e.target.closest('.btn-whatsapp-shipment');
+            const copyButton = e.target.closest('.btn-copy-shipment');
+
+            if (wppButton) {
                 try {
-                    const clientName = button.getAttribute('data-client-name');
-                    const clientPhone = button.getAttribute('data-client-phone');
-                    const shipmentDate = button.getAttribute('data-shipment-date');
-                    const items = JSON.parse(decodeURIComponent(button.getAttribute('data-items')));
+                    const clientName = wppButton.getAttribute('data-client-name');
+                    const clientPhone = wppButton.getAttribute('data-client-phone');
+                    const shipmentDate = wppButton.getAttribute('data-shipment-date');
+                    const items = JSON.parse(decodeURIComponent(wppButton.getAttribute('data-items')));
                     
                     generateShipmentWhatsAppSummary(clientName, clientPhone, shipmentDate, items);
                 } catch (error) {
@@ -1760,13 +1826,11 @@
                 }
             }
             
-            // --- NUEVO: Listener para el botón de Copiar ---
-            if (e.target.classList.contains('btn-copy-shipment')) {
-                const button = e.target;
+            if (copyButton) {
                 try {
-                    const clientName = button.getAttribute('data-client-name');
-                    const shipmentDate = button.getAttribute('data-shipment-date');
-                    const items = JSON.parse(decodeURIComponent(button.getAttribute('data-items')));
+                    const clientName = copyButton.getAttribute('data-client-name');
+                    const shipmentDate = copyButton.getAttribute('data-shipment-date');
+                    const items = JSON.parse(decodeURIComponent(copyButton.getAttribute('data-items')));
                     
                     // 1. Construir el mensaje
                     const message = buildShipmentMessage(clientName, shipmentDate, items);
@@ -1780,12 +1844,81 @@
             }
         });
         // --- FIN DE LÓGICA DE PESTAÑA DE ENVÍOS ---
+        
+        // --- NUEVO: LÓGICA DE LA PESTAÑA DE REPORTES ---
+        reportSearchBtn.addEventListener('click', async () => {
+            if (!isAuthReady) return;
+
+            const filterDate = reportDateFilter.value;
+            if (!filterDate) {
+                showModal("Error", "Por favor, seleccione una fecha para buscar.");
+                return;
+            }
+
+            reportResultsTbody.innerHTML = '<tr><td colspan="3" class="px-6 py-4 text-center text-brand-muted dark:text-gray-400">Generando reporte...</td></tr>';
+            reportResultsTotalRow.setAttribute('hidden', true);
+
+            try {
+                // 1. Consultar todos los items de ese día
+                const q = query(saleItemsCollection, where("date", "==", filterDate));
+                const querySnapshot = await getDocs(q);
+
+                if (querySnapshot.empty) {
+                    reportResultsTbody.innerHTML = '<tr><td colspan="3" class="px-6 py-4 text-center text-brand-muted dark:text-gray-400">No se encontraron ventas para esta fecha.</td></tr>';
+                    return;
+                }
+
+                // 2. Agrupar y sumar en el navegador
+                const totalsByPaymentMethod = new Map();
+                let grandTotal = 0;
+                let totalTransactions = 0;
+
+                querySnapshot.forEach(doc => {
+                    const item = doc.data();
+                    const method = item.medioDePago || 'Otro';
+                    
+                    const current = totalsByPaymentMethod.get(method) || { count: 0, total: 0 };
+                    
+                    current.count += 1;
+                    current.total += item.total;
+                    
+                    totalsByPaymentMethod.set(method, current);
+                    
+                    grandTotal += item.total;
+                    totalTransactions += 1; // Contar cada item
+                });
+
+                // 3. Renderizar los resultados
+                reportResultsTbody.innerHTML = '';
+                
+                totalsByPaymentMethod.forEach((data, method) => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-brand-text dark:text-brand-bg">${method}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-brand-muted dark:text-gray-400">${data.count}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-brand-muted dark:text-gray-400 text-right">${currencyFormatter.format(data.total)}</td>
+                    `;
+                    reportResultsTbody.appendChild(tr);
+                });
+
+                // 4. Renderizar totales
+                reportTotalTransactions.textContent = `${totalTransactions} (items)`;
+                reportGrandTotal.textContent = currencyFormatter.format(grandTotal);
+                reportResultsTotalRow.removeAttribute('hidden');
+
+            } catch (error) {
+                console.error("Error al generar reporte:", error);
+                reportResultsTbody.innerHTML = `<tr><td colspan="3" class="px-6 py-4 text-center text-red-500">Error: ${error.message}</td></tr>`;
+            }
+        });
+        // --- FIN DE LÓGICA DE REPORTES ---
 
 
         // --- NUEVA FUNCIÓN: Construye el texto del mensaje ---
         function buildShipmentMessage(clientName, shipmentDate, items) {
             
-            let message = `*Compras incluidas en tu envío* 📦\n\n`; // Emoji 📦 eliminado
+            // MODIFICADO: Emojis eliminados
+            let message = `*Compras incluidas en tu envío* 📦\n\n`;
             let totalPrendas = 0;
             const groupedItems = new Map();
 
@@ -1858,7 +1991,7 @@
 
             for (const item of itemsArray) {
                 if (item.isOld) {
-                    message += `🌻 ${toProperCase(item.description)}\n\n`; // Emoji 🌻 eliminado
+                    message += `🌻 ${toProperCase(item.description)}\n\n`; // Emoji 🌻 -> •
                 } else {
                     let mainDesc = `*${item.qty} x ${toProperCase(item.desc)}*`;
                     let attributes = [];
@@ -1869,7 +2002,7 @@
                         attributes.push(`talla: ${item.talla}`);
                     }
                     
-                    message += `🌻 ${mainDesc}`; // Emoji 🌻 eliminado
+                    message += `🌻 ${mainDesc}`; // Emoji 🌻 -> •
                     if (attributes.length > 0) {
                         message += ` _(${attributes.join(', ')})_`;
                     }
@@ -1891,7 +2024,7 @@
             }
 
             // 1. Construir el mensaje
-            const message = buildShipmentMessage(clientName, shipmentDate, items).normalize("NFC");
+            const message = buildShipmentMessage(clientName, shipmentDate, items);
 
             // 2. Encodear y enviar
             const encodedMessage = encodeURIComponent(message);
