@@ -132,11 +132,14 @@
     <div id="main-app" class="p-4 sm:p-6 lg:p-8 hidden">
 
         <!-- Encabezado -->
-        <header class="mb-6">
-            <h1 class="text-3xl font-bold text-brand-text dark:text-brand-bg">Panel de Gestión Latam5S</h1>
-            <!-- MODIFICADO: Muestra el email del usuario -->
-            <p class="text-sm text-brand-muted dark:text-gray-400">Usuario: <span id="userIdDisplay" class="font-medium text-brand-text dark:text-brand-bg">Cargando...</span></p>
+        <header class="mb-6 flex justify-between items-center">
             
+            <div> <!-- AÑADE ESTA LÍNEA -->
+                <h1 class="text-3xl font-bold text-brand-text dark:text-brand-bg">Complicidad Boutique</h1>
+                <!-- MODIFICADO: Muestra el email del usuario -->
+                <p class="text-sm text-brand-muted dark:text-gray-400">Usuario: <span id="userIdDisplay" class="font-medium text-brand-text dark:text-brand-bg">Cargando...</span></p>
+            </div> <!-- AÑADE ESTA LÍNEA -->
+
             <div class="flex space-x-4">
                 <!-- Botón de Modo Oscuro -->
                 <button id="darkModeToggle" class="mt-2 text-sm text-brand-muted dark:text-gray-400 hover:text-brand-accent dark:hover:text-brand-accent-alt transition duration-150">
@@ -454,6 +457,12 @@
         </div>
         <!-- FIN: Panel de Envíos -->
 
+        <footer class="pt-10 pb-2 bg-bg-soft flex-shrink-0 flex justify-center items-center gap-2 text-gray-500 text-sm mt-auto">
+            <span>Powered by</span>
+                <svg height="20" viewBox="0 0 90 22" xmlns="http://www.w3.org/2000/svg">
+                    <text x="0" y="18" style="font-family: Quicksand, sans-serif; font-size: 20px; font-weight: 700; fill: #D96B4F;">Latam5S</text>
+                </svg>
+        </footer>
 
     </div>
 
