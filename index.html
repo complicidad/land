@@ -1283,7 +1283,7 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-brand-muted dark:text-gray-400">${estadoHtml}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-brand-muted dark:text-gray-400">${item.fechaEnvio || 'N/A'}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <button data-sale-id="${item.saleId}" class="btn-delete-sale text-red-600 hover:text-red-900">Eliminar Venta</button>
+                            <button data-item-id="${doc.id}" class="btn-delete-sale-item text-red-600 hover:text-red-900">Eliminar Item</button>
                         </td>
                     `;
                     salesList.appendChild(tr);
@@ -1295,19 +1295,23 @@
         }
         
         salesList.addEventListener('click', async (e) => {
-            if (e.target.classList.contains('btn-delete-sale')) {
-                const saleId = e.target.getAttribute('data-sale-id');
+            // MODIFICADO: Ahora busca la nueva clase 'btn-delete-sale-item'
+            if (e.target.classList.contains('btn-delete-sale-item')) {
                 
-                if (confirm("¿Estás seguro de que deseas eliminar la VENTA COMPLETA asociada a este item? (El stock NO se restaurará automáticamente). Esta acción eliminará todos los items de esa venta.")) {
+                // MODIFICADO: Obtiene el ID del ITEM, no de la venta
+                const itemId = e.target.getAttribute('data-item-id');
+                
+                // MODIFICADO: Nuevo texto de confirmación
+                if (confirm("¿Estás seguro de que deseas eliminar ESTE ITEM? (El total de la venta original no se recalculará y el stock no se restaurará).")) {
                     try {
-                        await deleteDoc(doc(salesCollection, saleId)); 
-                        const qItems = query(saleItemsCollection, where("saleId", "==", saleId)); 
-                        const itemsSnapshot = await getDocs(qItems);
-                        for (const itemDoc of itemsSnapshot.docs) {
-                            await deleteDoc(itemDoc.ref);
-                        }
+                        // MODIFICADO: Lógica de eliminación simple
+                        await deleteDoc(doc(saleItemsCollection, itemId));
+                        showModal("Éxito", "Item eliminado.");
+                        // El listener onSnapshot de loadSales() refrescará la tabla.
+                        
                     } catch (error) {
-                        showModal("Error", "No se pudo eliminar la venta.");
+                        console.error("Error al eliminar item:", error);
+                        showModal("Error", "No se pudo eliminar el item.");
                     }
                 }
             }
