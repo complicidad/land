@@ -1702,23 +1702,25 @@
                             <ul class="list-none space-y-1">${itemsHtml}</ul>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                            <!-- NUEVO: Botón Copiar -->
+                            <!-- MODIFICADO: Botones con iconos -->
                             <button 
-                              class="btn-copy-shipment text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 font-medium"
+                              class="btn-copy-shipment p-2 inline-flex items-center justify-center rounded-md bg-blue-500 hover:bg-blue-600 text-white"
+                              title="Copiar Resumen"
                               data-shipment-date="${shipment.fechaEnvio}"
                               data-client-name="${shipment.clienteName}"
                               data-items="${encodeURIComponent(itemsJson)}"
                             >
-                              Copiar
+                              <i data-feather="copy" class="w-4 h-4"></i>
                             </button>
                             <button 
-                              class="btn-whatsapp-shipment text-xs text-green-600 dark:text-green-400 hover:text-green-800 font-medium"
+                              class="btn-whatsapp-shipment p-2 inline-flex items-center justify-center rounded-md bg-green-500 hover:bg-green-600 text-white"
+                              title="Enviar por WhatsApp"
                               data-shipment-date="${shipment.fechaEnvio}"
                               data-client-name="${shipment.clienteName}"
                               data-client-phone="${shipment.clienteName}" 
                               data-items="${encodeURIComponent(itemsJson)}"
                             >
-                              Wpp
+                              <i data-feather="send" class="w-4 h-4"></i>
                             </button>
                         </td>
                     `;
@@ -1894,4 +1896,3 @@
     </script>
 </body>
 </html>
-
